@@ -1,0 +1,4 @@
+enum AppRoutes {
+  login,
+  home,
+}
