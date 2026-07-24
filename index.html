@@ -1,0 +1,189 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="คู่มือ Dart และ Flutter ภาษาไทยสำหรับ React และ Next.js developer">
+  <title>Flutter Field Guide — จาก React สู่ Flutter</title>
+  <link rel="stylesheet" href="assets/css/site.css">
+  <script defer src="assets/js/site.js"></script>
+</head>
+<body>
+  <a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
+  <noscript>
+    <p class="noscript-note">เนื้อหาทั้งหมดยังอ่านได้ แต่ search, theme, quiz และ progress ต้องเปิด JavaScript</p>
+  </noscript>
+
+  <div class="site-shell">
+    <aside class="sidebar" aria-label="เมนูหลักสูตร">
+      <a class="brand" href="index.html" aria-current="page">
+        <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
+        <span><strong>Flutter Field Guide</strong><small>Web → Mobile</small></span>
+      </a>
+
+      <div class="sidebar-tools">
+        <button class="search-trigger" type="button" data-search-trigger>
+          ค้นหาบทเรียน <kbd>/</kbd>
+        </button>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม">
+          <span data-theme-label>ธีม</span>
+        </button>
+      </div>
+
+      <div class="course-progress">
+        <div class="progress-meta">
+          <span>ความคืบหน้า</span><strong data-progress-count>0 / 0</strong>
+        </div>
+        <div class="progress-track" aria-hidden="true">
+          <div class="progress-value" data-progress-value></div>
+        </div>
+      </div>
+
+      <p class="nav-heading">Learning tracks</p>
+      <nav class="course-nav">
+        <a href="#learning-path"><span class="nav-index">A</span>เริ่มต้นและติดตั้ง</a>
+        <a href="#learning-path"><span class="nav-index">B</span>Dart สำหรับ TypeScript</a>
+        <a href="#learning-path"><span class="nav-index">C</span>Flutter fundamentals</a>
+        <a href="#learning-path"><span class="nav-index">D</span>Boilerplate architecture</a>
+        <a href="#learning-path"><span class="nav-index">E</span>Task Management</a>
+        <a href="#learning-path"><span class="nav-index">F</span>Test, Build, Production</a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <p>Offline-first · ภาษาไทย · Flutter 3.44</p>
+        <p>อ้างอิง AI-first Flutter Boilerplate</p>
+      </div>
+    </aside>
+
+    <div class="site-main">
+      <header class="mobile-bar">
+        <button class="nav-trigger" type="button" data-nav-trigger aria-expanded="false">เมนู</button>
+        <strong>Flutter Field Guide</strong>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </header>
+
+      <main id="main-content">
+        <section class="hero">
+          <div>
+            <p class="eyebrow">React / Next.js → Dart / Flutter</p>
+            <h1>เปลี่ยนความรู้ Web ให้กลายเป็นระบบ Flutter ที่ดูแลต่อได้</h1>
+            <p class="hero-lead">
+              คู่มือนี้ไม่ได้สอนให้แปล JSX เป็น Widget แบบคำต่อคำ แต่จะสร้าง mental model ใหม่
+              ตั้งแต่ Dart, rendering, state, architecture ไปจนถึง Task Management app ที่ test และ build ได้
+            </p>
+            <div class="hero-actions">
+              <a class="button button-primary" href="#learning-path">ดูเส้นทางการเรียน</a>
+              <a class="button button-secondary" href="#how-it-works">วิธีใช้คู่มือ</a>
+            </div>
+            <p class="hero-note">
+              เปิดจากไฟล์ได้โดยตรง · ไม่ใช้ CDN · มี completed example project
+            </p>
+          </div>
+
+          <aside class="execution-card" aria-labelledby="execution-title">
+            <p class="track-label">Execution rail</p>
+            <h2 id="execution-title">จากความตั้งใจของผู้ใช้ถึง build artifact</h2>
+            <ol class="execution-rail">
+              <li><span class="rail-node">01</span><span class="rail-copy"><strong>Intent</strong><small>เข้าใจ feature และ invariant</small></span></li>
+              <li><span class="rail-node">02</span><span class="rail-copy"><strong>Dart</strong><small>สร้าง type และ business logic</small></span></li>
+              <li><span class="rail-node">03</span><span class="rail-copy"><strong>Widget</strong><small>ประกาศ UI จาก state</small></span></li>
+              <li><span class="rail-node">04</span><span class="rail-copy"><strong>Boundary</strong><small>แยก repository และ datasource</small></span></li>
+              <li><span class="rail-node">05</span><span class="rail-copy"><strong>Tests</strong><small>ยืนยัน behavior ก่อนส่งมอบ</small></span></li>
+              <li><span class="rail-node">06</span><span class="rail-copy"><strong>Build</strong><small>Android · iOS · Web</small></span></li>
+            </ol>
+          </aside>
+        </section>
+
+        <section class="landing-section" id="learning-path">
+          <div class="section-heading">
+            <div><p class="track-label">28 chapters · 6 tracks</p><h2>หลักสูตรที่พาไปถึงระบบจริง</h2></div>
+            <p>
+              อ่านตามลำดับเมื่อเริ่มจากศูนย์ หรือใช้ search เพื่อกลับมาหา syntax,
+              Riverpod, routing, test และ build command ระหว่างพัฒนา
+            </p>
+          </div>
+
+          <div class="track-grid">
+            <article class="track-card" data-track="setup">
+              <span class="track-label">Track A</span><h3>Orientation &amp; Setup</h3>
+              <p>ติดตั้ง toolchain, VS Code, clone, generate, run และอ่านสถานะของ Boilerplate</p>
+              <span class="chapter-count">4 บท</span>
+            </article>
+            <article class="track-card" data-track="dart">
+              <span class="track-label">Track B</span><h3>Dart for TypeScript Devs</h3>
+              <p>Type system, null safety, OOP, generics, async, streams และ typed results</p>
+              <span class="chapter-count">4 บท</span>
+            </article>
+            <article class="track-card" data-track="flutter">
+              <span class="track-label">Track C</span><h3>Flutter Fundamentals</h3>
+              <p>Widget/Element/RenderObject, constraints, forms, lifecycle และ state ownership</p>
+              <span class="chapter-count">3 บท</span>
+            </article>
+            <article class="track-card" data-track="architecture">
+              <span class="track-label">Track D</span><h3>Boilerplate Architecture</h3>
+              <p>Feature-first, Riverpod, GoRouter, Dio, Repository, Result และ secure storage</p>
+              <span class="chapter-count">4 บท</span>
+            </article>
+            <article class="track-card" data-track="capstone">
+              <span class="track-label">Track E</span><h3>Task Management Capstone</h3>
+              <p>สร้าง domain, CRUD, offline datasource, form, controller, route และ API-ready layer</p>
+              <span class="chapter-count">7 บท</span>
+            </article>
+            <article class="track-card" data-track="delivery">
+              <span class="track-label">Track F</span><h3>Quality &amp; Delivery</h3>
+              <p>Testing, DevTools, performance, security, accessibility, build และ AI workflow</p>
+              <span class="chapter-count">6 บท</span>
+            </article>
+          </div>
+        </section>
+
+        <section class="landing-section" id="how-it-works">
+          <div class="section-heading">
+            <div><p class="track-label">Mental bridge</p><h2>เริ่มจากสิ่งที่คุณรู้ แต่ไม่หยุดที่ analogy</h2></div>
+            <p>
+              ตารางเปรียบเทียบช่วยให้เริ่มเร็ว จากนั้นทุกบทจะชี้ชัดว่าความเหมือนสิ้นสุดตรงไหน
+              เพื่อไม่ให้เขียน Flutter ด้วยนิสัยจาก DOM
+            </p>
+          </div>
+
+          <figure class="diagram react-map" aria-labelledby="react-map-title">
+            <div class="concept-column">
+              <p class="concept-title">React / Next.js</p>
+              <div class="concept-node"><code>Component</code><span>function ที่คืน JSX</span></div>
+              <div class="concept-node"><code>Hooks</code><span>state และ side effects</span></div>
+              <div class="concept-node"><code>fetch</code><span>เรียก external data</span></div>
+              <div class="concept-node"><code>App Router</code><span>URL และ layouts</span></div>
+            </div>
+            <div class="map-bridge" aria-hidden="true">concept →</div>
+            <div class="concept-column">
+              <p class="concept-title">Dart / Flutter</p>
+              <div class="concept-node"><code>Widget</code><span>immutable configuration</span></div>
+              <div class="concept-node"><code>Riverpod</code><span>state + dependency graph</span></div>
+              <div class="concept-node"><code>Dio / Repository</code><span>transport + domain boundary</span></div>
+              <div class="concept-node"><code>GoRouter</code><span>route + redirect policy</span></div>
+            </div>
+            <figcaption>Concept bridge สำหรับเริ่มเรียน ไม่ใช่การจับคู่แบบหนึ่งต่อหนึ่ง</figcaption>
+          </figure>
+          <p class="diagram-description" id="react-map-title">
+            แผนภาพจับคู่แนวคิดที่คุ้นเคยจาก React กับเจ้าของ responsibility ใน Flutter
+            และเตือนให้แยก Widget ออกจาก DOM node รวมถึงแยก Dio ออกจาก Repository
+          </p>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
+    <div class="search-head">
+      <label>
+        <span id="search-title" class="visually-hidden">ค้นหาคู่มือ</span>
+        <input id="search-input" type="search" placeholder="ค้นหา Dart, Riverpod, routing, build…" autocomplete="off">
+      </label>
+      <button class="search-close" type="button" data-search-close>ปิด</button>
+    </div>
+    <div class="search-results" id="search-results" aria-live="polite">
+      <p class="search-empty">บทเรียนจะปรากฏที่นี่เมื่อเพิ่มเข้าสู่หลักสูตร</p>
+    </div>
+  </dialog>
+</body>
+</html>
