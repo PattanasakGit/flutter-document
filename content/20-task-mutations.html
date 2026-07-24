@@ -56,16 +56,15 @@
   <div class="code-label">Domain update</div>
   <pre><code>Result&lt;Task&gt; updateContent({
   required String title,
-  required String description,
+  String description = '',
 }) {
-  final cleanTitle = title.trim();
-  if (cleanTitle.isEmpty) {
-    return const Error(ValidationFailure(message: 'กรุณากรอกชื่องาน'));
-  }
-  return Success(copyWith(
-    title: cleanTitle,
-    description: description.trim(),
-  ));
+  return _validated(
+    id: id,
+    title: title,
+    description: description,
+    isCompleted: isCompleted,
+    createdAt: createdAt,
+  );
 }</code></pre>
 </div>
 
@@ -106,7 +105,9 @@ if (confirmed == true &amp;&amp; context.mounted) {
 <p>
   ถ้าอนุญาตหลาย task mutate พร้อมกัน ให้ state track operation ต่อ id
   ไม่ใช้ bool เดียว disable ทั้ง list แต่ถ้า MVP เลือก serialize ให้เขียน
-  policy และ test ชัด ไม่ปล่อย request แข่งกันโดยไม่ได้ตั้งใจ
+  policy และ test ชัด ตัวอย่างนี้ serialize mutation ทั้ง list, disable
+  filter/reload ระหว่าง mutation และใช้ generation token ให้ load ล่าสุดชนะ
+  จึงไม่ปล่อย pre-await snapshot หรือ request เก่าเขียนทับ state ใหม่
 </p>
 
 <h2 id="tests">Mutation tests</h2>
@@ -117,6 +118,8 @@ if (confirmed == true &amp;&amp; context.mounted) {
   <li>delete cancel ไม่เรียก controller</li>
   <li>delete confirm success เอา item ออก</li>
   <li>กด action ซ้ำระหว่าง mutation ไม่เกิด duplicate call</li>
+  <li>filter/reload ระหว่าง mutation ไม่เปลี่ยน state</li>
+  <li>overlapping load ที่เก่ากว่า complete ทีหลังไม่เขียนทับผลใหม่</li>
 </ul>
 
 <h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>

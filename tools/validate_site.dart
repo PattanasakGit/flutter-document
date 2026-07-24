@@ -5,6 +5,15 @@ final _attributePattern = RegExp(
   caseSensitive: false,
 );
 
+final _sourcePathPattern = RegExp(
+  r'\b(?:lib|test)/[a-zA-Z0-9_./-]+\.dart\b',
+);
+
+final _releaseCommandPattern = RegExp(
+  r'flutter build (?:apk|appbundle|ios|ipa|web)'
+  r'[\s\S]*?(?=flutter build |</code>)',
+);
+
 const _expectedPages = <String>{
   'index.html',
   'chapters/01-orientation.html',
@@ -73,14 +82,18 @@ void main() {
       errors,
     );
     _require(
-      RegExp(r'''<html\s+[^>]*lang=["']th["']''', caseSensitive: false)
-          .hasMatch(source),
+      RegExp(
+        r'''<html\s+[^>]*lang=["']th["']''',
+        caseSensitive: false,
+      ).hasMatch(source),
       '$path: missing lang="th"',
       errors,
     );
     _require(
-      RegExp(r'<title>\s*[^<]+\s*</title>', caseSensitive: false)
-          .hasMatch(source),
+      RegExp(
+        r'<title>\s*[^<]+\s*</title>',
+        caseSensitive: false,
+      ).hasMatch(source),
       '$path: missing non-empty title',
       errors,
     );
@@ -90,9 +103,21 @@ void main() {
       errors,
     );
     _require(
-      RegExp(r'<main(?:\s|>)', caseSensitive: false).allMatches(source).length ==
+      RegExp(
+            r'<main(?:\s|>)',
+            caseSensitive: false,
+          ).allMatches(source).length ==
           1,
       '$path: requires exactly one main element',
+      errors,
+    );
+    final catalogScriptIndex = source.indexOf('assets/js/catalog.js');
+    final siteScriptIndex = source.indexOf('assets/js/site.js');
+    _require(
+      catalogScriptIndex != -1 &&
+          siteScriptIndex != -1 &&
+          catalogScriptIndex < siteScriptIndex,
+      '$path: catalog.js must load before site.js',
       errors,
     );
 
@@ -106,15 +131,46 @@ void main() {
 
       localLinkCount += 1;
       final cleanTarget = target.split('#').first.split('?').first;
-      if (cleanTarget.isEmpty) continue;
-
-      final resolved = File(
-        Uri.file(file.absolute.path).resolve(cleanTarget).toFilePath(),
-      );
+      final resolved = cleanTarget.isEmpty
+          ? file
+          : File(
+              Uri.file(file.absolute.path).resolve(cleanTarget).toFilePath(),
+            );
       final directoryTarget = Directory(resolved.path);
       if (!resolved.existsSync() && !directoryTarget.existsSync()) {
         errors.add('$path: broken local link: $target');
+        continue;
       }
+
+      final fragment = _fragmentOf(target);
+      if (fragment != null &&
+          fragment.isNotEmpty &&
+          resolved.path.endsWith('.html') &&
+          !_containsFragment(resolved, fragment)) {
+        errors.add('$path: missing fragment "#$fragment" in $cleanTarget');
+      }
+    }
+
+    for (final match in _sourcePathPattern.allMatches(source)) {
+      final sourcePath = match.group(0)!;
+      final referencedFile = File(
+        'example/task_management_app/$sourcePath',
+      );
+      if (!referencedFile.existsSync()) {
+        errors.add('$path: missing referenced example source: $sourcePath');
+      }
+    }
+
+    for (final match in _releaseCommandPattern.allMatches(source)) {
+      final command = match.group(0)!;
+      if (!command.contains('lib/main_production.dart')) {
+        errors.add(
+          '$path: release command must target lib/main_production.dart',
+        );
+      }
+    }
+    if (source.contains('dart-define=APP_ENV')) {
+      errors.add('$path: APP_ENV is not a supported entrypoint selector');
     }
   }
 
@@ -127,8 +183,10 @@ void main() {
     final source = file.readAsStringSync();
     for (final match in diagramPattern.allMatches(source)) {
       final figure = match.group(1)!;
-      final hasCaption =
-          RegExp(r'<figcaption(?:\s|>)', caseSensitive: false).hasMatch(figure);
+      final hasCaption = RegExp(
+        r'<figcaption(?:\s|>)',
+        caseSensitive: false,
+      ).hasMatch(figure);
       final afterFigure = source.substring(match.end);
       final hasDescription = RegExp(
         r'''^\s*<p\s+[^>]*class=["'][^"']*\bdiagram-description\b''',
@@ -163,12 +221,13 @@ void main() {
 
 List<File> _htmlFilesIn(Directory directory) {
   if (!directory.existsSync()) return const [];
-  final files = directory
-      .listSync()
-      .whereType<File>()
-      .where((file) => file.path.endsWith('.html'))
-      .toList()
-    ..sort((a, b) => a.path.compareTo(b.path));
+  final files =
+      directory
+          .listSync()
+          .whereType<File>()
+          .where((file) => file.path.endsWith('.html'))
+          .toList()
+        ..sort((a, b) => a.path.compareTo(b.path));
   return files;
 }
 
@@ -179,11 +238,24 @@ bool _isExternalResource(String target) {
 }
 
 bool _isNonFileTarget(String target) {
-  return target.startsWith('#') ||
-      target.startsWith('mailto:') ||
+  return target.startsWith('mailto:') ||
       target.startsWith('tel:') ||
       target.startsWith('data:') ||
       target.startsWith('javascript:');
+}
+
+String? _fragmentOf(String target) {
+  final index = target.indexOf('#');
+  if (index == -1) return null;
+  return Uri.decodeComponent(target.substring(index + 1));
+}
+
+bool _containsFragment(File file, String fragment) {
+  final escaped = RegExp.escape(fragment);
+  return RegExp(
+    '''(?:id|name)=["']$escaped["']''',
+    caseSensitive: false,
+  ).hasMatch(file.readAsStringSync());
 }
 
 void _require(bool condition, String message, List<String> errors) {

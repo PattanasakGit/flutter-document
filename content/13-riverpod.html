@@ -25,12 +25,15 @@
 <h2 id="provider">Provider สำหรับ dependency</h2>
 <div class="code-block">
   <div class="code-label">Annotation-based provider</div>
-  <pre><code>@riverpod
-TaskRepository taskRepository(Ref ref) {
-  return TaskRepositoryImpl(
-    ref.watch(taskLocalDatasourceProvider),
-  );
-}</code></pre>
+  <pre><code>final taskRepositoryProvider = Provider&lt;TaskRepository&gt;(
+  (ref) =&gt; TaskRepositoryImpl(
+    datasource: ref.watch(taskLocalDatasourceProvider),
+    idGenerator: () =&gt; 'task-${DateTime.now().microsecondsSinceEpoch}',
+    clock: DateTime.now,
+    errorMapper: const ErrorMapper(),
+    logger: ref.watch(appLoggerProvider),
+  ),
+);</code></pre>
 </div>
 <p>
   Generated provider เพิ่ม compile-time type และชื่อที่สม่ำเสมอ
@@ -49,10 +52,10 @@ class TaskListController extends _$TaskListController {
 
   Future&lt;void&gt; load() async {
     final getTasks = ref.read(getTasksProvider);
-    final result = await getTasks();
+    final result = await getTasks.call();
     state = switch (result) {
       Success(:final data) =&gt; TaskListState.ready(tasks: data),
-      Error(:final failure) =&gt; TaskListState.failed(failure: failure),
+      FailureResult(:final failure) =&gt; TaskListState.failed(failure),
     };
   }
 }</code></pre>

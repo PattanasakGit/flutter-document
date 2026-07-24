@@ -46,7 +46,7 @@ test('rejects an empty title', () {
     createdAt: DateTime(2026, 7, 24),
   );
 
-  expect(result, isA&lt;Error&lt;Task&gt;&gt;());
+  expect(result, isA&lt;FailureResult&lt;Task&gt;&gt;());
 });</code></pre>
 </div>
 <p>
@@ -67,11 +67,11 @@ test('rejects an empty title', () {
   final cleanDescription = description.trim();
 
   if (cleanTitle.isEmpty) {
-    return const Error(ValidationFailure(message: 'กรุณากรอกชื่องาน'));
+    return const FailureResult(ValidationFailure(userMessage: 'กรุณากรอกชื่องาน'));
   }
   if (cleanTitle.length &gt; 120 || cleanDescription.length &gt; 500) {
-    return const Error(
-      ValidationFailure(message: 'ข้อมูลยาวเกินขอบเขตที่กำหนด'),
+    return const FailureResult(
+      ValidationFailure(userMessage: 'ข้อมูลยาวเกินขอบเขตที่กำหนด'),
     );
   }
 

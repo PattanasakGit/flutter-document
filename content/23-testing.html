@@ -63,7 +63,13 @@
   final source = FakeTaskDataSource(records: [
     const TaskRecord(id: '1', title: 'Read tests', completed: false),
   ]);
-  final repository = TaskRepositoryImpl(source);
+  final repository = TaskRepositoryImpl(
+    datasource: source,
+    idGenerator: () =&gt; 'task-test-1',
+    clock: () =&gt; DateTime(2026, 7, 24),
+    errorMapper: const ErrorMapper(),
+    logger: const NoOpAppLogger(),
+  );
 
   final result = await repository.loadTasks();
 

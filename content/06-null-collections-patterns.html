@@ -115,7 +115,10 @@ if (payload case {
   <pre><code>Widget body = switch (state) {
   TaskLoading() =&gt; const LoadingView(),
   TaskReady(:final tasks) =&gt; TaskList(tasks: tasks),
-  TaskFailed(:final failure) =&gt; ErrorView(message: failure.message),
+  TaskFailed(:final failure) =&gt; AppErrorView(
+    title: 'Tasks unavailable',
+    message: failure.userMessage,
+  ),
 };</code></pre>
 </div>
 <p>

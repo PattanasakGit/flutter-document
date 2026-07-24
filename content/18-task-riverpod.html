@@ -16,6 +16,7 @@ sealed class TaskListState with _$TaskListState {
     required List&lt;Task&gt; tasks,
     @Default(TaskFilter.all) TaskFilter filter,
     @Default(false) bool isMutating,
+    String? actionError,
   }) = TaskListReady;
   const factory TaskListState.failed(Failure failure) = TaskListFailed;
 }</code></pre>
@@ -28,17 +29,27 @@ sealed class TaskListState with _$TaskListState {
 <h2 id="build">Controller dependency</h2>
 <div class="code-block">
   <div class="code-label">TaskListController</div>
-  <pre><code>@riverpod
+  <pre><code>@Riverpod(keepAlive: true)
 class TaskListController extends _$TaskListController {
+  var _loadGeneration = 0;
+
   @override
-  TaskListState build() =&gt; const TaskListState.loading();
+  TaskListState build() {
+    unawaited(Future&lt;void&gt;.microtask(load));
+    return const TaskListState.loading();
+  }
 
   Future&lt;void&gt; load() async {
+    final current = state;
+    if (current is TaskListReady &amp;&amp; current.isMutating) return;
+
+    final generation = ++_loadGeneration;
     state = const TaskListState.loading();
-    final result = await ref.read(getTasksProvider)();
+    final result = await ref.read(getTasksProvider).call();
+    if (generation != _loadGeneration) return;
     state = switch (result) {
       Success(:final data) =&gt; TaskListState.ready(tasks: data),
-      Error(:final failure) =&gt; TaskListState.failed(failure),
+      FailureResult(:final failure) =&gt; TaskListState.failed(failure),
     };
   }
 }</code></pre>
@@ -55,7 +66,9 @@ class TaskListController extends _$TaskListController {
 </div>
 <p>
   ไม่ต้องเรียก repository ใหม่เมื่อเปลี่ยน filter เพราะ source list ไม่เปลี่ยน
-  filter เป็น UI/application view state ที่ derive ได้ deterministic
+  filter เป็น UI/application view state ที่ derive ได้ deterministic ระหว่าง
+  mutation controller จะไม่รับ filter/reload ใหม่ และ UI disable controls
+  เหล่านี้เพื่อไม่ให้ pre-await snapshot เขียนทับ state ที่ใหม่กว่า
 </p>
 
 <h2 id="mutation">Mutation transaction</h2>
@@ -66,16 +79,25 @@ class TaskListController extends _$TaskListController {
   if (current is! TaskListReady || current.isMutating) return;
 
   state = current.copyWith(isMutating: true);
-  final result = await ref.read(toggleTaskProvider)(id);
+  final result = await ref.read(toggleTaskProvider).call(id);
 
   state = switch (result) {
-    Success() =&gt; await _reloadReady(filter: current.filter),
-    Error(:final failure) =&gt; TaskListState.failed(failure),
+    Success&lt;Task&gt;(:final data) =&gt; current.copyWith(
+        tasks: [
+          for (final task in current.tasks)
+            if (task.id == data.id) data else task,
+        ],
+        isMutating: false,
+      ),
+    FailureResult&lt;Task&gt;(:final failure) =&gt; current.copyWith(
+        isMutating: false,
+        actionError: failure.userMessage,
+      ),
   };
 }</code></pre>
 </div>
 <p>
-  ตัวอย่างใช้ confirmed update: รอ repository แล้ว reload snapshot
+  ตัวอย่างใช้ confirmed update: รอ repository แล้ว mergeผลลง snapshot เดิม
   ระบบ latency สูงอาจเลือก optimistic update แต่ต้องออกแบบ rollback และ race
   condition เพิ่ม ไม่ควรทำเพียงเพื่อความรู้สึกเร็ว
 </p>
@@ -86,12 +108,14 @@ class TaskListController extends _$TaskListController {
   <pre><code>final state = ref.watch(taskListControllerProvider);
 
 return switch (state) {
-  TaskListLoading() =&gt; const Center(child: CircularProgressIndicator()),
-  TaskListFailed(:final failure) =&gt; ErrorView(
-      message: failure.message,
-      onRetry: () =&gt; ref.read(taskListControllerProvider.notifier).load(),
+  TaskListLoading() =&gt; const AppLoadingView(label: 'Loading tasks'),
+  TaskListFailed(:final failure) =&gt; AppErrorView(
+      title: 'Tasks unavailable',
+      message: failure.userMessage,
+      actionLabel: 'Try again',
+      onAction: () =&gt; ref.read(taskListControllerProvider.notifier).load(),
     ),
-  TaskListReady() =&gt; TaskListContent(state: state),
+  TaskListReady() =&gt; _ReadyTaskList(state: state),
 };</code></pre>
 </div>
 
@@ -102,6 +126,8 @@ return switch (state) {
   <li>complete ด้วย Success และ assert ready</li>
   <li>เปลี่ยน filter แล้ว assert visible tasks โดย repository call count ไม่เพิ่ม</li>
   <li>เรียก toggle ซ้ำระหว่าง isMutating แล้ว assert use case ถูกเรียกครั้งเดียว</li>
+  <li>ค้าง mutation ด้วย Completer แล้ว assert filter/reload ถูก ignore</li>
+  <li>ให้ load สองตัว complete สลับลำดับแล้ว assert generation ล่าสุดชนะ</li>
 </ol>
 
 <h2 id="failure-policy">Failure state กับ content preservation</h2>
@@ -117,5 +143,6 @@ return switch (state) {
   <li>ใช้ bool loading/error/data nullable ร่วมกัน</li>
   <li>ให้ Widget เรียก repository โดยตรง</li>
   <li>ไม่ guard duplicate mutation</li>
+  <li>capture state ก่อน await แล้วเปิดให้ filter/reload เปลี่ยนระหว่างทาง</li>
   <li>ทดสอบ mock call มากกว่าสถานะที่ consumer เห็น</li>
 </ul>

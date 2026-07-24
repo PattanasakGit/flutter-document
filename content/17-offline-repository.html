@@ -51,20 +51,27 @@
     return List.unmodifiable(_records);
   }
 
-  Future&lt;TaskRecord&gt; upsert(TaskRecord record) async {
+  Future&lt;TaskRecord?&gt; insert(TaskRecord record) async {
     final index = _records.indexWhere((item) =&gt; item.id == record.id);
-    if (index == -1) {
-      _records.add(record);
-    } else {
-      _records[index] = record;
-    }
+    if (index != -1) return null;
+    _records.add(record);
+    return record;
+  }
+
+  Future&lt;TaskRecord?&gt; update(TaskRecord record) async {
+    final index = _records.indexWhere((item) =&gt; item.id == record.id);
+    if (index == -1) return null;
+    _records[index] = record;
     return record;
   }
 }</code></pre>
 </div>
 <p>
   คืน unmodifiable snapshot ป้องกัน repository/caller mutate source โดยไม่ผ่าน
-  datasource method การ inject seed ทำให้ test สร้าง scenario ได้ชัด
+  datasource method และแยก insert/update semantics: duplicate insert กับ
+  missing update จะคืน <code>null</code> ให้ repository แปลงเป็น typed failure
+  แทนการ upsert จน CRUD bug ถูกซ่อน การ inject seed ทำให้ test สร้าง scenario
+  ได้ชัด
 </p>
 
 <h2 id="ids-clock">Inject ID และ Clock</h2>
@@ -74,9 +81,11 @@
 typedef Clock = DateTime Function();
 
 TaskRepositoryImpl(
-  datasource,
+  datasource: datasource,
   idGenerator: () =&gt; 'task-test-1',
   clock: () =&gt; DateTime(2026, 7, 24),
+  errorMapper: const ErrorMapper(),
+  logger: const NoOpAppLogger(),
 );</code></pre>
 </div>
 <p>
@@ -87,13 +96,21 @@ TaskRepositoryImpl(
 <h2 id="mapping">Repository mapping</h2>
 <div class="code-block">
   <div class="code-label">TaskRepositoryImpl</div>
-  <pre><code>Task _toEntity(TaskRecord record) {
+  <pre><code>Result&lt;Task&gt; _toEntity(TaskRecord record) {
+  final createdAt = DateTime.tryParse(record.createdAtIso);
+  if (createdAt == null) {
+    return const FailureResult(
+      ValidationFailure(
+        userMessage: 'Stored task data is invalid.',
+      ),
+    );
+  }
   return Task.restore(
     id: record.id,
     title: record.title,
     description: record.description,
     isCompleted: record.completed,
-    createdAt: DateTime.parse(record.createdAtIso),
+    createdAt: createdAt,
   );
 }
 
@@ -107,20 +124,27 @@ TaskRecord _toRecord(Task task) {
   );
 }</code></pre>
 </div>
+<p>
+  <code>Task.restore</code> คืน <code>Result&lt;Task&gt;</code> และใช้ invariant
+  ชุดเดียวกับ create/update ดังนั้น blank title, ID ว่าง, text เกิน limit หรือ
+  timestamp ที่ parse ไม่ได้จะไม่กลายเป็น invalid Domain object
+</p>
 
 <h2 id="failure">Missing ID เป็น typed failure</h2>
 <div class="code-block">
   <div class="code-label">Toggle policy</div>
   <pre><code>final record = await _datasource.readById(id);
 if (record == null) {
-  return const Error(
-    NotFoundFailure(message: 'ไม่พบงานที่ต้องการเปลี่ยน'),
+  return const FailureResult(
+    NotFoundFailure(userMessage: 'ไม่พบงานที่ต้องการเปลี่ยน'),
   );
 }
 
-final task = _toEntity(record).toggle();
-await _datasource.upsert(_toRecord(task));
-return Success(task);</code></pre>
+return switch (_toEntity(record)) {
+  Success&lt;Task&gt;(:final data) =&gt; _update(data.toggle()),
+  FailureResult&lt;Task&gt;(:final failure) =&gt;
+    FailureResult(failure),
+};</code></pre>
 </div>
 
 <h2 id="tests">Repository behavior tests</h2>
@@ -128,6 +152,9 @@ return Success(task);</code></pre>
   <li>read คืน seed ตามลำดับและ caller แก้ list ไม่ได้</li>
   <li>create trim/validate ผ่าน domain path และใช้ injected id/time</li>
   <li>update รักษา id/createdAt</li>
+  <li>create ที่ generate ID ซ้ำคืน ValidationFailure และไม่เขียนทับของเดิม</li>
+  <li>update ID ที่ไม่มีคืน NotFoundFailure และไม่ insert แอบแฝง</li>
+  <li>persisted record ผิด invariant คืน typed failure</li>
   <li>toggle task ที่ไม่มีคืน NotFoundFailure</li>
   <li>delete แล้ว read ไม่พบ</li>
   <li>datasource exception ถูก map เป็น UnknownFailure โดยไม่เปิด internal message ให้ UI</li>
@@ -136,17 +163,19 @@ return Success(task);</code></pre>
 <h2 id="providers">Compose ใน provider</h2>
 <div class="code-block">
   <div class="code-label">tasks_providers.dart</div>
-  <pre><code>@riverpod
-InMemoryTaskDatasource taskLocalDatasource(Ref ref) {
-  return InMemoryTaskDatasource(seed: TaskSeed.defaults);
-}
+  <pre><code>final taskLocalDatasourceProvider = Provider&lt;TaskLocalDatasource&gt;(
+  (ref) =&gt; InMemoryTaskDatasource(seed: TaskSeed.defaults),
+);
 
-@riverpod
-TaskRepository taskRepository(Ref ref) {
-  return TaskRepositoryImpl(
-    ref.watch(taskLocalDatasourceProvider),
-  );
-}</code></pre>
+final taskRepositoryProvider = Provider&lt;TaskRepository&gt;(
+  (ref) =&gt; TaskRepositoryImpl(
+    datasource: ref.watch(taskLocalDatasourceProvider),
+    idGenerator: () =&gt; 'task-${DateTime.now().microsecondsSinceEpoch}',
+    clock: DateTime.now,
+    errorMapper: const ErrorMapper(),
+    logger: ref.watch(appLoggerProvider),
+  ),
+);</code></pre>
 </div>
 
 <h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>

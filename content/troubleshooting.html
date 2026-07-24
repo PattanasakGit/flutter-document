@@ -49,7 +49,7 @@
     <thead><tr><th>อาการ</th><th>ตรวจ</th><th>แนวแก้</th></tr></thead>
     <tbody>
       <tr><td>Target of URI <code>*.g.dart</code> missing</td><td>part directive/annotation/dev deps</td><td>แก้ source แล้วรัน build_runner</td></tr>
-      <tr><td>Conflicting outputs</td><td>generated file ถูกแก้/ownership เปลี่ยน</td><td>ตรวจ diff แล้วใช้ <code>--delete-conflicting-outputs</code> เมื่อปลอดภัย</td></tr>
+      <tr><td>Conflicting outputs</td><td>generated file ถูกแก้/ownership เปลี่ยน</td><td>ใช้ <code>dart run build_runner build</code> ตามเวอร์ชันที่ Boilerplate pin และตรวจ source/generated ownership; ไม่เติม flag เก่าจากคู่มือคนละเวอร์ชัน</td></tr>
       <tr><td>Provider generated name ไม่พบ</td><td>annotation/signature/part name</td><td>ตรวจ naming และ generator output แรก</td></tr>
       <tr><td>Freezed constructor/mixin error</td><td>part files หรือ syntax/version mismatch</td><td>เทียบ nearby Freezed model ใน repo และ resolved API</td></tr>
       <tr><td>Generator loop/stale output</td><td>watch process เก่า/source error</td><td>หยุด watch, แก้ error แรก, one-shot build</td></tr>

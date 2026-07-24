@@ -26,7 +26,7 @@
 cd my_app
 git status --short --branch
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs
+dart run build_runner build
 flutter analyze
 flutter test
 flutter run -t lib/main_development.dart</code></pre>
@@ -54,8 +54,8 @@ flutter run -t lib/main_development.dart</code></pre>
 <h2 id="codegen">Code generation</h2>
 <div class="code-block">
   <div class="code-label">One-shot และ watch</div>
-  <pre><code>dart run build_runner build --delete-conflicting-outputs
-dart run build_runner watch --delete-conflicting-outputs</code></pre>
+  <pre><code>dart run build_runner build
+dart run build_runner watch</code></pre>
 </div>
 <ul>
   <li>ใช้ <code>build</code> ใน CI และก่อน commit</li>
@@ -114,11 +114,11 @@ flutter run \
 <h2 id="build">Build artifacts</h2>
 <div class="code-block">
   <div class="code-label">Common builds</div>
-  <pre><code>flutter build apk --release
-flutter build appbundle --release
-flutter build ios --release
-flutter build ipa --release
-flutter build web --release</code></pre>
+  <pre><code>flutter build apk --release -t lib/main_production.dart
+flutter build appbundle --release -t lib/main_production.dart
+flutter build ios --release -t lib/main_production.dart
+flutter build ipa --release -t lib/main_production.dart
+flutter build web --release -t lib/main_production.dart</code></pre>
 </div>
 <p>
   iOS ต้องใช้ macOS/Xcode; store build ต้องมี signing/environment จริง
@@ -144,7 +144,7 @@ flutter build web --release</code></pre>
   <div class="code-label">ใช้เมื่อ artifact stale ถูกพิสูจน์แล้ว</div>
   <pre><code>flutter clean
 flutter pub get
-dart run build_runner build --delete-conflicting-outputs</code></pre>
+dart run build_runner build</code></pre>
 </div>
 <p>
   <code>flutter clean</code> ลบ build outputs ไม่แก้ logic bug, invalid state,
@@ -170,7 +170,7 @@ git commit -m "feat(tasks): add task management flow"</code></pre>
 <h2 id="pre-pr">ก่อนเปิด PR</h2>
 <div class="code-block">
   <div class="code-label">Recommended chain</div>
-  <pre><code>dart run build_runner build --delete-conflicting-outputs
+  <pre><code>dart run build_runner build
 dart format --output=none --set-exit-if-changed .
 flutter analyze
 flutter test

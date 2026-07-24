@@ -146,8 +146,8 @@ final class Success&lt;T&gt; extends Result&lt;T&gt; {
   final T data;
 }
 
-final class Error&lt;T&gt; extends Result&lt;T&gt; {
-  const Error(this.failure);
+final class FailureResult&lt;T&gt; extends Result&lt;T&gt; {
+  const FailureResult(this.failure);
   final Failure failure;
 }</code></pre>
 </div>

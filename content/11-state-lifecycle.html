@@ -50,7 +50,7 @@ void _selectTab(int value) {
   final result = await _getTasks();
   state = switch (result) {
     Success(:final data) =&gt; TaskReady(tasks: data),
-    Error(:final failure) =&gt; TaskFailed(failure: failure),
+    FailureResult(:final failure) =&gt; TaskFailed(failure: failure),
   };
 }</code></pre>
 </div>

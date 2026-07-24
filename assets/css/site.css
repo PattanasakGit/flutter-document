@@ -667,6 +667,10 @@ img {
   padding-block: 64px 96px;
 }
 
+.lesson {
+  min-width: 0;
+}
+
 .lesson-header {
   padding-bottom: 36px;
   border-bottom: 1px solid var(--line);
@@ -1056,7 +1060,7 @@ code {
   }
 
   .lesson-wrap {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .lesson-toc {
