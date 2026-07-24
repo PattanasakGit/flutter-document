@@ -1,0 +1,121 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>ออกแบบ TaskListState ที่ไม่มี contradictory state</li>
+  <li>โหลดและ mutate ผ่าน use case providers</li>
+  <li>สร้าง filtered view แบบ derived state</li>
+  <li>ทดสอบ controller ด้วย repository override</li>
+</ul>
+
+<h2 id="state">State shape</h2>
+<div class="code-block">
+  <div class="code-label">Invariant-preserving state</div>
+  <pre><code>@freezed
+sealed class TaskListState with _$TaskListState {
+  const factory TaskListState.loading() = TaskListLoading;
+  const factory TaskListState.ready({
+    required List&lt;Task&gt; tasks,
+    @Default(TaskFilter.all) TaskFilter filter,
+    @Default(false) bool isMutating,
+  }) = TaskListReady;
+  const factory TaskListState.failed(Failure failure) = TaskListFailed;
+}</code></pre>
+</div>
+<p>
+  loading ไม่มี stale error, failed ต้องมี Failure และ ready ต้องมี list
+  แต่ mutation สามารถเกิดบน ready เพื่อยังแสดง content พร้อม disable action
+</p>
+
+<h2 id="build">Controller dependency</h2>
+<div class="code-block">
+  <div class="code-label">TaskListController</div>
+  <pre><code>@riverpod
+class TaskListController extends _$TaskListController {
+  @override
+  TaskListState build() =&gt; const TaskListState.loading();
+
+  Future&lt;void&gt; load() async {
+    state = const TaskListState.loading();
+    final result = await ref.read(getTasksProvider)();
+    state = switch (result) {
+      Success(:final data) =&gt; TaskListState.ready(tasks: data),
+      Error(:final failure) =&gt; TaskListState.failed(failure),
+    };
+  }
+}</code></pre>
+</div>
+
+<h2 id="derived">Filter เป็น derived state</h2>
+<div class="code-block">
+  <div class="code-label">Visible tasks</div>
+  <pre><code>extension TaskListReadyView on TaskListReady {
+  List&lt;Task&gt; get visibleTasks {
+    return tasks.where(filter.matches).toList(growable: false);
+  }
+}</code></pre>
+</div>
+<p>
+  ไม่ต้องเรียก repository ใหม่เมื่อเปลี่ยน filter เพราะ source list ไม่เปลี่ยน
+  filter เป็น UI/application view state ที่ derive ได้ deterministic
+</p>
+
+<h2 id="mutation">Mutation transaction</h2>
+<div class="code-block">
+  <div class="code-label">Toggle</div>
+  <pre><code>Future&lt;void&gt; toggle(String id) async {
+  final current = state;
+  if (current is! TaskListReady || current.isMutating) return;
+
+  state = current.copyWith(isMutating: true);
+  final result = await ref.read(toggleTaskProvider)(id);
+
+  state = switch (result) {
+    Success() =&gt; await _reloadReady(filter: current.filter),
+    Error(:final failure) =&gt; TaskListState.failed(failure),
+  };
+}</code></pre>
+</div>
+<p>
+  ตัวอย่างใช้ confirmed update: รอ repository แล้ว reload snapshot
+  ระบบ latency สูงอาจเลือก optimistic update แต่ต้องออกแบบ rollback และ race
+  condition เพิ่ม ไม่ควรทำเพียงเพื่อความรู้สึกเร็ว
+</p>
+
+<h2 id="ui">UI watch state</h2>
+<div class="code-block">
+  <div class="code-label">ConsumerWidget</div>
+  <pre><code>final state = ref.watch(taskListControllerProvider);
+
+return switch (state) {
+  TaskListLoading() =&gt; const Center(child: CircularProgressIndicator()),
+  TaskListFailed(:final failure) =&gt; ErrorView(
+      message: failure.message,
+      onRetry: () =&gt; ref.read(taskListControllerProvider.notifier).load(),
+    ),
+  TaskListReady() =&gt; TaskListContent(state: state),
+};</code></pre>
+</div>
+
+<h2 id="controller-tests">Controller tests</h2>
+<ol>
+  <li>สร้าง completer repository เพื่อค้าง Future</li>
+  <li>เรียก load แล้ว assert loading ก่อน complete</li>
+  <li>complete ด้วย Success และ assert ready</li>
+  <li>เปลี่ยน filter แล้ว assert visible tasks โดย repository call count ไม่เพิ่ม</li>
+  <li>เรียก toggle ซ้ำระหว่าง isMutating แล้ว assert use case ถูกเรียกครั้งเดียว</li>
+</ol>
+
+<h2 id="failure-policy">Failure state กับ content preservation</h2>
+<p>
+  ถ้า load ครั้งแรก fail หน้าเต็มเหมาะสม แต่ถ้า mutation บน list เดิม fail
+  UX อาจควรรักษา list และเก็บ transient action failure แยกจาก load failure
+  ให้ตัดสินตาม recovery ไม่ใช้ state เดียวกับทุก error โดยอัตโนมัติ
+</p>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>เก็บทั้ง source tasks และ filtered tasks แล้วสองชุดไม่ sync</li>
+  <li>ใช้ bool loading/error/data nullable ร่วมกัน</li>
+  <li>ให้ Widget เรียก repository โดยตรง</li>
+  <li>ไม่ guard duplicate mutation</li>
+  <li>ทดสอบ mock call มากกว่าสถานะที่ consumer เห็น</li>
+</ul>

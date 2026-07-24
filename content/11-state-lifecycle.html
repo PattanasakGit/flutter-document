@@ -1,0 +1,108 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>เลือก state owner จาก scope และ lifetime</li>
+  <li>ใช้ StatefulWidget สำหรับ local ephemeral state</li>
+  <li>ใช้ Riverpod สำหรับ shared/testable application state</li>
+  <li>หลีกเลี่ยง invalid state combination</li>
+</ul>
+
+<h2 id="questions">ถามห้าอย่างก่อนเลือกเครื่องมือ</h2>
+<ol>
+  <li><strong>Owner:</strong> ใครมีสิทธิ์เปลี่ยน state?</li>
+  <li><strong>Consumers:</strong> Widget/route กี่ตัวอ่าน?</li>
+  <li><strong>Lifetime:</strong> อยู่แค่ frame, page, session หรือข้าม restart?</li>
+  <li><strong>Boundary:</strong> ต้องเรียก repository/plugin หรือไม่?</li>
+  <li><strong>Testability:</strong> business transition ต้อง test แยก UI หรือไม่?</li>
+</ol>
+
+<table class="comparison-table">
+  <thead><tr><th>ตัวอย่าง</th><th>Owner</th><th>เครื่องมือ</th></tr></thead>
+  <tbody>
+    <tr><td>password visibility</td><td>field/page</td><td>StatefulWidget</td></tr>
+    <tr><td>form text/focus</td><td>form lifecycle</td><td>TextEditingController/FocusNode</td></tr>
+    <tr><td>task list + mutation</td><td>feature application</td><td>Riverpod controller</td></tr>
+    <tr><td>auth session</td><td>application/repository</td><td>Riverpod + persistence</td></tr>
+    <tr><td>theme preference</td><td>application + storage</td><td>provider/repository</td></tr>
+  </tbody>
+</table>
+
+<h2 id="set-state">setState ที่ถูกขอบเขต</h2>
+<div class="code-block">
+  <div class="code-label">Ephemeral state</div>
+  <pre><code>var _selectedTab = 0;
+
+void _selectTab(int value) {
+  if (_selectedTab == value) return;
+  setState(() =&gt; _selectedTab = value);
+}</code></pre>
+</div>
+<p>
+  <code>setState</code> ไม่ได้ “set ค่าใน framework” แต่แจ้ง Element ว่า state
+  เปลี่ยนและ subtree ควร build ใหม่ เก็บ mutation ให้อยู่ใน callback สั้นและ
+  ไม่ทำ async work ภายใน setState
+</p>
+
+<h2 id="application-state">Controller สำหรับ application transition</h2>
+<div class="code-block">
+  <div class="code-label">State transition</div>
+  <pre><code>Future&lt;void&gt; load() async {
+  state = const TaskLoading();
+  final result = await _getTasks();
+  state = switch (result) {
+    Success(:final data) =&gt; TaskReady(tasks: data),
+    Error(:final failure) =&gt; TaskFailed(failure: failure),
+  };
+}</code></pre>
+</div>
+<p>
+  Controller รู้ use case และเปลี่ยน state แต่ไม่สร้าง Dialog/Snackbar ด้วย
+  BuildContext Presentation watch state แล้วแสดงผลตาม state
+</p>
+
+<h2 id="invalid-state">ออกแบบ state ให้ผิดยาก</h2>
+<div class="code-block">
+  <div class="code-label">หลีกเลี่ยง nullable combination</div>
+  <pre><code>// สร้าง loading + error + data พร้อมกันได้
+class WeakState {
+  bool loading;
+  List&lt;Task&gt;? tasks;
+  Failure? error;
+}
+
+// แต่ละ subtype มีข้อมูลที่จำเป็นเท่านั้น
+sealed class TaskState {}
+final class TaskLoading extends TaskState {}
+final class TaskReady extends TaskState {
+  TaskReady(this.tasks);
+  final List&lt;Task&gt; tasks;
+}
+final class TaskFailed extends TaskState {
+  TaskFailed(this.failure);
+  final Failure failure;
+}</code></pre>
+</div>
+
+<h2 id="lifecycle">Lifecycle ที่ต้องนึกถึง</h2>
+<ul>
+  <li><code>initState</code>: subscribe/create สิ่งที่ใช้ตลอด State lifetime</li>
+  <li><code>didChangeDependencies</code>: dependency จาก context เปลี่ยน</li>
+  <li><code>didUpdateWidget</code>: parent ส่ง configuration ใหม่</li>
+  <li><code>dispose</code>: cancel subscription/dispose controller</li>
+  <li>Provider autoDispose: release state เมื่อไม่มี listener ตาม policy</li>
+</ul>
+
+<h2 id="side-effects">Side effect อยู่ที่ไหน</h2>
+<p>
+  UI event เรียก controller, controller เรียก use case, use case/repository ทำ
+  external work ผ่าน abstraction ส่วน Snackbar/navigation เป็น presentation
+  reaction ที่ใช้ <code>ref.listen</code> หรือ event result อย่างระมัดระวัง
+</p>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>ย้ายทุก boolean ไป global provider แม้ widget เดียวใช้</li>
+  <li>เก็บ BuildContext ใน controller</li>
+  <li>เริ่ม async load ซ้ำทุก build</li>
+  <li>ใช้ enum + nullable payload จนมี invalid combination</li>
+  <li>ลืม session initialization state ทำให้ router redirect เร็วเกินไป</li>
+</ul>

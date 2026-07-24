@@ -1,0 +1,115 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>อธิบาย Widget, Element และ RenderObject แยกจากกัน</li>
+  <li>เข้าใจว่า <code>build</code> ถูกเรียกซ้ำได้และต้องไม่มี external side effect</li>
+  <li>ใช้ <code>BuildContext</code> ตามตำแหน่งใน tree</li>
+  <li>รู้ว่า Key แก้ identity problem แบบใด</li>
+</ul>
+
+<h2 id="three-trees">สาม tree ทำงานร่วมกัน</h2>
+<figure class="diagram tree-diagram" aria-labelledby="runtime-tree-title">
+  <div class="track-grid">
+    <article class="track-card" data-track="flutter"><span class="track-label">Immutable</span><h3>Widget</h3><p>configuration ที่สร้างใหม่ได้ราคาถูก</p></article>
+    <article class="track-card" data-track="architecture"><span class="track-label">Persistent</span><h3>Element</h3><p>ตำแหน่ง identity state และ BuildContext</p></article>
+    <article class="track-card" data-track="capstone"><span class="track-label">Rendering</span><h3>RenderObject</h3><p>constraints, size, position, paint, hit test</p></article>
+  </div>
+  <figcaption>Flutter reconcile configuration ใหม่กับ identity เดิมก่อน layout และ paint</figcaption>
+</figure>
+<p class="diagram-description" id="runtime-tree-title">
+  Widget tree เปลี่ยนได้ทุก frame แต่ Element และ RenderObject ถูก reuse เมื่อ
+  runtimeType/key/position จับคู่กันได้
+</p>
+
+<h2 id="build">Build method เป็น pure-ish description</h2>
+<div class="code-block">
+  <div class="code-label">StatelessWidget</div>
+  <pre><code>final class TaskCount extends StatelessWidget {
+  const TaskCount({required this.count, super.key});
+  final int count;
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return Text('$count tasks', style: textTheme.titleMedium);
+  }
+}</code></pre>
+</div>
+<p>
+  <code>build</code> อ่าน input และ inherited dependencies แล้วคืน Widget
+  อย่าเรียก API, เขียน storage หรือ mutate provider ใน build เพราะ framework
+  เรียกซ้ำได้จาก parent rebuild, theme, locale, media query หรือ state
+</p>
+
+<h2 id="context">BuildContext คือ Element location</h2>
+<p>
+  <code>Theme.of(context)</code> เดินขึ้น tree หา inherited value ที่ใกล้ที่สุด
+  Context เหนือ provider/theme ใหม่จะมองไม่เห็นค่าที่สร้างใต้ตนเอง
+</p>
+<div class="code-block">
+  <div class="code-label">Builder สร้าง context ใต้ Theme</div>
+  <pre><code>Theme(
+  data: darkTheme,
+  child: Builder(
+    builder: (innerContext) {
+      return Text(
+        'Uses dark theme',
+        style: Theme.of(innerContext).textTheme.bodyLarge,
+      );
+    },
+  ),
+)</code></pre>
+</div>
+
+<h2 id="stateful">StatefulWidget แยก configuration กับ mutable state</h2>
+<div class="code-block">
+  <div class="code-label">Local UI state</div>
+  <pre><code>final class PasswordField extends StatefulWidget {
+  const PasswordField({super.key});
+
+  @override
+  State&lt;PasswordField&gt; createState() =&gt; _PasswordFieldState();
+}
+
+final class _PasswordFieldState extends State&lt;PasswordField&gt; {
+  var _obscure = true;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      obscureText: _obscure,
+      suffixIcon: IconButton(
+        tooltip: _obscure ? 'Show password' : 'Hide password',
+        onPressed: () =&gt; setState(() =&gt; _obscure = !_obscure),
+        icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
+      ),
+    );
+  }
+}</code></pre>
+</div>
+
+<h2 id="keys">Key และ identity</h2>
+<table class="comparison-table">
+  <thead><tr><th>สถานการณ์</th><th>Key</th><th>เหตุผล</th></tr></thead>
+  <tbody>
+    <tr><td>static child ตำแหน่งเดิม</td><td>ไม่ต้อง</td><td>position/runtimeType พอ</td></tr>
+    <tr><td>reorder task list ที่มี state</td><td>ValueKey(task.id)</td><td>state ตาม task ไม่ตาม index</td></tr>
+    <tr><td>เข้าถึง State จากภายนอก</td><td>GlobalKey อย่างจำกัด</td><td>มีต้นทุนและ coupling สูง</td></tr>
+    <tr><td>บังคับสร้าง subtree ใหม่</td><td>UniqueKey</td><td>ทำลาย identity เดิมทุกครั้ง</td></tr>
+  </tbody>
+</table>
+
+<h2 id="rebuild">Rebuild ไม่เท่ากับ repaint ทั้งหมด</h2>
+<p>
+  build สร้าง configuration ใหม่ แล้ว element update เฉพาะ diff
+  RenderObject อาจไม่ต้อง layout/paint ถ้า property ที่เกี่ยวข้องไม่เปลี่ยน
+  จึงควรวัดด้วย DevTools แทนกลัว build method ทุกตัว
+</p>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>เก็บ Widget object เป็น mutable state แทนเก็บข้อมูลที่ใช้สร้าง Widget</li>
+  <li>เรียก API ใน build</li>
+  <li>ใส่ GlobalKey ทุก list item</li>
+  <li>ใช้ context ของ parent เพื่ออ่าน dependency ที่เพิ่งสร้างใต้ parent</li>
+  <li>คิดว่า <code>const</code> ห้าม parent rebuild ทั้งหมด</li>
+</ul>

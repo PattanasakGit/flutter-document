@@ -1,0 +1,145 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>แยก compile-time environment, native flavor และ runtime config</li>
+  <li>จัดการ session, secrets, storage และ network policy ตาม threat model</li>
+  <li>ทำ accessibility และ localization เป็นข้อกำหนด ไม่ใช่งานตกแต่งท้ายโครงการ</li>
+  <li>ระบุ production gap ของ Boilerplate และแอปตัวอย่างอย่างตรงไปตรงมา</li>
+</ul>
+
+<h2 id="config-layers">Configuration สามชั้น</h2>
+<figure class="diagram layer-diagram" aria-labelledby="config-layers-title">
+  <div class="layer-stack">
+    <div class="layer layer-ui"><strong>Runtime config</strong><span>remote flags, account capability, kill switch</span></div>
+    <div class="layer layer-app"><strong>Dart environment</strong><span>API base URL, log policy, feature defaults</span></div>
+    <div class="layer layer-data"><strong>Native flavor/scheme</strong><span>bundle id, app name, signing, service files</span></div>
+  </div>
+  <figcaption>Configuration แต่ละชนิดมีช่วงเวลาและผู้ควบคุมต่างกัน</figcaption>
+</figure>
+<p class="diagram-description" id="config-layers-title">
+  <code>--dart-define</code> ไม่แทน Xcode scheme/Gradle flavor และ remote config
+  ไม่ควรถือ secret; เลือกชั้นจากเวลาที่ค่าถูกตัดสินและระดับความลับ
+</p>
+
+<h2 id="entrypoints">Environment entrypoint</h2>
+<div class="code-block">
+  <div class="code-label">lib/main_staging.dart</div>
+  <pre><code>Future&lt;void&gt; main() async {
+  await bootstrap(
+    const AppConfig(
+      environment: AppEnvironment.staging,
+      apiBaseUrl: String.fromEnvironment(
+        'API_BASE_URL',
+        defaultValue: 'https://staging.invalid',
+      ),
+      enableVerboseLogs: true,
+    ),
+  );
+}</code></pre>
+</div>
+<p>
+  ค่าใน client binary สามารถถูก inspect ได้ จึงใช้ environment define สำหรับ
+  public configuration เท่านั้น ไม่ใส่ server secret, private signing key
+  หรือ credential ที่ให้สิทธิ์ถาวร
+</p>
+
+<h2 id="secrets">อะไรเป็น secret และควรอยู่ที่ใด</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>ข้อมูล</th><th>ตำแหน่ง</th><th>เหตุผล</th></tr></thead>
+    <tbody>
+      <tr><td>Backend private key</td><td>Server/secret manager เท่านั้น</td><td>client ปกป้องไม่ได้</td></tr>
+      <tr><td>CI signing credential</td><td>CI protected secret</td><td>ใช้เฉพาะ pipeline ที่อนุญาต</td></tr>
+      <tr><td>Short-lived access token</td><td>Memory; restore ตาม policy</td><td>ลด exposure เมื่อเก็บถาวร</td></tr>
+      <tr><td>Refresh token</td><td>Secure storage</td><td>OS-protected persistence</td></tr>
+      <tr><td>Analytics public key</td><td>Build config ได้</td><td>ไม่ใช่ authorization secret</td></tr>
+      <tr><td>User preference</td><td>Preferences/local DB</td><td>ไม่ต้องใช้ secure storage ทุกค่า</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="session">Session lifecycle</h2>
+<ol>
+  <li>cold start อ่าน refresh material ผ่าน storage abstraction</li>
+  <li>ตั้ง state เป็น restoring แทนรีบสรุป signed-out</li>
+  <li>refresh กับ backend และหมุน token ตาม policy</li>
+  <li>ให้ request interceptor retry ได้จำกัดครั้งและ serialize refresh</li>
+  <li>ถ้า refresh ถูกปฏิเสธ ให้ clear local session และ redirect อย่างตั้งใจ</li>
+  <li>sign out ต้อง revoke ฝั่ง server (ถ้ามี), clear memory/storage และ reset user-scoped cache</li>
+</ol>
+<div class="callout warning">
+  <strong>Demo auth ใน Boilerplate ไม่ใช่ production auth</strong>
+  Fake credential และ in-memory session มีไว้สอน state/router wiring เท่านั้น
+  ห้ามเพียงเปลี่ยน URL แล้วนำขึ้น production
+</div>
+
+<h2 id="network">Network hardening</h2>
+<ul>
+  <li>ใช้ HTTPS และ platform network-security policy ที่เหมาะสม</li>
+  <li>ตั้ง connect/receive/send timeout แยกกัน</li>
+  <li>retry เฉพาะ idempotent/transient failure พร้อม backoff และ jitter</li>
+  <li>redact authorization, cookie และ personal payload จาก log</li>
+  <li>validate response schema ก่อน map เข้า domain</li>
+  <li>certificate pinning ใช้เมื่อ threat model ต้องการและมี rotation plan</li>
+</ul>
+
+<h2 id="accessibility">Accessibility checklist</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>ด้าน</th><th>ตรวจอย่างไร</th><th>เกณฑ์ตัวอย่าง</th></tr></thead>
+    <tbody>
+      <tr><td>Semantics</td><td>TalkBack/VoiceOver</td><td>label บอก action + state</td></tr>
+      <tr><td>Touch target</td><td>layout inspection</td><td>อย่างน้อยประมาณ 48 logical pixels</td></tr>
+      <tr><td>Text scale</td><td>ตั้ง 200%</td><td>ไม่ตัดข้อความหรือซ่อน action</td></tr>
+      <tr><td>Contrast</td><td>contrast tool/theme review</td><td>ไม่ใช้สีเป็นสัญญาณเดียว</td></tr>
+      <tr><td>Keyboard</td><td>Tab/Shift+Tab/Enter</td><td>focus order และ focus indicator ชัด</td></tr>
+      <tr><td>Motion</td><td>reduce motion</td><td>ไม่มี animation จำเป็นต่อความเข้าใจเพียงทางเดียว</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="localization">Localization ตั้งแต่ data model</h2>
+<div class="code-block">
+  <div class="code-label">อย่าประกอบประโยคจาก fragment</div>
+  <pre><code>// ไม่ควร: word order ใช้ไม่ได้กับทุกภาษา
+Text('$count ' + context.l10n.tasksRemainingSuffix);
+
+// ควร: ให้ translator เห็น message และ plural rule
+Text(context.l10n.tasksRemaining(count));</code></pre>
+</div>
+<p>
+  ทดสอบข้อความยาว, plural, date/number format, Thai line breaking,
+  ภาษา RTL และ locale fallback อย่าเก็บ translated display string เป็น
+  domain status; เก็บ stable enum แล้วแปลที่ presentation
+</p>
+
+<h2 id="privacy">Privacy และ data lifecycle</h2>
+<ul>
+  <li>เก็บข้อมูลเท่าที่ feature ต้องใช้และระบุ retention</li>
+  <li>ขอ permission ตอนมีเหตุผลที่ผู้ใช้เข้าใจได้</li>
+  <li>รองรับ export/delete account ตามข้อกำหนดของผลิตภัณฑ์และกฎหมาย</li>
+  <li>จำแนก analytics event กับ personal data ก่อนส่ง</li>
+  <li>ตรวจ third-party SDK และ privacy manifest/store disclosure</li>
+</ul>
+
+<h2 id="gap-register">Production gap register ของตัวอย่าง</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>ส่วน</th><th>ตัวอย่างปัจจุบัน</th><th>ก่อน production</th></tr></thead>
+    <tbody>
+      <tr><td>Auth</td><td>demo in-memory</td><td>OIDC/backend, restore, refresh, revoke</td></tr>
+      <tr><td>Tasks</td><td>in-memory datasource</td><td>remote/local sync, conflict, migration</td></tr>
+      <tr><td>Config</td><td>sample env</td><td>real endpoint + native flavors</td></tr>
+      <tr><td>Observability</td><td>developer logs</td><td>crash/error/performance telemetry + redaction</td></tr>
+      <tr><td>Release</td><td>unsigned/local build</td><td>signing, store, privacy, rollout, rollback</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>ฝัง server secret ใน Dart แล้วคิดว่า obfuscation ป้องกันได้</li>
+  <li>ใช้ secure storage เป็นฐานข้อมูลทั่วไป</li>
+  <li>route ไป Login ระหว่าง restore session ทำให้หน้ากระพริบและ redirect ผิด</li>
+  <li>เริ่ม localization หลัง UI ทุกหน้าถูก hard-code แล้ว</li>
+  <li>ประกาศ production-ready จากการที่ release build compile ผ่านอย่างเดียว</li>
+</ul>

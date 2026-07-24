@@ -1,0 +1,134 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>ใช้กฎ constraints → size → position วิเคราะห์ layout</li>
+  <li>เลือก Row, Column, Flex, Stack, scroll และ LayoutBuilder</li>
+  <li>ใช้ Theme token แทน hardcoded style กระจาย</li>
+  <li>สร้าง form ที่ keyboard, validation และ accessibility ทำงานร่วมกัน</li>
+</ul>
+
+<h2 id="constraints">Constraints ลง, Size ขึ้น, Parent วาง</h2>
+<div class="callout callout-bridge">
+  <strong>ต่างจาก CSS</strong>
+  Flutter child ไม่เลือกตำแหน่งบนหน้าจอเอง Parent ส่ง min/max constraints
+  ให้ child เลือก size ภายในช่วง แล้ว parent จึงกำหนด offset
+</div>
+
+<div class="code-block">
+  <div class="code-label">Responsive width</div>
+  <pre><code>LayoutBuilder(
+  builder: (context, constraints) {
+    final wide = constraints.maxWidth &gt;= 900;
+    return wide
+        ? Row(children: [Expanded(child: list), SizedBox(width: 360, child: form)])
+        : Column(children: [list, form]);
+  },
+)</code></pre>
+</div>
+
+<h2 id="flex">Row, Column, Expanded และ Flexible</h2>
+<ul>
+  <li><code>Row</code> ส่ง horizontal constraint ที่อาจ unbounded ให้ non-flex children</li>
+  <li><code>Expanded</code> บังคับใช้พื้นที่ที่เหลือตาม flex</li>
+  <li><code>Flexible</code> อนุญาต child เล็กกว่าส่วนแบ่ง</li>
+  <li><code>MainAxisSize.min</code> ให้ Flex หดตาม children เมื่อ constraint อนุญาต</li>
+</ul>
+<div class="code-block">
+  <div class="code-label">ป้องกัน text overflow</div>
+  <pre><code>Row(
+  children: [
+    const Icon(Icons.task_alt),
+    const SizedBox(width: 12),
+    Expanded(
+      child: Text(
+        task.title,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      ),
+    ),
+  ],
+)</code></pre>
+</div>
+
+<h2 id="scroll">Scroll และ unbounded constraint</h2>
+<p>
+  <code>SingleChildScrollView</code> ส่ง unbounded constraint ตามแกน scroll
+  จึงห้ามวาง <code>Expanded</code> ที่ต้องการพื้นที่เหลือไม่จำกัดในแกนนั้น
+  สำหรับรายการยาวใช้ <code>ListView.builder</code> เพื่อ lazy build
+</p>
+
+<h2 id="responsive">Responsive ไม่เท่ากับ device detection</h2>
+<p>
+  ตัดสินจากพื้นที่ที่ component ได้รับด้วย <code>LayoutBuilder</code>
+  มากกว่าถามว่าเป็น phone/tablet เพราะ split screen และ Web window ทำให้ device
+  เดิมมีหลาย constraint
+</p>
+<table class="comparison-table">
+  <thead><tr><th>เครื่องมือ</th><th>ใช้เมื่อ</th><th>หลีกเลี่ยง</th></tr></thead>
+  <tbody>
+    <tr><td>LayoutBuilder</td><td>layout ตาม parent constraints</td><td>อ่านทั้งจอเมื่อ component อยู่ pane เล็ก</td></tr>
+    <tr><td>MediaQuery</td><td>screen size, text scale, padding, keyboard</td><td>hardcode device model</td></tr>
+    <tr><td>SafeArea</td><td>หลบ notch/system insets</td><td>ซ้อนหลายชั้นจน padding เกิน</td></tr>
+    <tr><td>OrientationBuilder</td><td>layout ตาม orientation เมื่อมีเหตุผล</td><td>บังคับ portrait เพื่อซ่อน bug</td></tr>
+  </tbody>
+</table>
+
+<h2 id="theme">Material 3 และ design tokens</h2>
+<div class="code-block">
+  <div class="code-label">Theme</div>
+  <pre><code>ThemeData(
+  useMaterial3: true,
+  colorScheme: ColorScheme.fromSeed(
+    seedColor: const Color(0xFF5367E8),
+    brightness: Brightness.light,
+  ),
+  inputDecorationTheme: const InputDecorationTheme(
+    border: OutlineInputBorder(),
+  ),
+)</code></pre>
+</div>
+<p>
+  Widget อ่าน <code>Theme.of(context)</code> แทนคัด hex/font ไปทุกไฟล์
+  Semantic token เช่น error/surface/onSurface ช่วย dark mode และ contrast
+</p>
+
+<h2 id="forms">Form lifecycle</h2>
+<div class="code-block">
+  <div class="code-label">Validated form</div>
+  <pre><code>final _formKey = GlobalKey&lt;FormState&gt;();
+final _titleController = TextEditingController();
+
+@override
+void dispose() {
+  _titleController.dispose();
+  super.dispose();
+}
+
+void _submit() {
+  if (!_formKey.currentState!.validate()) return;
+  ref.read(taskListControllerProvider.notifier).create(
+    title: _titleController.text,
+  );
+}</code></pre>
+</div>
+<p>
+  Controller ที่สร้างใน State ต้อง dispose, field ต้องมี visible label,
+  error อยู่ใกล้ field และ submit button แสดง loading/disable ระหว่าง async
+</p>
+
+<h2 id="accessibility">Accessibility baseline</h2>
+<ul>
+  <li>touch target อย่างน้อย 48×48dp สำหรับ Material action</li>
+  <li>รองรับ text scale โดยไม่ใช้ fixed height ครอบ Text</li>
+  <li>tooltip/semantic label สำหรับ icon-only action</li>
+  <li>สีไม่ใช่ตัวบอกสถานะอย่างเดียว; ใช้ text/icon ร่วม</li>
+  <li>focus order ตามลำดับการอ่านและ keyboard submit ทำงาน</li>
+</ul>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>วาง Expanded ใน scroll axis ที่ unbounded</li>
+  <li>ใช้ width ตาม device name แทน constraint</li>
+  <li>กำหนด height ของ text card ตายตัวจน text scale ล้น</li>
+  <li>ใช้ placeholder แทน label</li>
+  <li>ลืม dispose TextEditingController/FocusNode</li>
+</ul>

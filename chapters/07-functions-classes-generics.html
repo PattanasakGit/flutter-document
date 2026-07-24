@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ออกแบบ API ด้วย named parameters, constructors, abstract interface, extension และ generic type">
+  <title>Functions, Classes, Immutability และ Generics — Flutter Field Guide</title>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script defer src="../assets/js/site.js"></script>
+  <script defer src="../assets/js/catalog.js"></script>
+</head>
+<body data-root="../">
+  <a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
+  <noscript><p class="noscript-note">เนื้อหาทั้งหมดยังอ่านได้ แต่ search, theme, quiz และ progress ต้องเปิด JavaScript</p></noscript>
+  <div class="site-shell">
+    <aside class="sidebar" aria-label="เมนูหลักสูตร">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
+        <span><strong>Flutter Field Guide</strong><small>Web → Mobile</small></span>
+      </a>
+      <div class="sidebar-tools">
+        <button class="search-trigger" type="button" data-search-trigger>ค้นหาบทเรียน <kbd>/</kbd></button>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </div>
+      <div class="course-progress">
+        <div class="progress-meta"><span>ความคืบหน้า</span><strong data-progress-count>0 / 28</strong></div>
+        <div class="progress-track" aria-hidden="true"><div class="progress-value" data-progress-value></div></div>
+      </div>
+      <p class="nav-heading">A · Orientation & Setup</p>
+<nav class="course-nav">
+<a href="../chapters/01-orientation.html"><span class="nav-index">01</span>เริ่มใช้คู่มือและตั้งเป้าหมายระบบ</a>
+<a href="../chapters/02-react-to-flutter.html"><span class="nav-index">02</span>แผนที่ความคิดจาก React และ Next.js สู่ Flutter</a>
+<a href="../chapters/03-macos-toolchain.html"><span class="nav-index">03</span>ติดตั้ง Flutter toolchain บน macOS และ VS Code</a>
+<a href="../chapters/04-clone-and-run.html"><span class="nav-index">04</span>Clone, Generate, Run และตรวจ Boilerplate</a>
+</nav>
+<p class="nav-heading">B · Dart for TypeScript</p>
+<nav class="course-nav">
+<a href="../chapters/05-dart-types.html"><span class="nav-index">05</span>Dart Types และโครงสร้างโปรแกรมสำหรับ TypeScript Developer</a>
+<a href="../chapters/06-null-collections-patterns.html"><span class="nav-index">06</span>Null Safety, Collections และ Pattern Matching</a>
+<a href="../chapters/07-functions-classes-generics.html" aria-current="page"><span class="nav-index">07</span>Functions, Classes, Immutability และ Generics</a>
+<a href="../chapters/08-async-errors-results.html"><span class="nav-index">08</span>Future, Stream, Exception และ Typed Result</a>
+</nav>
+<p class="nav-heading">C · Flutter Fundamentals</p>
+<nav class="course-nav">
+<a href="../chapters/09-widget-runtime.html"><span class="nav-index">09</span>Widget, Element, RenderObject และ BuildContext</a>
+<a href="../chapters/10-layout-theme-forms.html"><span class="nav-index">10</span>Constraints, Responsive Layout, Theme และ Form</a>
+<a href="../chapters/11-state-lifecycle.html"><span class="nav-index">11</span>State Ownership และ Lifecycle</a>
+</nav>
+<p class="nav-heading">D · Boilerplate Architecture</p>
+<nav class="course-nav">
+<a href="../chapters/12-boilerplate-map.html"><span class="nav-index">12</span>แผนที่ AI-first Flutter Boilerplate</a>
+<a href="../chapters/13-riverpod.html"><span class="nav-index">13</span>Riverpod: State Graph และ Dependency Injection</a>
+<a href="../chapters/14-go-router.html"><span class="nav-index">14</span>GoRouter, Redirect และ Authentication Guard</a>
+<a href="../chapters/15-network-storage-errors.html"><span class="nav-index">15</span>Dio, DTO, Repository, Failure และ Secure Storage</a>
+</nav>
+<p class="nav-heading">E · Task Management</p>
+<nav class="course-nav">
+<a href="../chapters/16-task-domain.html"><span class="nav-index">16</span>Capstone: Model Task Domain ด้วย Test-first</a>
+<a href="../chapters/17-offline-repository.html"><span class="nav-index">17</span>Capstone: Offline Datasource และ Repository</a>
+<a href="../chapters/18-task-riverpod.html"><span class="nav-index">18</span>Capstone: Task State และ Filter ด้วย Riverpod</a>
+<a href="../chapters/19-task-form.html"><span class="nav-index">19</span>Capstone: Create/Edit Form และ Validation</a>
+<a href="../chapters/20-task-mutations.html"><span class="nav-index">20</span>Capstone: Toggle, Update, Delete และ Feedback</a>
+<a href="../chapters/21-dio-datasource.html"><span class="nav-index">21</span>Capstone: Real-API-ready Dio Datasource</a>
+<a href="../chapters/22-capstone-integration.html"><span class="nav-index">22</span>Capstone: Route, Shell และ End-to-end Flow</a>
+</nav>
+<p class="nav-heading">F · Quality & Delivery</p>
+<nav class="course-nav">
+<a href="../chapters/23-testing.html"><span class="nav-index">23</span>Test Strategy: Unit ถึง Integration</a>
+<a href="../chapters/24-debug-performance.html"><span class="nav-index">24</span>Debugging, DevTools และ Performance</a>
+<a href="../chapters/25-production-concerns.html"><span class="nav-index">25</span>Environment, Security, Accessibility และ Localization</a>
+<a href="../chapters/26-build-release.html"><span class="nav-index">26</span>Build Android, iOS และ Web</a>
+<a href="../chapters/27-production-checklist.html"><span class="nav-index">27</span>Production Readiness และ Next-system Checklist</a>
+<a href="../chapters/28-ai-workflow.html"><span class="nav-index">28</span>ใช้ AI พัฒนา Flutter อย่างมีขอบเขตและหลักฐาน</a>
+</nav>
+<p class="nav-heading">Reference</p>
+<nav class="course-nav">
+<a href="../reference/commands.html"><span class="nav-index">R</span>Command Cookbook</a>
+<a href="../reference/glossary.html"><span class="nav-index">R</span>React/Next.js ↔ Flutter Glossary</a>
+<a href="../reference/architecture-decisions.html"><span class="nav-index">R</span>Architecture Decision Matrix</a>
+<a href="../reference/troubleshooting.html"><span class="nav-index">R</span>Troubleshooting Catalog</a>
+</nav>
+
+      <div class="sidebar-footer"><p>Offline-first · ภาษาไทย · Flutter 3.44</p></div>
+    </aside>
+    <div class="site-main">
+      <header class="mobile-bar">
+        <button class="nav-trigger" type="button" data-nav-trigger aria-expanded="false">เมนู</button>
+        <strong>07 · Functions, Classes, Immutability และ Generics</strong>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </header>
+      <main id="main-content" class="lesson-wrap">
+        <article class="lesson">
+          <header class="lesson-header">
+            <p class="lesson-kicker">B · Dart for TypeScript · บทที่ 07</p>
+            <h1>Functions, Classes, Immutability และ Generics</h1>
+            <p class="hero-lead">ออกแบบ API ด้วย named parameters, constructors, abstract interface, extension และ generic type</p>
+            <div class="lesson-meta">
+              <span>เวลาอ่าน 58 นาที</span>
+              <span>ระดับ พื้นฐาน</span>
+              <span>function class constructor interface extension generic immutable</span>
+            </div>
+          </header>
+          <h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>ออกแบบ function signature ที่ call site อ่านได้</li>
+  <li>ใช้ constructor, factory และ abstract interface ตาม responsibility</li>
+  <li>สร้าง immutable entity และ copy semantics</li>
+  <li>ใช้ generic type เก็บ type information ข้าม layer</li>
+</ul>
+
+<h2 id="functions">Function เป็น value และมี typed signature</h2>
+<div class="code-block">
+  <div class="code-label">Functions</div>
+  <pre><code>typedef TaskPredicate = bool Function(Task task);
+
+List&lt;Task&gt; filterTasks(
+  List&lt;Task&gt; tasks, {
+  required TaskPredicate where,
+}) {
+  return tasks.where(where).toList(growable: false);
+}
+
+final open = filterTasks(
+  tasks,
+  where: (task) =&gt; !task.isCompleted,
+);</code></pre>
+</div>
+<p>
+  Callback ใน Flutter เช่น <code>VoidCallback</code> หรือ
+  <code>ValueChanged&lt;T&gt;</code> เป็น function type ไม่ต้องสร้าง interface
+  สำหรับ event เล็กทุกตัว
+</p>
+
+<h2 id="class">Immutable Task class</h2>
+<div class="code-block">
+  <div class="code-label">Domain entity</div>
+  <pre><code>final class Task {
+  const Task({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.isCompleted,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String title;
+  final String description;
+  final bool isCompleted;
+  final DateTime createdAt;
+
+  Task copyWith({
+    String? title,
+    String? description,
+    bool? isCompleted,
+  }) {
+    return Task(
+      id: id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      isCompleted: isCompleted ?? this.isCompleted,
+      createdAt: createdAt,
+    );
+  }
+}</code></pre>
+</div>
+<p>
+  <code>final class</code> ห้าม extend/implement นอก library ในรูปแบบที่
+  compiler กำหนดและสื่อว่า entity ไม่ได้ออกแบบเป็น extension point
+  Boilerplate ใช้ Freezed กับ model/state บางส่วนเพื่อลด boilerplate ของ
+  equality/copy/union แต่ควรรู้ logic ที่ generated code ทำแทน
+</p>
+
+<h2 id="constructors">Constructor หลายแบบ</h2>
+<div class="code-block">
+  <div class="code-label">Named และ factory constructor</div>
+  <pre><code>final class TaskId {
+  const TaskId._(this.value);
+
+  final String value;
+
+  factory TaskId.parse(String raw) {
+    final value = raw.trim();
+    if (value.isEmpty) {
+      throw const FormatException('Task id must not be empty');
+    }
+    return TaskId._(value);
+  }
+}</code></pre>
+</div>
+<ul>
+  <li>Generative constructor สร้าง instance ใหม่</li>
+  <li>Named constructor บอก use case เช่น <code>Task.draft</code></li>
+  <li>Factory คืน cached instance/subtype/validated instance ได้</li>
+  <li>Private constructor ใช้ซ่อน creation path ภายใน library</li>
+</ul>
+
+<h2 id="interfaces">Abstract interface และ implementation</h2>
+<div class="code-block">
+  <div class="code-label">Repository contract</div>
+  <pre><code>abstract interface class TaskRepository {
+  Future&lt;Result&lt;List&lt;Task&gt;&gt;&gt; getTasks();
+  Future&lt;Result&lt;Task&gt;&gt; save(Task task);
+  Future&lt;Result&lt;void&gt;&gt; delete(String id);
+}
+
+final class TaskRepositoryImpl implements TaskRepository {
+  TaskRepositoryImpl(this._datasource);
+
+  final TaskLocalDatasource _datasource;
+
+  @override
+  Future&lt;Result&lt;List&lt;Task&gt;&gt;&gt; getTasks() async {
+    // Map datasource records into domain entities.
+  }
+}</code></pre>
+</div>
+<p>
+  Domain ประกาศสิ่งที่ต้องการ ส่วน Data เลือกวิธีทำ การพึ่ง contract ทำให้ test
+  use case ด้วย fake repository และเปลี่ยน offline เป็น remote datasource ได้
+</p>
+
+<h2 id="extensions">Extension method</h2>
+<div class="code-block">
+  <div class="code-label">Presentation formatting</div>
+  <pre><code>extension TaskFilterLabel on TaskFilter {
+  String get label =&gt; switch (this) {
+    TaskFilter.all =&gt; 'ทั้งหมด',
+    TaskFilter.open =&gt; 'ยังไม่เสร็จ',
+    TaskFilter.completed =&gt; 'เสร็จแล้ว',
+  };
+}</code></pre>
+</div>
+<p>
+  Extension เหมาะกับ behavior ที่สัมพันธ์กับ type แต่ไม่ควรแก้ type ต้นทาง
+  อย่าใช้ซ่อน external I/O หรือ dependency ที่คนอ่านไม่เห็นจาก call site
+</p>
+
+<h2 id="generics">Generics รักษา type ข้าม boundary</h2>
+<div class="code-block">
+  <div class="code-label">Typed result</div>
+  <pre><code>sealed class Result&lt;T&gt; {
+  const Result();
+}
+
+final class Success&lt;T&gt; extends Result&lt;T&gt; {
+  const Success(this.data);
+  final T data;
+}
+
+final class Error&lt;T&gt; extends Result&lt;T&gt; {
+  const Error(this.failure);
+  final Failure failure;
+}</code></pre>
+</div>
+<p>
+  <code>Result&lt;Task&gt;</code> กับ <code>Result&lt;List&lt;Task&gt;&gt;</code>
+  ใช้ flow เดียวกันแต่ compiler ยังรู้ data type ไม่ต้อง cast จาก
+  <code>Object</code>
+</p>
+
+<h2 id="composition">Composition ก่อน inheritance</h2>
+<div class="code-block">
+  <div class="code-label">Compose dependency</div>
+  <pre><code>final class CreateTask {
+  const CreateTask(this._repository);
+  final TaskRepository _repository;
+
+  Future&lt;Result&lt;Task&gt;&gt; call({
+    required String title,
+    String description = '',
+  }) {
+    // Validate then delegate.
+  }
+}</code></pre>
+</div>
+<p>
+  Use case ไม่ extend repository แต่รับ contract ผ่าน constructor
+  จึงเปลี่ยน implementation และทดสอบได้โดยไม่สร้าง inheritance tree
+</p>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>สร้าง base class ใหญ่ที่ทุก feature ต้อง extend</li>
+  <li>ใช้ factory ซ่อน network call จน creation มี side effect</li>
+  <li>ทำ entity mutable แล้ว controller เปลี่ยนค่าโดยไม่มี state transition</li>
+  <li>คืน <code>Result&lt;dynamic&gt;</code> ทำให้ generic ไม่มีประโยชน์</li>
+  <li>ใส่ UI label ใน domain ทั้งที่ต้อง localize ใน presentation</li>
+</ul>
+
+          <section class="checkpoint" id="checkpoint">
+  <h2>Checkpoint ก่อนเดินต่อ</h2>
+  <ol>
+    <li>อธิบายหัวข้อนี้ด้วยภาษาของตนเองโดยไม่เปิดคู่มือ</li>
+    <li>ชี้ไฟล์หรือคำสั่งใน Boilerplate ที่สัมพันธ์กับบทนี้ได้</li>
+    <li>รันตัวอย่างหรือ verification ที่บทกำหนดและอ่านผลลัพธ์ได้</li>
+  </ol>
+</section>
+<section class="quiz" id="quiz">
+  <h2>Quiz ตรวจ mental model</h2>
+  <p><strong>ประโยชน์หลักของ named parameter คืออะไร?</strong></p>
+  <div class="quiz-options"><button class="quiz-option" type="button" data-correct="false">ลด type safety</button><button class="quiz-option" type="button" data-correct="true">ทำให้ call site บอกความหมายและกำหนด required ได้</button><button class="quiz-option" type="button" data-correct="false">ทำให้ทุก parameter nullable</button></div>
+  <p class="quiz-feedback" aria-live="polite"></p>
+</section>
+<section class="exercise" id="practice">
+  <h2>Practice</h2>
+  <p>ออกแบบ immutable Task และ copyWith โดยห้าม expose mutable collection จาก repository</p>
+  <p><strong>Definition of done:</strong> อธิบายเหตุผลของ design, แสดงผลลัพธ์ที่รันจริง และไม่มี warning ที่ถูกมองข้าม</p>
+</section>
+
+          <nav class="chapter-pagination" aria-label="เปลี่ยนบทเรียน">
+            <a href="../chapters/06-null-collections-patterns.html">ก่อนหน้า<br><strong>Null Safety, Collections และ Pattern Matching</strong></a>
+            <a href="../chapters/08-async-errors-results.html">บทถัดไป<br><strong>Future, Stream, Exception และ Typed Result</strong></a>
+          </nav>
+        </article>
+        <aside class="lesson-toc" aria-label="สารบัญบท">
+          <strong>ในบทนี้</strong>
+          <a href="#objectives">เป้าหมายของบท</a>
+<a href="#functions">Function เป็น value และมี typed signature</a>
+<a href="#class">Immutable Task class</a>
+<a href="#constructors">Constructor หลายแบบ</a>
+<a href="#interfaces">Abstract interface และ implementation</a>
+<a href="#extensions">Extension method</a>
+<a href="#generics">Generics รักษา type ข้าม boundary</a>
+<a href="#composition">Composition ก่อน inheritance</a>
+<a href="#mistakes">ข้อผิดพลาดที่พบบ่อย</a>
+<a href="#checkpoint">Checkpoint</a>
+<a href="#quiz">Quiz</a>
+<a href="#practice">Practice</a>
+          <button class="chapter-complete" type="button" data-current-chapter="07-functions-classes-generics" aria-pressed="false">
+            ทำเครื่องหมายว่าเรียนจบบทนี้
+          </button>
+        </aside>
+      </main>
+    </div>
+  </div>
+  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
+    <div class="search-head">
+      <label><span id="search-title" class="visually-hidden">ค้นหาคู่มือ</span><input id="search-input" type="search" placeholder="ค้นหา Dart, Riverpod, routing, build…" autocomplete="off"></label>
+      <button class="search-close" type="button" data-search-close>ปิด</button>
+    </div>
+    <div class="search-results" id="search-results" aria-live="polite"></div>
+  </dialog>
+</body>
+</html>

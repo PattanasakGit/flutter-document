@@ -1,0 +1,285 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="เตรียม Flutter SDK, Android, iOS, Web, emulator, simulator และ VS Code ให้ตรวจสอบได้">
+  <title>ติดตั้ง Flutter toolchain บน macOS และ VS Code — Flutter Field Guide</title>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script defer src="../assets/js/site.js"></script>
+  <script defer src="../assets/js/catalog.js"></script>
+</head>
+<body data-root="../">
+  <a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
+  <noscript><p class="noscript-note">เนื้อหาทั้งหมดยังอ่านได้ แต่ search, theme, quiz และ progress ต้องเปิด JavaScript</p></noscript>
+  <div class="site-shell">
+    <aside class="sidebar" aria-label="เมนูหลักสูตร">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
+        <span><strong>Flutter Field Guide</strong><small>Web → Mobile</small></span>
+      </a>
+      <div class="sidebar-tools">
+        <button class="search-trigger" type="button" data-search-trigger>ค้นหาบทเรียน <kbd>/</kbd></button>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </div>
+      <div class="course-progress">
+        <div class="progress-meta"><span>ความคืบหน้า</span><strong data-progress-count>0 / 28</strong></div>
+        <div class="progress-track" aria-hidden="true"><div class="progress-value" data-progress-value></div></div>
+      </div>
+      <p class="nav-heading">A · Orientation & Setup</p>
+<nav class="course-nav">
+<a href="../chapters/01-orientation.html"><span class="nav-index">01</span>เริ่มใช้คู่มือและตั้งเป้าหมายระบบ</a>
+<a href="../chapters/02-react-to-flutter.html"><span class="nav-index">02</span>แผนที่ความคิดจาก React และ Next.js สู่ Flutter</a>
+<a href="../chapters/03-macos-toolchain.html" aria-current="page"><span class="nav-index">03</span>ติดตั้ง Flutter toolchain บน macOS และ VS Code</a>
+<a href="../chapters/04-clone-and-run.html"><span class="nav-index">04</span>Clone, Generate, Run และตรวจ Boilerplate</a>
+</nav>
+<p class="nav-heading">B · Dart for TypeScript</p>
+<nav class="course-nav">
+<a href="../chapters/05-dart-types.html"><span class="nav-index">05</span>Dart Types และโครงสร้างโปรแกรมสำหรับ TypeScript Developer</a>
+<a href="../chapters/06-null-collections-patterns.html"><span class="nav-index">06</span>Null Safety, Collections และ Pattern Matching</a>
+<a href="../chapters/07-functions-classes-generics.html"><span class="nav-index">07</span>Functions, Classes, Immutability และ Generics</a>
+<a href="../chapters/08-async-errors-results.html"><span class="nav-index">08</span>Future, Stream, Exception และ Typed Result</a>
+</nav>
+<p class="nav-heading">C · Flutter Fundamentals</p>
+<nav class="course-nav">
+<a href="../chapters/09-widget-runtime.html"><span class="nav-index">09</span>Widget, Element, RenderObject และ BuildContext</a>
+<a href="../chapters/10-layout-theme-forms.html"><span class="nav-index">10</span>Constraints, Responsive Layout, Theme และ Form</a>
+<a href="../chapters/11-state-lifecycle.html"><span class="nav-index">11</span>State Ownership และ Lifecycle</a>
+</nav>
+<p class="nav-heading">D · Boilerplate Architecture</p>
+<nav class="course-nav">
+<a href="../chapters/12-boilerplate-map.html"><span class="nav-index">12</span>แผนที่ AI-first Flutter Boilerplate</a>
+<a href="../chapters/13-riverpod.html"><span class="nav-index">13</span>Riverpod: State Graph และ Dependency Injection</a>
+<a href="../chapters/14-go-router.html"><span class="nav-index">14</span>GoRouter, Redirect และ Authentication Guard</a>
+<a href="../chapters/15-network-storage-errors.html"><span class="nav-index">15</span>Dio, DTO, Repository, Failure และ Secure Storage</a>
+</nav>
+<p class="nav-heading">E · Task Management</p>
+<nav class="course-nav">
+<a href="../chapters/16-task-domain.html"><span class="nav-index">16</span>Capstone: Model Task Domain ด้วย Test-first</a>
+<a href="../chapters/17-offline-repository.html"><span class="nav-index">17</span>Capstone: Offline Datasource และ Repository</a>
+<a href="../chapters/18-task-riverpod.html"><span class="nav-index">18</span>Capstone: Task State และ Filter ด้วย Riverpod</a>
+<a href="../chapters/19-task-form.html"><span class="nav-index">19</span>Capstone: Create/Edit Form และ Validation</a>
+<a href="../chapters/20-task-mutations.html"><span class="nav-index">20</span>Capstone: Toggle, Update, Delete และ Feedback</a>
+<a href="../chapters/21-dio-datasource.html"><span class="nav-index">21</span>Capstone: Real-API-ready Dio Datasource</a>
+<a href="../chapters/22-capstone-integration.html"><span class="nav-index">22</span>Capstone: Route, Shell และ End-to-end Flow</a>
+</nav>
+<p class="nav-heading">F · Quality & Delivery</p>
+<nav class="course-nav">
+<a href="../chapters/23-testing.html"><span class="nav-index">23</span>Test Strategy: Unit ถึง Integration</a>
+<a href="../chapters/24-debug-performance.html"><span class="nav-index">24</span>Debugging, DevTools และ Performance</a>
+<a href="../chapters/25-production-concerns.html"><span class="nav-index">25</span>Environment, Security, Accessibility และ Localization</a>
+<a href="../chapters/26-build-release.html"><span class="nav-index">26</span>Build Android, iOS และ Web</a>
+<a href="../chapters/27-production-checklist.html"><span class="nav-index">27</span>Production Readiness และ Next-system Checklist</a>
+<a href="../chapters/28-ai-workflow.html"><span class="nav-index">28</span>ใช้ AI พัฒนา Flutter อย่างมีขอบเขตและหลักฐาน</a>
+</nav>
+<p class="nav-heading">Reference</p>
+<nav class="course-nav">
+<a href="../reference/commands.html"><span class="nav-index">R</span>Command Cookbook</a>
+<a href="../reference/glossary.html"><span class="nav-index">R</span>React/Next.js ↔ Flutter Glossary</a>
+<a href="../reference/architecture-decisions.html"><span class="nav-index">R</span>Architecture Decision Matrix</a>
+<a href="../reference/troubleshooting.html"><span class="nav-index">R</span>Troubleshooting Catalog</a>
+</nav>
+
+      <div class="sidebar-footer"><p>Offline-first · ภาษาไทย · Flutter 3.44</p></div>
+    </aside>
+    <div class="site-main">
+      <header class="mobile-bar">
+        <button class="nav-trigger" type="button" data-nav-trigger aria-expanded="false">เมนู</button>
+        <strong>03 · ติดตั้ง Flutter toolchain บน macOS และ VS Code</strong>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </header>
+      <main id="main-content" class="lesson-wrap">
+        <article class="lesson">
+          <header class="lesson-header">
+            <p class="lesson-kicker">A · Orientation & Setup · บทที่ 03</p>
+            <h1>ติดตั้ง Flutter toolchain บน macOS และ VS Code</h1>
+            <p class="hero-lead">เตรียม Flutter SDK, Android, iOS, Web, emulator, simulator และ VS Code ให้ตรวจสอบได้</p>
+            <div class="lesson-meta">
+              <span>เวลาอ่าน 40 นาที</span>
+              <span>ระดับ เริ่มต้น</span>
+              <span>macOS VS Code Xcode Android Studio CocoaPods flutter doctor</span>
+            </div>
+          </header>
+          <h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>ติดตั้งส่วนประกอบที่จำเป็นโดยรู้ว่าแต่ละตัวรับผิดชอบอะไร</li>
+  <li>ใช้ <code>flutter doctor -v</code> เป็นหลักฐาน ไม่เดาจากอาการ</li>
+  <li>ตั้ง VS Code, Android emulator, iOS Simulator และ Web device</li>
+  <li>แยกปัญหา Flutter SDK ออกจาก platform SDK</li>
+</ul>
+
+<div class="callout callout-warning">
+  <strong>อย่าติดตั้งแบบสุ่มตาม error แรก</strong>
+  อ่าน target ที่ต้องรองรับก่อน หากทำ Web อย่างเดียว Xcode warning ไม่ block
+  งาน แต่ถ้าจะ build iOS ต้องมี Xcode component และ license ครบ
+</div>
+
+<h2 id="layers">Toolchain มีหลายชั้น</h2>
+<figure class="diagram pipeline-diagram" aria-labelledby="toolchain-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">01</span><span class="rail-copy"><strong>Flutter SDK</strong><small>framework, engine tools, flutter command</small></span></li>
+    <li><span class="rail-node">02</span><span class="rail-copy"><strong>Dart SDK</strong><small>compiler, analyzer, formatter</small></span></li>
+    <li><span class="rail-node">03</span><span class="rail-copy"><strong>Platform SDK</strong><small>Android SDK / Xcode / browser</small></span></li>
+    <li><span class="rail-node">04</span><span class="rail-copy"><strong>Device</strong><small>emulator, simulator, physical device</small></span></li>
+    <li><span class="rail-node">05</span><span class="rail-copy"><strong>IDE</strong><small>VS Code extension, debugger, DevTools</small></span></li>
+  </ol>
+  <figcaption>error แต่ละชั้นต้องใช้หลักฐานและเครื่องมือคนละชุด</figcaption>
+</figure>
+<p class="diagram-description" id="toolchain-title">
+  Flutter command orchestrates Dart และ platform toolchain แต่ไม่ได้รวม Android
+  SDK หรือ iOS platform component ทั้งหมดไว้ด้วย
+</p>
+
+<h2 id="flutter">ติดตั้งและตรวจ Flutter</h2>
+<p>
+  ใช้ Flutter stable ที่ตรงกับ <code>.fvmrc</code> ของ repository
+  หากทีมใช้ FVM ให้ทุกคนเลือก version จากไฟล์เดียวกัน หากติดตั้ง SDK ตรง
+  ให้ตรวจว่า <code>flutter --version</code> ตรง baseline
+</p>
+<div class="code-block">
+  <div class="code-label">ตรวจ SDK และ PATH</div>
+  <pre><code>which flutter
+flutter --version
+dart --version
+flutter doctor -v</code></pre>
+</div>
+<p>
+  อ่าน path บรรทัดแรกเพื่อป้องกันการเรียก Flutter คนละชุดกับ VS Code
+  หาก terminal กับ IDE แสดง version ต่างกัน ให้แก้ SDK path ไม่ใช่รัน
+  <code>flutter clean</code>
+</p>
+
+<h2 id="vscode">ตั้งค่า VS Code</h2>
+<ol>
+  <li>ติดตั้ง extension <strong>Flutter</strong> ซึ่งติดตั้ง Dart extension ให้ด้วย</li>
+  <li>เปิด repository root ที่มี <code>pubspec.yaml</code> ไม่เปิดเฉพาะ <code>lib</code></li>
+  <li>ใช้ Command Palette → <strong>Flutter: Select Device</strong></li>
+  <li>ตรวจ status bar ว่า SDK และ device ถูกชุด</li>
+  <li>เปิด Settings และเปิด format on save สำหรับ Dart</li>
+</ol>
+
+<div class="code-block">
+  <div class="code-label">.vscode/settings.json ตัวอย่าง</div>
+  <pre><code>{
+  "[dart]": {
+    "editor.formatOnSave": true,
+    "editor.rulers": [80]
+  },
+  "dart.flutterSdkPath": ".fvm/flutter_sdk"
+}</code></pre>
+</div>
+<p>
+  ใส่ <code>dart.flutterSdkPath</code> เฉพาะเมื่อ repository ใช้ FVM และ path
+  นั้นมีจริง อย่า commit path absolute ที่เป็นของเครื่องคนเดียว
+</p>
+
+<h2 id="android">Android setup</h2>
+<ol>
+  <li>ติดตั้ง Android Studio เพื่อจัดการ SDK แม้เขียนโค้ดใน VS Code</li>
+  <li>SDK Manager: ติดตั้ง platform และ build tools ที่ Flutter รองรับ</li>
+  <li>Device Manager: สร้าง emulator ที่ ABI เหมาะกับ Apple Silicon</li>
+  <li>ยอมรับ license ด้วย <code>flutter doctor --android-licenses</code></li>
+  <li>รัน emulator แล้วตรวจด้วย <code>flutter devices</code></li>
+</ol>
+
+<h2 id="ios">iOS setup</h2>
+<ol>
+  <li>ติดตั้ง Xcode และเปิดครั้งแรกเพื่อให้ component initialization เสร็จ</li>
+  <li>เลือก Command Line Tools ใน Xcode Settings → Locations</li>
+  <li>ดาวน์โหลด iOS Simulator runtime ที่ project target ต้องใช้</li>
+  <li>ติดตั้ง CocoaPods ตาม policy ของทีม</li>
+  <li>เปิด Simulator แล้วตรวจด้วย <code>flutter devices</code></li>
+</ol>
+
+<div class="callout">
+  <strong>iOS build error ที่ไม่ใช่ source error</strong>
+  หาก Xcode รายงานว่า iOS platform version ไม่ถูกติดตั้ง ให้เพิ่ม component
+  ใน Xcode Settings ก่อนแก้ Dart code
+</div>
+
+<h2 id="web">Web setup</h2>
+<div class="code-block">
+  <div class="code-label">ตรวจ Web device</div>
+  <pre><code>flutter config --enable-web
+flutter devices
+flutter run -d chrome -t lib/main_development.dart</code></pre>
+</div>
+<p>
+  Web เหมาะกับ feedback loop เร็ว แต่ plugin เช่น secure storage มีข้อกำหนด
+  ต่างจาก mobile จึงต้องมี platform verification ภายหลัง
+</p>
+
+<h2 id="doctor">อ่าน flutter doctor อย่างมีเหตุผล</h2>
+<table class="comparison-table">
+  <thead><tr><th>สถานะ</th><th>ความหมาย</th><th>การตัดสินใจ</th></tr></thead>
+  <tbody>
+    <tr><td>[✓]</td><td>component ผ่าน check ที่ doctor รู้จัก</td><td>ยังต้อง build/test project จริง</td></tr>
+    <tr><td>[!]</td><td>มี warning หรือ optional gap</td><td>อ่าน target; อาจไม่ block งานปัจจุบัน</td></tr>
+    <tr><td>[✗]</td><td>component ไม่พร้อม</td><td>แก้ก่อนถ้า target นั้นอยู่ใน scope</td></tr>
+  </tbody>
+</table>
+
+<h2 id="mistakes">ปัญหาที่พบบ่อย</h2>
+<ul>
+  <li>มี Flutter หลายชุดใน PATH แล้ว VS Code ใช้คนละชุดกับ terminal</li>
+  <li>เปิด project ใน iCloud แล้ว generated build files ถูก duplicate</li>
+  <li>อัปเดต Xcode แต่ไม่ได้ดาวน์โหลด Simulator runtime ใหม่</li>
+  <li>สร้าง Android emulator x86 บน Apple Silicon โดยไม่จำเป็น</li>
+  <li>แก้ทุก doctor warning ทั้งที่ target ปัจจุบันเป็น Web เท่านั้น</li>
+</ul>
+
+          <section class="checkpoint" id="checkpoint">
+  <h2>Checkpoint ก่อนเดินต่อ</h2>
+  <ol>
+    <li>อธิบายหัวข้อนี้ด้วยภาษาของตนเองโดยไม่เปิดคู่มือ</li>
+    <li>ชี้ไฟล์หรือคำสั่งใน Boilerplate ที่สัมพันธ์กับบทนี้ได้</li>
+    <li>รันตัวอย่างหรือ verification ที่บทกำหนดและอ่านผลลัพธ์ได้</li>
+  </ol>
+</section>
+<section class="quiz" id="quiz">
+  <h2>Quiz ตรวจ mental model</h2>
+  <p><strong>คำสั่งใดให้ภาพรวม toolchain ที่ตรวจสอบได้?</strong></p>
+  <div class="quiz-options"><button class="quiz-option" type="button" data-correct="false">flutter clean</button><button class="quiz-option" type="button" data-correct="true">flutter doctor -v</button><button class="quiz-option" type="button" data-correct="false">dart format</button></div>
+  <p class="quiz-feedback" aria-live="polite"></p>
+</section>
+<section class="exercise" id="practice">
+  <h2>Practice</h2>
+  <p>รัน flutter doctor -v แล้วเขียนสรุปเฉพาะรายการที่กระทบ platform ที่ทีมจะรองรับ</p>
+  <p><strong>Definition of done:</strong> อธิบายเหตุผลของ design, แสดงผลลัพธ์ที่รันจริง และไม่มี warning ที่ถูกมองข้าม</p>
+</section>
+
+          <nav class="chapter-pagination" aria-label="เปลี่ยนบทเรียน">
+            <a href="../chapters/02-react-to-flutter.html">ก่อนหน้า<br><strong>แผนที่ความคิดจาก React และ Next.js สู่ Flutter</strong></a>
+            <a href="../chapters/04-clone-and-run.html">บทถัดไป<br><strong>Clone, Generate, Run และตรวจ Boilerplate</strong></a>
+          </nav>
+        </article>
+        <aside class="lesson-toc" aria-label="สารบัญบท">
+          <strong>ในบทนี้</strong>
+          <a href="#objectives">เป้าหมายของบท</a>
+<a href="#layers">Toolchain มีหลายชั้น</a>
+<a href="#flutter">ติดตั้งและตรวจ Flutter</a>
+<a href="#vscode">ตั้งค่า VS Code</a>
+<a href="#android">Android setup</a>
+<a href="#ios">iOS setup</a>
+<a href="#web">Web setup</a>
+<a href="#doctor">อ่าน flutter doctor อย่างมีเหตุผล</a>
+<a href="#mistakes">ปัญหาที่พบบ่อย</a>
+<a href="#checkpoint">Checkpoint</a>
+<a href="#quiz">Quiz</a>
+<a href="#practice">Practice</a>
+          <button class="chapter-complete" type="button" data-current-chapter="03-macos-toolchain" aria-pressed="false">
+            ทำเครื่องหมายว่าเรียนจบบทนี้
+          </button>
+        </aside>
+      </main>
+    </div>
+  </div>
+  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
+    <div class="search-head">
+      <label><span id="search-title" class="visually-hidden">ค้นหาคู่มือ</span><input id="search-input" type="search" placeholder="ค้นหา Dart, Riverpod, routing, build…" autocomplete="off"></label>
+      <button class="search-close" type="button" data-search-close>ปิด</button>
+    </div>
+    <div class="search-results" id="search-results" aria-live="polite"></div>
+  </dialog>
+</body>
+</html>

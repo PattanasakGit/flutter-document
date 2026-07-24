@@ -1,0 +1,137 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>ใช้ checklist เป็น risk review ที่มี owner/evidence ไม่ใช่พิธีการ</li>
+  <li>แบ่ง Compile-ready, Demo-ready, Release-ready และ Operable</li>
+  <li>จัดลำดับ P0/P1/P2 จาก impact และ likelihood</li>
+  <li>กำหนด go/no-go และ rollback criteria ก่อนเปิดระบบ</li>
+</ul>
+
+<h2 id="readiness-levels">ระดับความพร้อม</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>ระดับ</th><th>พิสูจน์แล้ว</th><th>ยังไม่ควรอ้าง</th></tr></thead>
+    <tbody>
+      <tr><td>Compile-ready</td><td>source สร้าง artifact ได้</td><td>flow ถูกต้อง/ปลอดภัย</td></tr>
+      <tr><td>Demo-ready</td><td>happy path สาธิตได้ใน environment ควบคุม</td><td>real auth/data/scale</td></tr>
+      <tr><td>Release-ready</td><td>requirements, security, test, signing, store ผ่าน</td><td>ดูแลได้หลังปล่อย</td></tr>
+      <tr><td>Operable</td><td>monitor, alert, incident, rollback, ownership พร้อม</td><td>ไม่มีความเสี่ยงเลย</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="score">Scoring ที่ใช้ตัดสินใจได้</h2>
+<div class="code-block">
+  <div class="code-label">Risk score</div>
+  <pre><code>risk = impact (1–5) × likelihood (1–5)
+
+20–25  → P0: ปิดก่อน release
+12–19  → P1: owner + deadline + mitigation
+ 6–11  → P2: track ใน backlog
+ 1–5   → accept พร้อมเหตุผล</code></pre>
+</div>
+<p>
+  คะแนนเป็นเครื่องช่วยสนทนา ไม่แทน judgment เช่น data leak อาจเป็น P0
+  แม้ likelihood ต่ำ เพราะผลกระทบและข้อกำกับสูง
+</p>
+
+<h2 id="product">Product และ UX</h2>
+<ul class="checklist">
+  <li>Acceptance criteria ของ critical flow ผ่านบน device matrix</li>
+  <li>empty/loading/error/offline/permission-denied state มีข้อความและทางไปต่อ</li>
+  <li>double tap, retry และ background/foreground ไม่สร้างข้อมูลซ้ำ</li>
+  <li>accessibility: semantics, contrast, keyboard, text scale ผ่าน</li>
+  <li>localization, timezone, locale number/date และข้อความยาวผ่าน</li>
+</ul>
+
+<h2 id="architecture">Architecture และ data</h2>
+<ul class="checklist">
+  <li>dependency direction ตรงกับ architecture contract</li>
+  <li>domain ไม่อ้าง DTO/plugin/platform type</li>
+  <li>migration ถูกทดสอบจาก production version ก่อนหน้า</li>
+  <li>offline/sync/conflict/idempotency policy ถูกเขียนและทดสอบ</li>
+  <li>cache invalidation, retention และ user-scoped cleanup ชัดเจน</li>
+</ul>
+
+<h2 id="security">Security และ privacy</h2>
+<ul class="checklist">
+  <li>threat model ครอบคลุม auth, storage, network และ deep links</li>
+  <li>ไม่มี secret ใน source, artifact, logs หรือ analytics</li>
+  <li>token restore/refresh/revoke/race condition ถูกทดสอบ</li>
+  <li>dependency/security scan ผ่านและ exception มี owner/expiry</li>
+  <li>privacy disclosure, consent, export/delete และ retention ตรงระบบจริง</li>
+</ul>
+
+<h2 id="quality">Quality gate</h2>
+<ul class="checklist">
+  <li>format, analyze, unit/widget/router/integration tests ผ่านจาก clean checkout</li>
+  <li>critical failure paths และ unknown route ถูกทดสอบ</li>
+  <li>performance baseline บนอุปกรณ์ขั้นต่ำไม่มี P0 regression</li>
+  <li>crash-free baseline และ error budget ถูกกำหนด</li>
+  <li>artifact ตรง commit/tag ที่ approve และมี checksum</li>
+</ul>
+
+<h2 id="delivery">Delivery และ stores</h2>
+<ul class="checklist">
+  <li>application/bundle id, version, icons, metadata และ screenshots ถูก environment</li>
+  <li>signing certificate/profile/keystore rotation และ backup มี owner</li>
+  <li>native permissions/capabilities/privacy manifests ครบ</li>
+  <li>staged rollout, kill switch และ rollback procedure ถูกซ้อม</li>
+  <li>support channel และ release communication พร้อม</li>
+</ul>
+
+<h2 id="operations">Operations</h2>
+<ul class="checklist">
+  <li>dashboard ครอบคลุม crash, latency, API error, auth failure และ critical outcome</li>
+  <li>alert มี threshold, owner, escalation และ runbook</li>
+  <li>log/trace มี correlation id และ redact ข้อมูลอ่อนไหว</li>
+  <li>backend/mobile compatibility window และ forced-upgrade policy ชัดเจน</li>
+  <li>incident review สร้าง action ที่มี owner/deadline</li>
+</ul>
+
+<h2 id="example-assessment">ประเมินแอป Task ตัวอย่าง</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Gap</th><th>Risk</th><th>Priority</th><th>Acceptance criteria</th></tr></thead>
+    <tbody>
+      <tr><td>Demo authentication</td><td>ไม่มี real identity/session security</td><td>P0</td><td>OIDC/backend flow + restore/refresh/revoke tests</td></tr>
+      <tr><td>In-memory tasks</td><td>ข้อมูลหายเมื่อปิดแอป</td><td>P0</td><td>persist/sync + migration/conflict tests</td></tr>
+      <tr><td>No production telemetry</td><td>ไม่เห็น incident หลัง release</td><td>P0</td><td>redacted crash/error/performance telemetry + alerts</td></tr>
+      <tr><td>No store signing</td><td>แจก artifact ไม่ได้</td><td>P1</td><td>protected CI signing + staged internal release</td></tr>
+      <tr><td>Limited locale set</td><td>UX ไม่ครบตลาดเป้าหมาย</td><td>P2</td><td>approved locale matrix + QA</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="go-no-go">Go / No-go meeting</h2>
+<figure class="diagram flow-diagram" aria-labelledby="gono-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">EV</span><span class="rail-copy"><strong>Evidence</strong><small>ผล test, scan, device, artifact</small></span></li>
+    <li><span class="rail-node">RK</span><span class="rail-copy"><strong>Risks</strong><small>open P0/P1 และ mitigation</small></span></li>
+    <li><span class="rail-node">OW</span><span class="rail-copy"><strong>Owners</strong><small>ผู้ตัดสินใจและผู้เฝ้าระวัง</small></span></li>
+    <li><span class="rail-node">RL</span><span class="rail-copy"><strong>Rollout</strong><small>cohort, metric, pause threshold</small></span></li>
+    <li><span class="rail-node">RB</span><span class="rail-copy"><strong>Rollback</strong><small>คำสั่งและเวลาที่คาด</small></span></li>
+  </ol>
+  <figcaption>Go/no-go ที่ดีอ่านหลักฐานและข้อตกลงล่วงหน้า ไม่ตัดสินจากความรู้สึก</figcaption>
+</figure>
+<p class="diagram-description" id="gono-title">
+  ถ้ามี P0 เปิดอยู่ให้เป็น no-go เว้นแต่ผู้มีอำนาจยอมรับความเสี่ยงอย่างชัดเจน
+  พร้อม mitigation และเวลาปิดที่ตรวจสอบได้
+</p>
+
+<h2 id="next-system">จากตัวอย่างสู่ระบบถัดไป</h2>
+<ol>
+  <li>คง feature boundaries และ typed failures ที่พิสูจน์แล้ว</li>
+  <li>แทน in-memory datasource ด้วย boundary ที่ต้องการ ไม่ rewrite presentation</li>
+  <li>ทำ auth/session และ observability ก่อนเพิ่ม feature จำนวนมาก</li>
+  <li>เพิ่ม CI gate และ release rehearsal ตั้งแต่ milestone แรก</li>
+  <li>ทบทวน architecture decision เมื่อ assumption เปลี่ยน ไม่ตาม calendar อย่างเดียว</li>
+</ol>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>ติ๊ก checklist โดยไม่มีลิงก์ evidence</li>
+  <li>ทุก risk เป็น P0 จนไม่มีลำดับ</li>
+  <li>release ก่อนกำหนด rollback threshold</li>
+  <li>ให้ทีม mobile รับผิดชอบ backend/store/operations โดยไม่มี owner ร่วม</li>
+  <li>ถือว่า “ไม่มี bug ที่รู้จัก” เท่ากับพร้อม production</li>
+</ul>

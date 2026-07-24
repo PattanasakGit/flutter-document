@@ -1,0 +1,187 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>ออกแบบ function signature ที่ call site อ่านได้</li>
+  <li>ใช้ constructor, factory และ abstract interface ตาม responsibility</li>
+  <li>สร้าง immutable entity และ copy semantics</li>
+  <li>ใช้ generic type เก็บ type information ข้าม layer</li>
+</ul>
+
+<h2 id="functions">Function เป็น value และมี typed signature</h2>
+<div class="code-block">
+  <div class="code-label">Functions</div>
+  <pre><code>typedef TaskPredicate = bool Function(Task task);
+
+List&lt;Task&gt; filterTasks(
+  List&lt;Task&gt; tasks, {
+  required TaskPredicate where,
+}) {
+  return tasks.where(where).toList(growable: false);
+}
+
+final open = filterTasks(
+  tasks,
+  where: (task) =&gt; !task.isCompleted,
+);</code></pre>
+</div>
+<p>
+  Callback ใน Flutter เช่น <code>VoidCallback</code> หรือ
+  <code>ValueChanged&lt;T&gt;</code> เป็น function type ไม่ต้องสร้าง interface
+  สำหรับ event เล็กทุกตัว
+</p>
+
+<h2 id="class">Immutable Task class</h2>
+<div class="code-block">
+  <div class="code-label">Domain entity</div>
+  <pre><code>final class Task {
+  const Task({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.isCompleted,
+    required this.createdAt,
+  });
+
+  final String id;
+  final String title;
+  final String description;
+  final bool isCompleted;
+  final DateTime createdAt;
+
+  Task copyWith({
+    String? title,
+    String? description,
+    bool? isCompleted,
+  }) {
+    return Task(
+      id: id,
+      title: title ?? this.title,
+      description: description ?? this.description,
+      isCompleted: isCompleted ?? this.isCompleted,
+      createdAt: createdAt,
+    );
+  }
+}</code></pre>
+</div>
+<p>
+  <code>final class</code> ห้าม extend/implement นอก library ในรูปแบบที่
+  compiler กำหนดและสื่อว่า entity ไม่ได้ออกแบบเป็น extension point
+  Boilerplate ใช้ Freezed กับ model/state บางส่วนเพื่อลด boilerplate ของ
+  equality/copy/union แต่ควรรู้ logic ที่ generated code ทำแทน
+</p>
+
+<h2 id="constructors">Constructor หลายแบบ</h2>
+<div class="code-block">
+  <div class="code-label">Named และ factory constructor</div>
+  <pre><code>final class TaskId {
+  const TaskId._(this.value);
+
+  final String value;
+
+  factory TaskId.parse(String raw) {
+    final value = raw.trim();
+    if (value.isEmpty) {
+      throw const FormatException('Task id must not be empty');
+    }
+    return TaskId._(value);
+  }
+}</code></pre>
+</div>
+<ul>
+  <li>Generative constructor สร้าง instance ใหม่</li>
+  <li>Named constructor บอก use case เช่น <code>Task.draft</code></li>
+  <li>Factory คืน cached instance/subtype/validated instance ได้</li>
+  <li>Private constructor ใช้ซ่อน creation path ภายใน library</li>
+</ul>
+
+<h2 id="interfaces">Abstract interface และ implementation</h2>
+<div class="code-block">
+  <div class="code-label">Repository contract</div>
+  <pre><code>abstract interface class TaskRepository {
+  Future&lt;Result&lt;List&lt;Task&gt;&gt;&gt; getTasks();
+  Future&lt;Result&lt;Task&gt;&gt; save(Task task);
+  Future&lt;Result&lt;void&gt;&gt; delete(String id);
+}
+
+final class TaskRepositoryImpl implements TaskRepository {
+  TaskRepositoryImpl(this._datasource);
+
+  final TaskLocalDatasource _datasource;
+
+  @override
+  Future&lt;Result&lt;List&lt;Task&gt;&gt;&gt; getTasks() async {
+    // Map datasource records into domain entities.
+  }
+}</code></pre>
+</div>
+<p>
+  Domain ประกาศสิ่งที่ต้องการ ส่วน Data เลือกวิธีทำ การพึ่ง contract ทำให้ test
+  use case ด้วย fake repository และเปลี่ยน offline เป็น remote datasource ได้
+</p>
+
+<h2 id="extensions">Extension method</h2>
+<div class="code-block">
+  <div class="code-label">Presentation formatting</div>
+  <pre><code>extension TaskFilterLabel on TaskFilter {
+  String get label =&gt; switch (this) {
+    TaskFilter.all =&gt; 'ทั้งหมด',
+    TaskFilter.open =&gt; 'ยังไม่เสร็จ',
+    TaskFilter.completed =&gt; 'เสร็จแล้ว',
+  };
+}</code></pre>
+</div>
+<p>
+  Extension เหมาะกับ behavior ที่สัมพันธ์กับ type แต่ไม่ควรแก้ type ต้นทาง
+  อย่าใช้ซ่อน external I/O หรือ dependency ที่คนอ่านไม่เห็นจาก call site
+</p>
+
+<h2 id="generics">Generics รักษา type ข้าม boundary</h2>
+<div class="code-block">
+  <div class="code-label">Typed result</div>
+  <pre><code>sealed class Result&lt;T&gt; {
+  const Result();
+}
+
+final class Success&lt;T&gt; extends Result&lt;T&gt; {
+  const Success(this.data);
+  final T data;
+}
+
+final class Error&lt;T&gt; extends Result&lt;T&gt; {
+  const Error(this.failure);
+  final Failure failure;
+}</code></pre>
+</div>
+<p>
+  <code>Result&lt;Task&gt;</code> กับ <code>Result&lt;List&lt;Task&gt;&gt;</code>
+  ใช้ flow เดียวกันแต่ compiler ยังรู้ data type ไม่ต้อง cast จาก
+  <code>Object</code>
+</p>
+
+<h2 id="composition">Composition ก่อน inheritance</h2>
+<div class="code-block">
+  <div class="code-label">Compose dependency</div>
+  <pre><code>final class CreateTask {
+  const CreateTask(this._repository);
+  final TaskRepository _repository;
+
+  Future&lt;Result&lt;Task&gt;&gt; call({
+    required String title,
+    String description = '',
+  }) {
+    // Validate then delegate.
+  }
+}</code></pre>
+</div>
+<p>
+  Use case ไม่ extend repository แต่รับ contract ผ่าน constructor
+  จึงเปลี่ยน implementation และทดสอบได้โดยไม่สร้าง inheritance tree
+</p>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>สร้าง base class ใหญ่ที่ทุก feature ต้อง extend</li>
+  <li>ใช้ factory ซ่อน network call จน creation มี side effect</li>
+  <li>ทำ entity mutable แล้ว controller เปลี่ยนค่าโดยไม่มี state transition</li>
+  <li>คืน <code>Result&lt;dynamic&gt;</code> ทำให้ generic ไม่มีประโยชน์</li>
+  <li>ใส่ UI label ใน domain ทั้งที่ต้อง localize ใน presentation</li>
+</ul>

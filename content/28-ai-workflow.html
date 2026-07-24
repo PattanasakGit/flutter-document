@@ -1,0 +1,174 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>ใช้ AI สำรวจ วางแผน implement review และ verify โดยรักษาขอบเขต</li>
+  <li>เขียน prompt ที่บอก behavior, architecture contract และหลักฐานที่ต้องส่ง</li>
+  <li>แบ่งงานให้มี context พอดีและตรวจ diff ได้</li>
+  <li>ป้องกัน hallucinated API, dependency drift, secret leakage และ scope creep</li>
+</ul>
+
+<h2 id="contract">AI working contract</h2>
+<p>
+  AI ช่วยเร่ง feedback loop แต่ไม่ได้แทน product decision, security ownership
+  หรือหลักฐานจาก compiler/test/runtime ผู้พัฒนายังคงรับผิดชอบสิ่งที่ merge
+</p>
+<div class="callout note">
+  <strong>หลักสำคัญ:</strong>
+  Context ที่ชัด + scope ที่เล็ก + acceptance criteria ที่รันได้
+  ให้ผลดีกว่า prompt ยาวที่ขอ “ทำแอปทั้งหมดให้ดีที่สุด”
+</div>
+
+<h2 id="loop">AI-assisted development loop</h2>
+<figure class="diagram flow-diagram" aria-labelledby="ai-loop-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">EX</span><span class="rail-copy"><strong>Explore</strong><small>อ่าน AGENTS, nearby code, tests, versions</small></span></li>
+    <li><span class="rail-node">PL</span><span class="rail-copy"><strong>Plan</strong><small>ไฟล์, boundary, risk, verification</small></span></li>
+    <li><span class="rail-node">RD</span><span class="rail-copy"><strong>Red</strong><small>failing behavior test</small></span></li>
+    <li><span class="rail-node">GR</span><span class="rail-copy"><strong>Green</strong><small>implementation เล็กที่สุด</small></span></li>
+    <li><span class="rail-node">RV</span><span class="rail-copy"><strong>Review</strong><small>diff, contract, security, UX</small></span></li>
+    <li><span class="rail-node">VF</span><span class="rail-copy"><strong>Verify</strong><small>commands + output + gaps</small></span></li>
+  </ol>
+  <figcaption>AI workflow ที่ผูกทุกการอ้างความสำเร็จกับหลักฐาน</figcaption>
+</figure>
+<p class="diagram-description" id="ai-loop-title">
+  ถ้าพบ unexpected failure ให้กลับไป Explore/Observe ไม่ให้ AI เดา patch
+  ต่อเนื่องจน tests บังเอิญผ่านโดยไม่เข้าใจ root cause
+</p>
+
+<h2 id="context-pack">Context pack ที่ AI ต้องรู้</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>ข้อมูล</th><th>ตัวอย่าง</th><th>เหตุผล</th></tr></thead>
+    <tbody>
+      <tr><td>Goal</td><td>เพิ่ม task priority</td><td>กำหนด outcome</td></tr>
+      <tr><td>Scope</td><td>features/tasks เท่านั้น</td><td>หยุด scope creep</td></tr>
+      <tr><td>Contract</td><td>Domain ห้าม import Flutter/DTO</td><td>รักษา dependency direction</td></tr>
+      <tr><td>Nearby patterns</td><td>ใช้ Result/Failure และ Riverpod codegen เดิม</td><td>ไม่สร้าง abstraction ซ้ำ</td></tr>
+      <tr><td>Behavior</td><td>เรียง high → normal → low แบบ stable</td><td>test ได้</td></tr>
+      <tr><td>Constraints</td><td>ไม่เพิ่ม package, offline tests</td><td>จำกัดทางเลือก</td></tr>
+      <tr><td>Verification</td><td>focused tests, analyze, full test</td><td>สร้าง evidence</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="prompt">Prompt template สำหรับ feature</h2>
+<div class="code-block">
+  <div class="code-label">คัดลอกแล้วแทนค่าที่อยู่ใน [ ]</div>
+  <pre><code>Goal:
+เพิ่ม [behavior] ใน [feature]
+
+Read first:
+- AGENTS.md ที่เกี่ยวข้องทั้งหมด
+- [nearby implementation files]
+- [nearby tests]
+- pubspec.yaml / lockfile สำหรับ API version
+
+Architecture constraints:
+- รักษา Domain → Application ← Data/Presentation
+- ใช้ Result/Failure และ provider pattern ที่มีอยู่
+- ห้ามเพิ่ม dependency หรือแก้ public API นอก scope โดยไม่รายงาน
+
+Behavior / edge cases:
+- [given / when / then]
+- [failure / empty / concurrent action]
+
+Workflow:
+1. สรุป current pattern และแผนไฟล์
+2. เขียน failing tests และแสดง failure ที่คาด
+3. implement เล็กที่สุดให้ผ่าน
+4. review diff เรื่อง types, null, async race, UX, security
+5. รัน format, analyze, focused tests และ full tests
+
+Deliver:
+- changed files
+- decisions/tradeoffs
+- exact verification results
+- remaining production gaps</code></pre>
+</div>
+
+<h2 id="example">ตัวอย่าง prompt: เพิ่ม Priority</h2>
+<div class="code-block">
+  <div class="code-label">พร้อมใช้กับ Boilerplate นี้</div>
+  <pre><code>เพิ่ม TaskPriority {high, normal, low} ใน features/tasks
+
+Behavior:
+- task ใหม่ default เป็น normal
+- filter เดิมยังทำงาน
+- list เรียง high → normal → low และรักษาลำดับเดิมภายใน priority
+- form ต้องเลือก priority ด้วย accessible control
+- DTO unknown value map เป็น normal และบันทึก warning แบบไม่ใส่ payload
+
+อย่าแก้ auth, core network หรือเพิ่ม package
+เริ่มจาก domain/data/controller/widget failing tests
+รัน build_runner เฉพาะเมื่อ annotation เปลี่ยน
+รายงาน focused/full test และ flutter analyze ตาม output จริง</code></pre>
+</div>
+
+<h2 id="small-tasks">แบ่งงานให้ AI ตรวจง่าย</h2>
+<ol>
+  <li>Domain contract + unit tests</li>
+  <li>Datasource/repository mapping + tests</li>
+  <li>Controller state transition + tests</li>
+  <li>Presentation behavior + widget tests</li>
+  <li>Router/integration wiring</li>
+  <li>Docs, changelog และ release evidence</li>
+</ol>
+<p>
+  แต่ละชิ้นควรมี working state และ commit ที่อธิบายได้ อย่าให้ AI เปลี่ยน
+  architecture, package versions, generated code และ UI ทั้งระบบใน diff เดียว
+</p>
+
+<h2 id="review">Human review checklist</h2>
+<ul class="checklist">
+  <li>โค้ดตอบ behavior ที่ขอจริงหรือเพียงทำ test ที่ AI เขียนเองผ่าน</li>
+  <li>API มีอยู่ใน dependency version ปัจจุบันหรือ hallucinate</li>
+  <li>import direction และ public surface ยังถูกต้อง</li>
+  <li>null/async/cancellation/concurrent action มี race หรือไม่</li>
+  <li>error ถูกแปลงและผู้ใช้มี recovery action หรือไม่</li>
+  <li>log/test fixture/diff มี secret หรือ personal data หรือไม่</li>
+  <li>generated file มาจาก command และไม่มี unrelated change</li>
+  <li>verification output ใหม่และตรง commit ปัจจุบันหรือไม่</li>
+</ul>
+
+<h2 id="safe-context">ส่ง context ให้ AI อย่างปลอดภัย</h2>
+<ul>
+  <li>ใช้ sanitized fixture แทน production payload</li>
+  <li>ไม่ paste token, key, cookie, customer log หรือ crash dump ที่ยังไม่ redact</li>
+  <li>บอก AI ไม่ให้เปิด/ส่งไฟล์ env, keychain, provisioning หรือ secret store</li>
+  <li>จำกัด file scope และตรวจ <code>git diff</code> ก่อน commit</li>
+  <li>ใช้ dependency source/docs ปัจจุบันเมื่อต้องยืนยัน API ที่เปลี่ยนตาม version</li>
+</ul>
+
+<h2 id="failure-prompts">เมื่อ test fail ให้ prompt แบบ diagnosis</h2>
+<div class="code-block">
+  <div class="code-label">ไม่สั่ง “แก้ให้ผ่าน” อย่างเดียว</div>
+  <pre><code>นี่คือ command และ output เต็มจาก focused test: [output]
+
+ก่อนแก้:
+1. reproduce ด้วย command เดิม
+2. แยก expected behavior จาก observed behavior
+3. trace state/data จาก boundary ที่ใกล้ที่สุด
+4. เสนอ hypothesis ที่พิสูจน์ได้ พร้อมไฟล์/บรรทัด
+5. เขียนหรือปรับ regression test ให้ fail เพราะ root cause
+
+แก้เฉพาะเมื่อมีหลักฐาน แล้วรัน focused + related + full suite
+ห้ามล้าง cache/upgrade dependency เว้นแต่พิสูจน์ว่าเป็นสาเหตุ</code></pre>
+</div>
+
+<h2 id="definition-of-done">Definition of done สำหรับงานที่ AI ช่วย</h2>
+<ul>
+  <li>Acceptance criteria ถูกแปลงเป็น tests หรือ verification steps</li>
+  <li>diff อยู่ใน scope และ architecture contract ผ่าน</li>
+  <li>format, analyze, focused/full tests มี output จริง</li>
+  <li>manual flow ที่ automation ไม่ครอบคลุมถูกตรวจ</li>
+  <li>docs/decision/production gaps ถูกปรับ</li>
+  <li>ผู้พัฒนาอธิบาย code path และ rollback ได้โดยไม่พึ่ง transcript</li>
+</ul>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>ให้ AI เดา requirement ที่เป็น product/security decision</li>
+  <li>รับ API หรือ package name โดยไม่ตรวจ version/source</li>
+  <li>ขอ refactor ใหญ่พร้อม feature และ bug fix ในครั้งเดียว</li>
+  <li>เชื่อข้อความ “tests pass” โดยไม่มี command output ใหม่</li>
+  <li>ส่ง production secret/log จริงเพื่อให้ debug เร็วขึ้น</li>
+</ul>

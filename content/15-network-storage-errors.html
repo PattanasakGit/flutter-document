@@ -1,0 +1,121 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>ติดตาม request/response ผ่าน Data → Domain → Application → UI</li>
+  <li>แยก DTO จาก Entity และตรวจ schema ที่ boundary</li>
+  <li>แปลง transport exception เป็น typed failure</li>
+  <li>เข้าใจ secure storage abstraction และข้อกำหนดราย platform</li>
+</ul>
+
+<h2 id="pipeline">External data pipeline</h2>
+<figure class="diagram flow-diagram" aria-labelledby="data-pipeline-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">RQ</span><span class="rail-copy"><strong>Dio request</strong><small>base URL, timeout, auth header</small></span></li>
+    <li><span class="rail-node">JS</span><span class="rail-copy"><strong>JSON payload</strong><small>untrusted external shape</small></span></li>
+    <li><span class="rail-node">DTO</span><span class="rail-copy"><strong>Checked DTO</strong><small>decode และ validate field type</small></span></li>
+    <li><span class="rail-node">EN</span><span class="rail-copy"><strong>Entity</strong><small>domain meaning/invariant</small></span></li>
+    <li><span class="rail-node">RS</span><span class="rail-copy"><strong>Result</strong><small>success หรือ typed failure</small></span></li>
+    <li><span class="rail-node">UI</span><span class="rail-copy"><strong>Presentation</strong><small>state และ recovery action</small></span></li>
+  </ol>
+  <figcaption>ทุก boundary ลด external detail ก่อนส่งให้ชั้นถัดไป</figcaption>
+</figure>
+<p class="diagram-description" id="data-pipeline-title">
+  UI ไม่อ่าน status code และ Domain ไม่รู้ JSON key Repository เป็นจุดรวม mapping
+  จาก data representation ไป application result
+</p>
+
+<h2 id="dio">Dio client responsibility</h2>
+<div class="code-block">
+  <div class="code-label">Typed decode callback</div>
+  <pre><code>Future&lt;T&gt; get&lt;T&gt;(
+  String path, {
+  required T Function(Object? data) decode,
+}) async {
+  try {
+    final response = await _dio.get&lt;Object?&gt;(path);
+    return decode(response.data);
+  } on DioException catch (error) {
+    throw _errorMapper.mapDioException(error);
+  }
+}</code></pre>
+</div>
+<p>
+  ApiClient ซ่อน <code>Response</code> และ DioException แต่ decoder เองอาจ throw
+  schema exception จึงต้องกำหนดว่า datasource จะแปลง error นั้นตรงไหนและเขียน
+  malformed-payload test
+</p>
+
+<h2 id="dto">DTO ไม่ใช่ Entity</h2>
+<div class="code-block">
+  <div class="code-label">Mapping</div>
+  <pre><code>final class TaskDto {
+  const TaskDto({
+    required this.id,
+    required this.title,
+    required this.completed,
+  });
+
+  final String id;
+  final String title;
+  final bool completed;
+
+  Task toEntity() =&gt; Task(
+    id: id,
+    title: title.trim(),
+    description: '',
+    isCompleted: completed,
+  );
+}</code></pre>
+</div>
+<p>
+  DTO เปลี่ยนตาม API contract, Entity เปลี่ยนตาม product/domain
+  การแยกทำให้ API field rename ไม่บังคับทุก Widget เปลี่ยน
+</p>
+
+<h2 id="repository">Repository เป็น source-of-truth policy</h2>
+<p>
+  Repository ตัดสินว่าจะอ่าน remote/local/cache อย่างไร map external
+  exception เป็น Failure และคืน Entity ไม่ควรเป็นเพียงชื่อใหม่ของ Dio method
+</p>
+
+<h2 id="errors">Error classification</h2>
+<table class="comparison-table">
+  <thead><tr><th>Source</th><th>AppException</th><th>Failure/UI</th></tr></thead>
+  <tbody>
+    <tr><td>connection/timeout</td><td>Network/Timeout</td><td>retry และอธิบาย connectivity</td></tr>
+    <tr><td>401</td><td>Unauthorized</td><td>refresh/logout/login</td></tr>
+    <tr><td>400 validation</td><td>Validation</td><td>ข้อความใกล้ input</td></tr>
+    <tr><td>invalid JSON shape</td><td>Schema/Unknown พร้อม diagnostic</td><td>safe message + report</td></tr>
+    <tr><td>programming bug</td><td>ไม่กลืนแบบกว้าง</td><td>crash reporting/test ต้องเห็น</td></tr>
+  </tbody>
+</table>
+
+<h2 id="storage">Secure storage abstraction</h2>
+<div class="code-block">
+  <div class="code-label">Business-neutral interface</div>
+  <pre><code>abstract interface class SecureStorage {
+  Future&lt;String?&gt; read(String key);
+  Future&lt;void&gt; write(String key, String value);
+  Future&lt;void&gt; delete(String key);
+}</code></pre>
+</div>
+<p>
+  Feature ใช้ abstraction ไม่ import plugin โดยตรง แต่ abstraction ไม่ทำให้
+  platform config หายไป iOS ต้องตรวจ entitlements, Android ต้องตรวจ backup/
+  cipher policy และ Web ต้องใช้ secure hosting/header ตาม plugin requirement
+</p>
+
+<h2 id="session">Token ไม่เท่ากับ Session</h2>
+<p>
+  การเก็บ access token อย่างเดียวไม่พอ ต้องมี initialization, user identity,
+  expiry, refresh, 401 policy, clear-on-logout และ route coordination
+  อย่าให้ router เห็น anonymous ขณะที่ token เก่ายังถูก interceptor ส่ง
+</p>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>คืน Dio Response จาก repository</li>
+  <li>ใช้ Entity เป็น JSON DTO โดยตรงทุกกรณี</li>
+  <li>จับทุก Object เป็น UnknownFailure แล้วซ่อน programming bug</li>
+  <li>คิดว่าใช้ secure storage package แล้ว platform config สมบูรณ์อัตโนมัติ</li>
+  <li>log header/body ที่มี token หรือ password ใน production</li>
+</ul>

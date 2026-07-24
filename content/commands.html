@@ -1,0 +1,195 @@
+<h2 id="how-to-use">วิธีใช้ Command Cookbook</h2>
+<p>
+  รันจาก root ที่มี <code>pubspec.yaml</code> เว้นแต่ระบุเป็นอย่างอื่น
+  อ่าน output ก่อนรันคำสั่งถัดไป และอย่าใช้ clean/reset เป็นการแก้แบบสุ่ม
+</p>
+
+<h2 id="environment">SDK และ environment</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Command</th><th>ใช้เมื่อ</th><th>อ่านอะไรจากผลลัพธ์</th></tr></thead>
+    <tbody>
+      <tr><td><code>flutter --version</code></td><td>ยืนยัน SDK</td><td>Flutter/Dart version และ channel</td></tr>
+      <tr><td><code>flutter doctor -v</code></td><td>ตรวจ toolchain</td><td>เฉพาะ platform ที่ทีมรองรับต้องพร้อม</td></tr>
+      <tr><td><code>flutter devices</code></td><td>หา target</td><td>device id/platform</td></tr>
+      <tr><td><code>flutter emulators</code></td><td>ดู emulator</td><td>id ที่ใช้ launch</td></tr>
+      <tr><td><code>flutter config --list</code></td><td>ดู feature flags SDK</td><td>platform enablement</td></tr>
+      <tr><td><code>dart --version</code></td><td>ยืนยัน Dart ที่ใช้งาน</td><td>ต้องสัมพันธ์กับ Flutter SDK</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="clone">Clone และ baseline</h2>
+<div class="code-block">
+  <div class="code-label">เริ่มจาก clean checkout</div>
+  <pre><code>git clone &lt;repository-url&gt; my_app
+cd my_app
+git status --short --branch
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+flutter analyze
+flutter test
+flutter run -t lib/main_development.dart</code></pre>
+</div>
+<p>
+  ถ้า repository มี Flutter version manager ให้ใช้ command wrapper ที่โครงการกำหนด
+  และไม่เปลี่ยน lockfile โดยไม่ตั้งใจ
+</p>
+
+<h2 id="dependencies">Dependencies</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Command</th><th>ความหมาย</th><th>ข้อควรระวัง</th></tr></thead>
+    <tbody>
+      <tr><td><code>flutter pub get</code></td><td>resolve ตาม pubspec/lock</td><td>ตรวจ lockfile diff</td></tr>
+      <tr><td><code>flutter pub add package</code></td><td>เพิ่ม runtime dependency</td><td>ต้องมีเหตุผล/owner</td></tr>
+      <tr><td><code>flutter pub add --dev package</code></td><td>เพิ่ม dev dependency</td><td>ไม่เข้า production runtime โดยตรง</td></tr>
+      <tr><td><code>flutter pub deps</code></td><td>ดู dependency tree</td><td>ใช้หา transitive conflict</td></tr>
+      <tr><td><code>flutter pub outdated</code></td><td>ดู version ที่ล้าหลัง</td><td>ไม่ได้แปลว่าต้อง upgrade ทั้งหมด</td></tr>
+      <tr><td><code>dart pub cache repair</code></td><td>ซ่อม pub cache</td><td>ใช้เมื่อพิสูจน์ว่า cache เสีย</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="codegen">Code generation</h2>
+<div class="code-block">
+  <div class="code-label">One-shot และ watch</div>
+  <pre><code>dart run build_runner build --delete-conflicting-outputs
+dart run build_runner watch --delete-conflicting-outputs</code></pre>
+</div>
+<ul>
+  <li>ใช้ <code>build</code> ใน CI และก่อน commit</li>
+  <li>ใช้ <code>watch</code> ระหว่างแก้ annotation ต่อเนื่อง</li>
+  <li>ถ้า conflict ให้ตรวจ source/generated ownership ก่อนลบไฟล์</li>
+  <li>อย่าแก้ <code>*.g.dart</code> หรือ <code>*.freezed.dart</code> ด้วยมือ</li>
+</ul>
+
+<h2 id="format-analyze">Format และ analyze</h2>
+<div class="code-block">
+  <div class="code-label">Local fix และ CI check</div>
+  <pre><code># จัด format
+dart format .
+
+# ตรวจว่า format แล้วโดยไม่แก้ไฟล์
+dart format --output=none --set-exit-if-changed .
+
+# Static analysis
+flutter analyze</code></pre>
+</div>
+
+<h2 id="test">Testing</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Command</th><th>Scope</th></tr></thead>
+    <tbody>
+      <tr><td><code>flutter test</code></td><td>unit/widget tests ทั้งหมด</td></tr>
+      <tr><td><code>flutter test test/features/tasks</code></td><td>focused directory</td></tr>
+      <tr><td><code>flutter test --name "creates a task"</code></td><td>test ตามชื่อ</td></tr>
+      <tr><td><code>flutter test --coverage</code></td><td>สร้าง coverage/lcov.info</td></tr>
+      <tr><td><code>flutter test integration_test</code></td><td>integration ตาม target/support ปัจจุบัน</td></tr>
+      <tr><td><code>flutter test --update-goldens</code></td><td>อัปเดต golden โดยตั้งใจ</td></tr>
+    </tbody>
+  </table>
+</div>
+<p>
+  ตรวจ golden diff ด้วยภาพ ไม่ commit เพราะ command ผ่านอย่างเดียว
+  integration command อาจต้องระบุ <code>-d &lt;device-id&gt;</code> ตาม platform
+</p>
+
+<h2 id="run">Run และ debugging</h2>
+<div class="code-block">
+  <div class="code-label">Target และ environment</div>
+  <pre><code>flutter run -t lib/main_development.dart
+flutter run -d chrome -t lib/main_development.dart
+flutter run -d &lt;device-id&gt; --profile
+flutter run \
+  -t lib/main_staging.dart \
+  --dart-define=API_BASE_URL=https://staging.example.com</code></pre>
+</div>
+<p>
+  ระหว่าง <code>flutter run</code>: กด <code>r</code> เพื่อ hot reload,
+  <code>R</code> เพื่อ hot restart, <code>q</code> เพื่อหยุดอย่างเรียบร้อย
+</p>
+
+<h2 id="build">Build artifacts</h2>
+<div class="code-block">
+  <div class="code-label">Common builds</div>
+  <pre><code>flutter build apk --release
+flutter build appbundle --release
+flutter build ios --release
+flutter build ipa --release
+flutter build web --release</code></pre>
+</div>
+<p>
+  iOS ต้องใช้ macOS/Xcode; store build ต้องมี signing/environment จริง
+  อ่านรายละเอียดในบท Build &amp; Release ก่อนแจก artifact
+</p>
+
+<h2 id="native">Native dependency commands</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Command</th><th>ใช้เมื่อ</th></tr></thead>
+    <tbody>
+      <tr><td><code>cd ios &amp;&amp; pod install</code></td><td>ติดตั้ง iOS pods เมื่อ project ต้องการ</td></tr>
+      <tr><td><code>pod repo update</code></td><td>spec repo ล้าหลังและ error ชี้ตรงนั้น</td></tr>
+      <tr><td><code>open ios/Runner.xcworkspace</code></td><td>เปิด Xcode workspace บน macOS</td></tr>
+      <tr><td><code>cd android &amp;&amp; ./gradlew tasks</code></td><td>inspect Gradle tasks บน macOS/Linux</td></tr>
+      <tr><td><code>cd android &amp;&amp; gradlew.bat tasks</code></td><td>Windows equivalent</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="clean">Clean อย่างมีเหตุผล</h2>
+<div class="code-block">
+  <div class="code-label">ใช้เมื่อ artifact stale ถูกพิสูจน์แล้ว</div>
+  <pre><code>flutter clean
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs</code></pre>
+</div>
+<p>
+  <code>flutter clean</code> ลบ build outputs ไม่แก้ logic bug, invalid state,
+  network failure หรือ dependency incompatibility
+</p>
+
+<h2 id="git">Git safety chain</h2>
+<div class="code-block">
+  <div class="code-label">ก่อน commit</div>
+  <pre><code>git status --short --branch
+git diff --stat
+git diff
+git diff --check
+git add &lt;explicit-paths&gt;
+git diff --cached
+git commit -m "feat(tasks): add task management flow"</code></pre>
+</div>
+<p>
+  ระบุ path ตอน stage เพื่อไม่รวมไฟล์ส่วนตัว/generated artifact ที่ไม่ตั้งใจ
+  และตรวจ author ด้วย <code>git log -1 --format=fuller</code>
+</p>
+
+<h2 id="pre-pr">ก่อนเปิด PR</h2>
+<div class="code-block">
+  <div class="code-label">Recommended chain</div>
+  <pre><code>dart run build_runner build --delete-conflicting-outputs
+dart format --output=none --set-exit-if-changed .
+flutter analyze
+flutter test
+git diff --check
+git status --short</code></pre>
+</div>
+
+<h2 id="exit-codes">อ่าน exit code</h2>
+<p>
+  Exit code 0 หมายถึง command สำเร็จตามสิ่งที่มันตรวจเท่านั้น
+  เช่น <code>flutter analyze</code> ผ่านไม่ได้พิสูจน์ runtime flow และ
+  <code>flutter build</code> ผ่านไม่ได้พิสูจน์ backend หรือ store compliance
+</p>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>copy command โดยไม่รู้ working directory</li>
+  <li>ใช้ latest dependency โดยไม่อ่าน lockfile/API migration</li>
+  <li>รัน full suite อย่างเดียวจน feedback ช้า แทน focused → full</li>
+  <li>ลบ cache หลายชั้นพร้อมกันจนวิเคราะห์สาเหตุไม่ได้</li>
+  <li>ส่ง secret ผ่าน command line ที่ shell history/CI log มองเห็น</li>
+</ul>

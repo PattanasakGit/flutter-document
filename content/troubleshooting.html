@@ -1,0 +1,193 @@
+<h2 id="diagnose-first">Diagnose-first protocol</h2>
+<figure class="diagram flow-diagram" aria-labelledby="diagnose-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">RP</span><span class="rail-copy"><strong>Reproduce</strong><small>exact command + clean condition</small></span></li>
+    <li><span class="rail-node">CP</span><span class="rail-copy"><strong>Capture</strong><small>first error, stack, version, diff</small></span></li>
+    <li><span class="rail-node">CL</span><span class="rail-copy"><strong>Classify</strong><small>toolchain, codegen, compile, runtime, test</small></span></li>
+    <li><span class="rail-node">IS</span><span class="rail-copy"><strong>Isolate</strong><small>smallest failing target</small></span></li>
+    <li><span class="rail-node">FX</span><span class="rail-copy"><strong>Fix + verify</strong><small>root cause, related suite, regression</small></span></li>
+  </ol>
+  <figcaption>เริ่มจาก error แรกที่ actionable ไม่ไล่แก้ error ลูกทั้งหมดพร้อมกัน</figcaption>
+</figure>
+<p class="diagram-description" id="diagnose-title">
+  เก็บ <code>flutter --version</code>, <code>flutter doctor -v</code>,
+  exact command, full first stack และ <code>git diff</code> ก่อนเปลี่ยน state
+</p>
+
+<h2 id="sdk">SDK และ device</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>อาการ</th><th>ตรวจ</th><th>แนวแก้</th></tr></thead>
+    <tbody>
+      <tr><td><code>flutter: command not found</code></td><td><code>which flutter</code>, shell PATH</td><td>เพิ่ม SDK bin ตามวิธีติดตั้งแล้วเปิด terminal ใหม่</td></tr>
+      <tr><td>Flutter/Dart version ไม่ตรง repo</td><td><code>flutter --version</code>, constraints/CI</td><td>ใช้ version manager/channel ที่ทีม pin ไม่สุ่ม upgrade package</td></tr>
+      <tr><td>No devices found</td><td><code>flutter devices</code>, emulator/simulator, USB trust</td><td>เปิด target, accept license/trust, ตรวจ platform toolchain</td></tr>
+      <tr><td>Android licenses</td><td><code>flutter doctor -v</code></td><td>รัน license workflow ของ Android SDK แล้วตรวจซ้ำ</td></tr>
+      <tr><td>Xcode incomplete</td><td><code>xcode-select -p</code>, doctor</td><td>ติดตั้ง components, select Xcode, accept license</td></tr>
+      <tr><td>Web target หาย</td><td><code>flutter config --list</code></td><td>enable web ตาม SDK แล้ว restart IDE</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="pub">Pub และ dependency resolution</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>อาการ</th><th>สาเหตุที่เป็นไปได้</th><th>วิธีตรวจ/แก้</th></tr></thead>
+    <tbody>
+      <tr><td>version solving failed</td><td>constraints ขัดกัน</td><td>อ่าน package chain ใน error, <code>flutter pub deps</code>, ปรับ dependency ที่เป็นเจ้าของ conflict</td></tr>
+      <tr><td>package download fail</td><td>network/proxy/certificate</td><td>ตรวจ network/proxy ก่อนลบ cache</td></tr>
+      <tr><td>lockfile เปลี่ยนมาก</td><td>SDK/command/version constraints เปลี่ยน</td><td>เทียบ SDK และ pubspec; revert เฉพาะถ้าไม่ได้ตั้งใจ</td></tr>
+      <tr><td>API ไม่มีแม้ pub get ผ่าน</td><td>จำ API จากคนละ version</td><td>ดู resolved version และ source/docs ของ version นั้น</td></tr>
+      <tr><td>cache corrupt</td><td>ไฟล์ package ขาด/ checksum issue</td><td>พิสูจน์จาก path/error ก่อนใช้ <code>dart pub cache repair</code></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="codegen">build_runner, Riverpod และ Freezed</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>อาการ</th><th>ตรวจ</th><th>แนวแก้</th></tr></thead>
+    <tbody>
+      <tr><td>Target of URI <code>*.g.dart</code> missing</td><td>part directive/annotation/dev deps</td><td>แก้ source แล้วรัน build_runner</td></tr>
+      <tr><td>Conflicting outputs</td><td>generated file ถูกแก้/ownership เปลี่ยน</td><td>ตรวจ diff แล้วใช้ <code>--delete-conflicting-outputs</code> เมื่อปลอดภัย</td></tr>
+      <tr><td>Provider generated name ไม่พบ</td><td>annotation/signature/part name</td><td>ตรวจ naming และ generator output แรก</td></tr>
+      <tr><td>Freezed constructor/mixin error</td><td>part files หรือ syntax/version mismatch</td><td>เทียบ nearby Freezed model ใน repo และ resolved API</td></tr>
+      <tr><td>Generator loop/stale output</td><td>watch process เก่า/source error</td><td>หยุด watch, แก้ error แรก, one-shot build</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="analyzer">Analyzer และ compiler</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>ข้อความ</th><th>ความหมาย</th><th>แนวแก้</th></tr></thead>
+    <tbody>
+      <tr><td>nullable value used as non-null</td><td>ยังไม่ prove null invariant</td><td>guard/pattern/default; ไม่เติม <code>!</code> อัตโนมัติ</td></tr>
+      <tr><td>switch not exhaustive</td><td>sealed/enum case ไม่ครบ</td><td>จัดการ case ใหม่อย่างตั้งใจ ไม่ใช้ wildcard ซ่อน behavior</td></tr>
+      <tr><td>invalid assignment</td><td>type boundary ผิด</td><td>ตรวจ generic/DTO-domain mapping ไม่ cast เพื่อปิด error</td></tr>
+      <tr><td>unused import/dead code</td><td>refactor ค้างหรือ boundary รั่ว</td><td>ลบ/ปรับ public surface และรัน analyze</td></tr>
+      <tr><td>dependency import lint</td><td>package อยู่ dev/ไม่ได้ประกาศ</td><td>วาง dependency ให้ตรง runtime responsibility</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="layout">Runtime และ layout</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>อาการ</th><th>หา root cause</th><th>แก้ที่หลักการ</th></tr></thead>
+    <tbody>
+      <tr><td>RenderFlex overflow</td><td>Inspector + constraints + text scale</td><td>Flexible/Expanded/wrap/scroll ตาม requirement ไม่ clip ทิ้ง</td></tr>
+      <tr><td>Vertical viewport unbounded</td><td>ListView อยู่ใน Column/scroll ซ้อน</td><td>กำหนด constraint หรือเลือก scroll owner เดียว</td></tr>
+      <tr><td>setState after dispose</td><td>async callback กลับหลัง lifecycle จบ</td><td>cancel/guard mounted หรือย้าย state owner</td></tr>
+      <tr><td>BuildContext after async gap</td><td>widget อาจ unmount ระหว่าง await</td><td>ตรวจ mounted หรือคืน outcome ให้ presentation ปัจจุบันจัดการ</td></tr>
+      <tr><td>Duplicate GlobalKey</td><td>key instance ถูก reuse สองตำแหน่ง</td><td>ใช้ local/stable ValueKey หรือ owner เดียว</td></tr>
+      <tr><td>หน้าจอค้าง loading</td><td>state transition/future completion/error branch</td><td>ทดสอบ loading→data/error และใช้ finally เมื่อจำเป็น</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="riverpod">Riverpod</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>อาการ</th><th>สาเหตุ</th><th>แนวแก้</th></tr></thead>
+    <tbody>
+      <tr><td>No ProviderScope found</td><td>root/test ไม่มี ProviderScope</td><td>ครอบ app/test harness ให้ถูก</td></tr>
+      <tr><td>provider disposed unexpectedly</td><td>autoDispose ไม่มี listener/keep policy</td><td>เลือก lifetime จาก owner ไม่เปิด keepAlive ทุกตัว</td></tr>
+      <tr><td>state ไม่ rebuild</td><td>ใช้ read ตอน render หรือ mutate collection เดิม</td><td>watch ใน build และ emit immutable value ใหม่</td></tr>
+      <tr><td>circular dependency</td><td>providers watch กันเป็นวง</td><td>แยก responsibility/contract และ dependency direction</td></tr>
+      <tr><td>test ใช้ real plugin</td><td>override boundary ไม่ครบ</td><td>override repository/storage provider ก่อนอ่าน graph</td></tr>
+      <tr><td>race จากหลาย mutation</td><td>last completion overwrite state</td><td>serialize/cancel/version request ตาม product policy + test</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="router">GoRouter และ auth</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>อาการ</th><th>ตรวจ</th><th>แนวแก้</th></tr></thead>
+    <tbody>
+      <tr><td>redirect loop</td><td>source/target condition ทุก auth state</td><td>return null เมื่ออยู่ปลายทางถูกต้องและทำ matrix test</td></tr>
+      <tr><td>signed-in ยังอยู่ login</td><td>router refresh ฟัง auth state หรือไม่</td><td>เชื่อม refresh/listenable/provider ตาม pattern repo</td></tr>
+      <tr><td>unknown route bypass auth</td><td>default redirect policy</td><td>default deny เมื่อ signed-out ถ้า threat model กำหนด</td></tr>
+      <tr><td>deep link เปิดหน้าผิด</td><td>URI, base, native association, redirect</td><td>ทดสอบ cold/warm link และ signed-in/out</td></tr>
+      <tr><td>back stack ซ้ำ</td><td>ใช้ go/push ไม่ตรง intent</td><td>go สำหรับ replace location, push สำหรับ stack detail</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="network">Dio และ network</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>อาการ</th><th>ตรวจ</th><th>แนวแก้</th></tr></thead>
+    <tbody>
+      <tr><td>401 ทุก request</td><td>token presence/expiry/header redacted log</td><td>แก้ restore/refresh; ห้าม hard-code token</td></tr>
+      <tr><td>refresh ยิงพร้อมกันหลายครั้ง</td><td>concurrent request timeline</td><td>single-flight refresh + retry จำกัด</td></tr>
+      <tr><td>timeout</td><td>connect/receive, DNS, server latency</td><td>map failure ถูกชนิด; retry เฉพาะปลอดภัย</td></tr>
+      <tr><td>invalid JSON/type cast</td><td>response schema ที่ sanitize แล้ว</td><td>validate DTO boundary และ contract test</td></tr>
+      <tr><td>CORS บน Web</td><td>browser network/response headers</td><td>แก้ server CORS; mobile client setting ไม่แก้ browser policy</td></tr>
+      <tr><td>network log มี secret</td><td>interceptor/logger config</td><td>redact header/body ก่อน output และทดสอบ policy</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="android">Android / Gradle</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>อาการ</th><th>ตรวจ</th><th>แนวแก้</th></tr></thead>
+    <tbody>
+      <tr><td>SDK/compileSdk missing</td><td>Android SDK Manager/local path</td><td>ติดตั้ง version ที่ project ต้องการ</td></tr>
+      <tr><td>Gradle/JDK incompatible</td><td>doctor, Gradle/AGP/JDK matrix ของ repo</td><td>ใช้ JDK ที่ toolchain pin ไม่สุ่มเปลี่ยน AGP</td></tr>
+      <tr><td>Manifest merge failed</td><td>อ่าน blame/source manifests</td><td>แก้ conflicting attribute/placeholder ที่เจ้าของ</td></tr>
+      <tr><td>Signing config missing</td><td>release secret/config</td><td>provision CI/local signing อย่างปลอดภัย</td></tr>
+      <tr><td>minSdk plugin conflict</td><td>plugin requirement + target policy</td><td>ตัดสินใจรองรับ OS/เปลี่ยน plugin อย่างมีผลกระทบ</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="ios">iOS / CocoaPods</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>อาการ</th><th>ตรวจ</th><th>แนวแก้</th></tr></thead>
+    <tbody>
+      <tr><td>Pod install fails</td><td>error แรก, Ruby/CocoaPods, deployment target</td><td>แก้ constraint/tooling ตรงสาเหตุ ก่อน repo update</td></tr>
+      <tr><td>Module/plugin not found</td><td>เปิด workspace, pods generated หรือไม่</td><td><code>pod install</code> แล้วเปิด <code>Runner.xcworkspace</code></td></tr>
+      <tr><td>Signing/provisioning</td><td>bundle id/team/capabilities/profile</td><td>เลือก identity/environment ที่ตรง</td></tr>
+      <tr><td>Permission crash/denied</td><td>Info.plist usage description + capability</td><td>เพิ่มข้อความจริงและทดสอบทุก permission state</td></tr>
+      <tr><td>Simulator ผ่าน device fail</td><td>architecture, entitlement, plugin/device-only API</td><td>ทดสอบ device และ release/profile mode</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="tests">Tests</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>อาการ</th><th>สาเหตุ</th><th>แนวแก้</th></tr></thead>
+    <tbody>
+      <tr><td>pumpAndSettle timeout</td><td>animation/stream/timer ไม่สิ้นสุด</td><td>pump ระยะที่คาดหรือควบคุม scheduler</td></tr>
+      <tr><td>test ผ่านเดี่ยวแต่ fail รวม</td><td>global state/time/file/plugin leak</td><td>tearDown/dispose และ isolate ownership</td></tr>
+      <tr><td>flaky async test</td><td>ใช้ delay จริง/ไม่ await state</td><td>fake clock/completer/listen state อย่าง deterministic</td></tr>
+      <tr><td>golden ต่างทุกเครื่อง</td><td>font/platform/render variance</td><td>pin font/surface/config และ review baseline</td></tr>
+      <tr><td>MissingPluginException</td><td>unit/widget test เรียก plugin จริง</td><td>override adapter หรือ initialize test channel เฉพาะ contract test</td></tr>
+      <tr><td>Finder พบหลาย widget</td><td>query กว้าง/duplicate semantics</td><td>ใช้ role/label/key ที่สื่อ behavior และแก้ UX ambiguity</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="escalation">ข้อมูลที่ควรแนบเมื่อขอความช่วยเหลือ</h2>
+<ul>
+  <li>expected vs actual และขั้นตอน reproduce ขั้นต่ำ</li>
+  <li>exact command + first actionable error/stack trace</li>
+  <li>Flutter/Dart/platform/tool versions</li>
+  <li>sanitized relevant code/diff และ test ที่ fail</li>
+  <li>สิ่งที่ลองแล้วพร้อมผล ไม่ใช่เพียงรายการคำสั่ง</li>
+  <li>ห้ามแนบ token, key, personal payload หรือ unredacted logs</li>
+</ul>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>แก้ error 20 บรรทัดท้ายแทน error แรกที่เป็นสาเหตุ</li>
+  <li>upgrade SDK/packages ทั้งหมดเพื่อแก้ปัญหาเฉพาะจุด</li>
+  <li>ลบ lockfile/build/cache/pods พร้อมกันโดยไม่เก็บหลักฐาน</li>
+  <li>ซ่อน error ด้วย cast, <code>!</code>, catch เปล่า หรือ ignore lint</li>
+  <li>หยุดเมื่อ focused test ผ่านโดยไม่รัน related/full verification</li>
+</ul>

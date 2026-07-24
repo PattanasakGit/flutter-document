@@ -1,0 +1,318 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="สร้าง deterministic in-memory datasource และแปลง external record ผ่าน repository boundary">
+  <title>Capstone: Offline Datasource และ Repository — Flutter Field Guide</title>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script defer src="../assets/js/site.js"></script>
+  <script defer src="../assets/js/catalog.js"></script>
+</head>
+<body data-root="../">
+  <a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
+  <noscript><p class="noscript-note">เนื้อหาทั้งหมดยังอ่านได้ แต่ search, theme, quiz และ progress ต้องเปิด JavaScript</p></noscript>
+  <div class="site-shell">
+    <aside class="sidebar" aria-label="เมนูหลักสูตร">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
+        <span><strong>Flutter Field Guide</strong><small>Web → Mobile</small></span>
+      </a>
+      <div class="sidebar-tools">
+        <button class="search-trigger" type="button" data-search-trigger>ค้นหาบทเรียน <kbd>/</kbd></button>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </div>
+      <div class="course-progress">
+        <div class="progress-meta"><span>ความคืบหน้า</span><strong data-progress-count>0 / 28</strong></div>
+        <div class="progress-track" aria-hidden="true"><div class="progress-value" data-progress-value></div></div>
+      </div>
+      <p class="nav-heading">A · Orientation & Setup</p>
+<nav class="course-nav">
+<a href="../chapters/01-orientation.html"><span class="nav-index">01</span>เริ่มใช้คู่มือและตั้งเป้าหมายระบบ</a>
+<a href="../chapters/02-react-to-flutter.html"><span class="nav-index">02</span>แผนที่ความคิดจาก React และ Next.js สู่ Flutter</a>
+<a href="../chapters/03-macos-toolchain.html"><span class="nav-index">03</span>ติดตั้ง Flutter toolchain บน macOS และ VS Code</a>
+<a href="../chapters/04-clone-and-run.html"><span class="nav-index">04</span>Clone, Generate, Run และตรวจ Boilerplate</a>
+</nav>
+<p class="nav-heading">B · Dart for TypeScript</p>
+<nav class="course-nav">
+<a href="../chapters/05-dart-types.html"><span class="nav-index">05</span>Dart Types และโครงสร้างโปรแกรมสำหรับ TypeScript Developer</a>
+<a href="../chapters/06-null-collections-patterns.html"><span class="nav-index">06</span>Null Safety, Collections และ Pattern Matching</a>
+<a href="../chapters/07-functions-classes-generics.html"><span class="nav-index">07</span>Functions, Classes, Immutability และ Generics</a>
+<a href="../chapters/08-async-errors-results.html"><span class="nav-index">08</span>Future, Stream, Exception และ Typed Result</a>
+</nav>
+<p class="nav-heading">C · Flutter Fundamentals</p>
+<nav class="course-nav">
+<a href="../chapters/09-widget-runtime.html"><span class="nav-index">09</span>Widget, Element, RenderObject และ BuildContext</a>
+<a href="../chapters/10-layout-theme-forms.html"><span class="nav-index">10</span>Constraints, Responsive Layout, Theme และ Form</a>
+<a href="../chapters/11-state-lifecycle.html"><span class="nav-index">11</span>State Ownership และ Lifecycle</a>
+</nav>
+<p class="nav-heading">D · Boilerplate Architecture</p>
+<nav class="course-nav">
+<a href="../chapters/12-boilerplate-map.html"><span class="nav-index">12</span>แผนที่ AI-first Flutter Boilerplate</a>
+<a href="../chapters/13-riverpod.html"><span class="nav-index">13</span>Riverpod: State Graph และ Dependency Injection</a>
+<a href="../chapters/14-go-router.html"><span class="nav-index">14</span>GoRouter, Redirect และ Authentication Guard</a>
+<a href="../chapters/15-network-storage-errors.html"><span class="nav-index">15</span>Dio, DTO, Repository, Failure และ Secure Storage</a>
+</nav>
+<p class="nav-heading">E · Task Management</p>
+<nav class="course-nav">
+<a href="../chapters/16-task-domain.html"><span class="nav-index">16</span>Capstone: Model Task Domain ด้วย Test-first</a>
+<a href="../chapters/17-offline-repository.html" aria-current="page"><span class="nav-index">17</span>Capstone: Offline Datasource และ Repository</a>
+<a href="../chapters/18-task-riverpod.html"><span class="nav-index">18</span>Capstone: Task State และ Filter ด้วย Riverpod</a>
+<a href="../chapters/19-task-form.html"><span class="nav-index">19</span>Capstone: Create/Edit Form และ Validation</a>
+<a href="../chapters/20-task-mutations.html"><span class="nav-index">20</span>Capstone: Toggle, Update, Delete และ Feedback</a>
+<a href="../chapters/21-dio-datasource.html"><span class="nav-index">21</span>Capstone: Real-API-ready Dio Datasource</a>
+<a href="../chapters/22-capstone-integration.html"><span class="nav-index">22</span>Capstone: Route, Shell และ End-to-end Flow</a>
+</nav>
+<p class="nav-heading">F · Quality & Delivery</p>
+<nav class="course-nav">
+<a href="../chapters/23-testing.html"><span class="nav-index">23</span>Test Strategy: Unit ถึง Integration</a>
+<a href="../chapters/24-debug-performance.html"><span class="nav-index">24</span>Debugging, DevTools และ Performance</a>
+<a href="../chapters/25-production-concerns.html"><span class="nav-index">25</span>Environment, Security, Accessibility และ Localization</a>
+<a href="../chapters/26-build-release.html"><span class="nav-index">26</span>Build Android, iOS และ Web</a>
+<a href="../chapters/27-production-checklist.html"><span class="nav-index">27</span>Production Readiness และ Next-system Checklist</a>
+<a href="../chapters/28-ai-workflow.html"><span class="nav-index">28</span>ใช้ AI พัฒนา Flutter อย่างมีขอบเขตและหลักฐาน</a>
+</nav>
+<p class="nav-heading">Reference</p>
+<nav class="course-nav">
+<a href="../reference/commands.html"><span class="nav-index">R</span>Command Cookbook</a>
+<a href="../reference/glossary.html"><span class="nav-index">R</span>React/Next.js ↔ Flutter Glossary</a>
+<a href="../reference/architecture-decisions.html"><span class="nav-index">R</span>Architecture Decision Matrix</a>
+<a href="../reference/troubleshooting.html"><span class="nav-index">R</span>Troubleshooting Catalog</a>
+</nav>
+
+      <div class="sidebar-footer"><p>Offline-first · ภาษาไทย · Flutter 3.44</p></div>
+    </aside>
+    <div class="site-main">
+      <header class="mobile-bar">
+        <button class="nav-trigger" type="button" data-nav-trigger aria-expanded="false">เมนู</button>
+        <strong>17 · Capstone: Offline Datasource และ Repository</strong>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </header>
+      <main id="main-content" class="lesson-wrap">
+        <article class="lesson">
+          <header class="lesson-header">
+            <p class="lesson-kicker">E · Task Management · บทที่ 17</p>
+            <h1>Capstone: Offline Datasource และ Repository</h1>
+            <p class="hero-lead">สร้าง deterministic in-memory datasource และแปลง external record ผ่าน repository boundary</p>
+            <div class="lesson-meta">
+              <span>เวลาอ่าน 70 นาที</span>
+              <span>ระดับ กลาง</span>
+              <span>in-memory datasource repository mapping offline deterministic</span>
+            </div>
+          </header>
+          <h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>สร้าง runnable app ที่ไม่พึ่ง network</li>
+  <li>แยก datasource record จาก domain entity</li>
+  <li>ให้ repository เป็น mapping/failure boundary</li>
+  <li>ทดสอบ create/update/toggle/delete แบบ deterministic</li>
+</ul>
+
+<h2 id="why-offline">เหตุใด onboarding ใช้ Offline-first</h2>
+<p>
+  Public API เปลี่ยน, rate-limit หรือ offline ได้ ทำให้ผู้เรียนสับสนระหว่าง
+  architecture bug กับบริการภายนอก In-memory datasource ให้ feedback loop
+  แน่นอนและทำให้ test ทุกเครื่องได้ผลเดียวกัน
+</p>
+
+<h2 id="record">Datasource record</h2>
+<div class="code-block">
+  <div class="code-label">data/datasources/task_local_datasource.dart</div>
+  <pre><code>final class TaskRecord {
+  const TaskRecord({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.completed,
+    required this.createdAtIso,
+  });
+
+  final String id;
+  final String title;
+  final String description;
+  final bool completed;
+  final String createdAtIso;
+}</code></pre>
+</div>
+<p>
+  แม้ in-memory record คล้าย entity เรายังแยกเพื่อแสดง boundary และเตรียม
+  เปลี่ยน record เป็น database/JSON ได้โดย Domain ไม่เปลี่ยน
+</p>
+
+<h2 id="datasource">InMemory datasource</h2>
+<div class="code-block">
+  <div class="code-label">Deterministic implementation</div>
+  <pre><code>final class InMemoryTaskDatasource {
+  InMemoryTaskDatasource({
+    List&lt;TaskRecord&gt; seed = const [],
+  }) : _records = [...seed];
+
+  final List&lt;TaskRecord&gt; _records;
+
+  Future&lt;List&lt;TaskRecord&gt;&gt; readAll() async {
+    return List.unmodifiable(_records);
+  }
+
+  Future&lt;TaskRecord&gt; upsert(TaskRecord record) async {
+    final index = _records.indexWhere((item) =&gt; item.id == record.id);
+    if (index == -1) {
+      _records.add(record);
+    } else {
+      _records[index] = record;
+    }
+    return record;
+  }
+}</code></pre>
+</div>
+<p>
+  คืน unmodifiable snapshot ป้องกัน repository/caller mutate source โดยไม่ผ่าน
+  datasource method การ inject seed ทำให้ test สร้าง scenario ได้ชัด
+</p>
+
+<h2 id="ids-clock">Inject ID และ Clock</h2>
+<div class="code-block">
+  <div class="code-label">Deterministic dependencies</div>
+  <pre><code>typedef IdGenerator = String Function();
+typedef Clock = DateTime Function();
+
+TaskRepositoryImpl(
+  datasource,
+  idGenerator: () =&gt; 'task-test-1',
+  clock: () =&gt; DateTime(2026, 7, 24),
+);</code></pre>
+</div>
+<p>
+  ถ้า repository เรียก current time/random id โดยตรง test ต้องเดาผล
+  การ inject function เล็กทำให้ production ใช้ของจริงและ test ใช้ค่าคงที่
+</p>
+
+<h2 id="mapping">Repository mapping</h2>
+<div class="code-block">
+  <div class="code-label">TaskRepositoryImpl</div>
+  <pre><code>Task _toEntity(TaskRecord record) {
+  return Task.restore(
+    id: record.id,
+    title: record.title,
+    description: record.description,
+    isCompleted: record.completed,
+    createdAt: DateTime.parse(record.createdAtIso),
+  );
+}
+
+TaskRecord _toRecord(Task task) {
+  return TaskRecord(
+    id: task.id,
+    title: task.title,
+    description: task.description,
+    completed: task.isCompleted,
+    createdAtIso: task.createdAt.toIso8601String(),
+  );
+}</code></pre>
+</div>
+
+<h2 id="failure">Missing ID เป็น typed failure</h2>
+<div class="code-block">
+  <div class="code-label">Toggle policy</div>
+  <pre><code>final record = await _datasource.readById(id);
+if (record == null) {
+  return const Error(
+    NotFoundFailure(message: 'ไม่พบงานที่ต้องการเปลี่ยน'),
+  );
+}
+
+final task = _toEntity(record).toggle();
+await _datasource.upsert(_toRecord(task));
+return Success(task);</code></pre>
+</div>
+
+<h2 id="tests">Repository behavior tests</h2>
+<ul>
+  <li>read คืน seed ตามลำดับและ caller แก้ list ไม่ได้</li>
+  <li>create trim/validate ผ่าน domain path และใช้ injected id/time</li>
+  <li>update รักษา id/createdAt</li>
+  <li>toggle task ที่ไม่มีคืน NotFoundFailure</li>
+  <li>delete แล้ว read ไม่พบ</li>
+  <li>datasource exception ถูก map เป็น UnknownFailure โดยไม่เปิด internal message ให้ UI</li>
+</ul>
+
+<h2 id="providers">Compose ใน provider</h2>
+<div class="code-block">
+  <div class="code-label">tasks_providers.dart</div>
+  <pre><code>@riverpod
+InMemoryTaskDatasource taskLocalDatasource(Ref ref) {
+  return InMemoryTaskDatasource(seed: TaskSeed.defaults);
+}
+
+@riverpod
+TaskRepository taskRepository(Ref ref) {
+  return TaskRepositoryImpl(
+    ref.watch(taskLocalDatasourceProvider),
+  );
+}</code></pre>
+</div>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>เรียก DateTime.now/random ใน test path โดย inject ไม่ได้</li>
+  <li>คืน internal mutable list</li>
+  <li>ให้ datasource คืน Result ซึ่งเป็น application concern ทุก implementation</li>
+  <li>เขียน repository เป็น pass-through จนไม่มี mapping/policy</li>
+  <li>ทำ offline datasource เป็น global singleton นอก provider lifecycle</li>
+</ul>
+
+          <section class="checkpoint" id="checkpoint">
+  <h2>Checkpoint ก่อนเดินต่อ</h2>
+  <ol>
+    <li>อธิบายหัวข้อนี้ด้วยภาษาของตนเองโดยไม่เปิดคู่มือ</li>
+    <li>ชี้ไฟล์หรือคำสั่งใน Boilerplate ที่สัมพันธ์กับบทนี้ได้</li>
+    <li>รันตัวอย่างหรือ verification ที่บทกำหนดและอ่านผลลัพธ์ได้</li>
+  </ol>
+</section>
+<section class="quiz" id="quiz">
+  <h2>Quiz ตรวจ mental model</h2>
+  <p><strong>เหตุใด UI ไม่ควรเรียก datasource โดยตรง?</strong></p>
+  <div class="quiz-options"><button class="quiz-option" type="button" data-correct="false">เพราะ Dart ห้าม import</button><button class="quiz-option" type="button" data-correct="true">เพราะจะผูก UI กับรูปแบบ I/O และทำให้เปลี่ยน/test ยาก</button><button class="quiz-option" type="button" data-correct="false">เพราะ datasource เร็วเกินไป</button></div>
+  <p class="quiz-feedback" aria-live="polite"></p>
+</section>
+<section class="exercise" id="practice">
+  <h2>Practice</h2>
+  <p>เพิ่ม failure สำหรับ task id ที่ไม่มีอยู่และยืนยันว่า repository คืน typed Result</p>
+  <p><strong>Definition of done:</strong> อธิบายเหตุผลของ design, แสดงผลลัพธ์ที่รันจริง และไม่มี warning ที่ถูกมองข้าม</p>
+</section>
+
+          <nav class="chapter-pagination" aria-label="เปลี่ยนบทเรียน">
+            <a href="../chapters/16-task-domain.html">ก่อนหน้า<br><strong>Capstone: Model Task Domain ด้วย Test-first</strong></a>
+            <a href="../chapters/18-task-riverpod.html">บทถัดไป<br><strong>Capstone: Task State และ Filter ด้วย Riverpod</strong></a>
+          </nav>
+        </article>
+        <aside class="lesson-toc" aria-label="สารบัญบท">
+          <strong>ในบทนี้</strong>
+          <a href="#objectives">เป้าหมายของบท</a>
+<a href="#why-offline">เหตุใด onboarding ใช้ Offline-first</a>
+<a href="#record">Datasource record</a>
+<a href="#datasource">InMemory datasource</a>
+<a href="#ids-clock">Inject ID และ Clock</a>
+<a href="#mapping">Repository mapping</a>
+<a href="#failure">Missing ID เป็น typed failure</a>
+<a href="#tests">Repository behavior tests</a>
+<a href="#providers">Compose ใน provider</a>
+<a href="#mistakes">ข้อผิดพลาดที่พบบ่อย</a>
+<a href="#checkpoint">Checkpoint</a>
+<a href="#quiz">Quiz</a>
+<a href="#practice">Practice</a>
+          <button class="chapter-complete" type="button" data-current-chapter="17-offline-repository" aria-pressed="false">
+            ทำเครื่องหมายว่าเรียนจบบทนี้
+          </button>
+        </aside>
+      </main>
+    </div>
+  </div>
+  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
+    <div class="search-head">
+      <label><span id="search-title" class="visually-hidden">ค้นหาคู่มือ</span><input id="search-input" type="search" placeholder="ค้นหา Dart, Riverpod, routing, build…" autocomplete="off"></label>
+      <button class="search-close" type="button" data-search-close>ปิด</button>
+    </div>
+    <div class="search-results" id="search-results" aria-live="polite"></div>
+  </dialog>
+</body>
+</html>

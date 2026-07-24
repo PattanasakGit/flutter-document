@@ -1,0 +1,165 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>เพิ่ม remote datasource โดยไม่เปลี่ยน Domain/UI</li>
+  <li>ออกแบบ request/response DTO และ checked decoding</li>
+  <li>mock HTTP boundary ใน contract test</li>
+  <li>แยก runnable offline composition จาก production transport example</li>
+</ul>
+
+<h2 id="contract">สมมติ API contract</h2>
+<div class="code-block">
+  <div class="code-label">Response shape</div>
+  <pre><code>{
+  "data": [
+    {
+      "id": "task-1",
+      "title": "Learn Dart",
+      "description": "Practice records",
+      "completed": false,
+      "created_at": "2026-07-24T10:00:00Z"
+    }
+  ]
+}</code></pre>
+</div>
+<p>
+  JSON เป็น untrusted input แม้ backend ทีมเดียวกัน ต้องทดสอบ missing key,
+  wrong type, null และ invalid date ไม่ใช้ <code>as</code> กระจายโดยไม่มี
+  mapping policy
+</p>
+
+<h2 id="dto">DTO และ JSON mapping</h2>
+<div class="code-block">
+  <div class="code-label">task_dto.dart</div>
+  <pre><code>@freezed
+sealed class TaskDto with _$TaskDto {
+  const factory TaskDto({
+    required String id,
+    required String title,
+    @Default('') String description,
+    required bool completed,
+    @JsonKey(name: 'created_at') required DateTime createdAt,
+  }) = _TaskDto;
+
+  factory TaskDto.fromJson(Map&lt;String, Object?&gt; json) =&gt;
+      _$TaskDtoFromJson(json);
+}</code></pre>
+</div>
+
+<h2 id="datasource">Remote datasource</h2>
+<div class="code-block">
+  <div class="code-label">TaskRemoteDatasource</div>
+  <pre><code>final class TaskRemoteDatasource {
+  const TaskRemoteDatasource(this._client);
+  final ApiClient _client;
+
+  Future&lt;List&lt;TaskDto&gt;&gt; readAll() {
+    return _client.get(
+      '/tasks',
+      decode: (data) {
+        final root = data as Map&lt;String, Object?&gt;;
+        final items = root['data'] as List&lt;Object?&gt;;
+        return items
+            .map((item) =&gt; TaskDto.fromJson(
+                  item as Map&lt;String, Object?&gt;,
+                ))
+            .toList(growable: false);
+      },
+    );
+  }
+}</code></pre>
+</div>
+
+<div class="callout callout-warning">
+  <strong>Cast error ต้องถูกจำแนก</strong>
+  code ตัวอย่างชี้ตำแหน่ง decode แต่ production implementation ต้องจับ
+  <code>CheckedFromJsonException</code>, <code>TypeError</code> หรือ format error
+  ที่ boundary แล้ว map เป็น schema-specific AppException พร้อม diagnostic
+</div>
+
+<h2 id="request">Create request DTO</h2>
+<div class="code-block">
+  <div class="code-label">Request body</div>
+  <pre><code>@freezed
+sealed class CreateTaskRequest with _$CreateTaskRequest {
+  const factory CreateTaskRequest({
+    required String title,
+    required String description,
+  }) = _CreateTaskRequest;
+
+  factory CreateTaskRequest.fromJson(Map&lt;String, Object?&gt; json) =&gt;
+      _$CreateTaskRequestFromJson(json);
+}</code></pre>
+</div>
+<p>
+  Request DTO แยกจาก Task entity เพื่อไม่ส่ง internal fields เช่น
+  local createdAt/completion policy โดยไม่ตั้งใจ
+</p>
+
+<h2 id="contract-tests">HTTP contract tests</h2>
+<div class="code-block">
+  <div class="code-label">Fake adapter test</div>
+  <pre><code>test('decodes a valid task list', () async {
+  adapter.replyJson('/tasks', {
+    'data': [
+      {
+        'id': 'task-1',
+        'title': 'Learn Dart',
+        'completed': false,
+        'created_at': '2026-07-24T10:00:00Z',
+      },
+    ],
+  });
+
+  final tasks = await datasource.readAll();
+  expect(tasks.single.id, 'task-1');
+});
+
+test('maps malformed payload to schema exception', () async {
+  adapter.replyJson('/tasks', {'data': [{'id': 42}]});
+
+  expect(
+    datasource.readAll,
+    throwsA(isA&lt;SchemaAppException&gt;()),
+  );
+});</code></pre>
+</div>
+
+<h2 id="composition">เลือก implementation ตาม environment</h2>
+<div class="code-block">
+  <div class="code-label">Fail-closed composition</div>
+  <pre><code>TaskRepository taskRepository(Ref ref) {
+  final config = ref.watch(appConfigProvider);
+  return switch (config.environment) {
+    AppEnvironment.development =&gt; TaskRepositoryImpl(
+        ref.watch(taskLocalDatasourceProvider),
+      ),
+    AppEnvironment.staging ||
+    AppEnvironment.production =&gt; RemoteTaskRepository(
+        ref.watch(taskRemoteDatasourceProvider),
+      ),
+  };
+}</code></pre>
+</div>
+<p>
+  ถ้า remote implementation/config ไม่พร้อม Production ควร fail bootstrap
+  ไม่ fallback ไป fake/local แล้วแสดง label Production
+</p>
+
+<h2 id="security">Transport security checklist</h2>
+<ul>
+  <li>HTTPS และ certificate policy</li>
+  <li>timeout แยก connect/send/receive</li>
+  <li>auth header injection จาก session abstraction</li>
+  <li>redact token/password/body ใน logs</li>
+  <li>401 refresh queue ป้องกันหลาย request refresh พร้อมกัน</li>
+  <li>schema/version compatibility และ observability</li>
+</ul>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>ใช้ public API เป็น dependency ของ onboarding/test ทั้งหมด</li>
+  <li>map JSON ใน Widget</li>
+  <li>catch เฉพาะ DioException แล้วปล่อย schema error raw</li>
+  <li>ส่ง Entity.toJson เป็น request ทุก endpoint</li>
+  <li>fallback Production ไป fake datasource เมื่อ config ขาด</li>
+</ul>

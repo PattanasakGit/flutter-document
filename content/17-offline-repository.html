@@ -1,0 +1,159 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>สร้าง runnable app ที่ไม่พึ่ง network</li>
+  <li>แยก datasource record จาก domain entity</li>
+  <li>ให้ repository เป็น mapping/failure boundary</li>
+  <li>ทดสอบ create/update/toggle/delete แบบ deterministic</li>
+</ul>
+
+<h2 id="why-offline">เหตุใด onboarding ใช้ Offline-first</h2>
+<p>
+  Public API เปลี่ยน, rate-limit หรือ offline ได้ ทำให้ผู้เรียนสับสนระหว่าง
+  architecture bug กับบริการภายนอก In-memory datasource ให้ feedback loop
+  แน่นอนและทำให้ test ทุกเครื่องได้ผลเดียวกัน
+</p>
+
+<h2 id="record">Datasource record</h2>
+<div class="code-block">
+  <div class="code-label">data/datasources/task_local_datasource.dart</div>
+  <pre><code>final class TaskRecord {
+  const TaskRecord({
+    required this.id,
+    required this.title,
+    required this.description,
+    required this.completed,
+    required this.createdAtIso,
+  });
+
+  final String id;
+  final String title;
+  final String description;
+  final bool completed;
+  final String createdAtIso;
+}</code></pre>
+</div>
+<p>
+  แม้ in-memory record คล้าย entity เรายังแยกเพื่อแสดง boundary และเตรียม
+  เปลี่ยน record เป็น database/JSON ได้โดย Domain ไม่เปลี่ยน
+</p>
+
+<h2 id="datasource">InMemory datasource</h2>
+<div class="code-block">
+  <div class="code-label">Deterministic implementation</div>
+  <pre><code>final class InMemoryTaskDatasource {
+  InMemoryTaskDatasource({
+    List&lt;TaskRecord&gt; seed = const [],
+  }) : _records = [...seed];
+
+  final List&lt;TaskRecord&gt; _records;
+
+  Future&lt;List&lt;TaskRecord&gt;&gt; readAll() async {
+    return List.unmodifiable(_records);
+  }
+
+  Future&lt;TaskRecord&gt; upsert(TaskRecord record) async {
+    final index = _records.indexWhere((item) =&gt; item.id == record.id);
+    if (index == -1) {
+      _records.add(record);
+    } else {
+      _records[index] = record;
+    }
+    return record;
+  }
+}</code></pre>
+</div>
+<p>
+  คืน unmodifiable snapshot ป้องกัน repository/caller mutate source โดยไม่ผ่าน
+  datasource method การ inject seed ทำให้ test สร้าง scenario ได้ชัด
+</p>
+
+<h2 id="ids-clock">Inject ID และ Clock</h2>
+<div class="code-block">
+  <div class="code-label">Deterministic dependencies</div>
+  <pre><code>typedef IdGenerator = String Function();
+typedef Clock = DateTime Function();
+
+TaskRepositoryImpl(
+  datasource,
+  idGenerator: () =&gt; 'task-test-1',
+  clock: () =&gt; DateTime(2026, 7, 24),
+);</code></pre>
+</div>
+<p>
+  ถ้า repository เรียก current time/random id โดยตรง test ต้องเดาผล
+  การ inject function เล็กทำให้ production ใช้ของจริงและ test ใช้ค่าคงที่
+</p>
+
+<h2 id="mapping">Repository mapping</h2>
+<div class="code-block">
+  <div class="code-label">TaskRepositoryImpl</div>
+  <pre><code>Task _toEntity(TaskRecord record) {
+  return Task.restore(
+    id: record.id,
+    title: record.title,
+    description: record.description,
+    isCompleted: record.completed,
+    createdAt: DateTime.parse(record.createdAtIso),
+  );
+}
+
+TaskRecord _toRecord(Task task) {
+  return TaskRecord(
+    id: task.id,
+    title: task.title,
+    description: task.description,
+    completed: task.isCompleted,
+    createdAtIso: task.createdAt.toIso8601String(),
+  );
+}</code></pre>
+</div>
+
+<h2 id="failure">Missing ID เป็น typed failure</h2>
+<div class="code-block">
+  <div class="code-label">Toggle policy</div>
+  <pre><code>final record = await _datasource.readById(id);
+if (record == null) {
+  return const Error(
+    NotFoundFailure(message: 'ไม่พบงานที่ต้องการเปลี่ยน'),
+  );
+}
+
+final task = _toEntity(record).toggle();
+await _datasource.upsert(_toRecord(task));
+return Success(task);</code></pre>
+</div>
+
+<h2 id="tests">Repository behavior tests</h2>
+<ul>
+  <li>read คืน seed ตามลำดับและ caller แก้ list ไม่ได้</li>
+  <li>create trim/validate ผ่าน domain path และใช้ injected id/time</li>
+  <li>update รักษา id/createdAt</li>
+  <li>toggle task ที่ไม่มีคืน NotFoundFailure</li>
+  <li>delete แล้ว read ไม่พบ</li>
+  <li>datasource exception ถูก map เป็น UnknownFailure โดยไม่เปิด internal message ให้ UI</li>
+</ul>
+
+<h2 id="providers">Compose ใน provider</h2>
+<div class="code-block">
+  <div class="code-label">tasks_providers.dart</div>
+  <pre><code>@riverpod
+InMemoryTaskDatasource taskLocalDatasource(Ref ref) {
+  return InMemoryTaskDatasource(seed: TaskSeed.defaults);
+}
+
+@riverpod
+TaskRepository taskRepository(Ref ref) {
+  return TaskRepositoryImpl(
+    ref.watch(taskLocalDatasourceProvider),
+  );
+}</code></pre>
+</div>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>เรียก DateTime.now/random ใน test path โดย inject ไม่ได้</li>
+  <li>คืน internal mutable list</li>
+  <li>ให้ datasource คืน Result ซึ่งเป็น application concern ทุก implementation</li>
+  <li>เขียน repository เป็น pass-through จนไม่มี mapping/policy</li>
+  <li>ทำ offline datasource เป็น global singleton นอก provider lifecycle</li>
+</ul>

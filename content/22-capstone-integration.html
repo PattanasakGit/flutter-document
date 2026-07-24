@@ -1,0 +1,116 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>เปิด Tasks ผ่าน public feature surface</li>
+  <li>เพิ่ม route โดยไม่ทำลาย authentication guard</li>
+  <li>เชื่อม Home action และ deep link</li>
+  <li>รัน feature tests และ smoke flow ครบ</li>
+</ul>
+
+<h2 id="public-api">Feature public surface</h2>
+<div class="code-block">
+  <div class="code-label">lib/features/tasks/tasks.dart</div>
+  <pre><code>export 'presentation/pages/task_list_page.dart'
+    show TaskListPage;</code></pre>
+</div>
+<p>
+  Router ต้องรู้เพียง page ที่เปิดได้ ไม่ต้อง import datasource, DTO,
+  controller implementation หรือ generated providers ทั้งหมด
+</p>
+
+<h2 id="route">เพิ่ม route</h2>
+<div class="code-block">
+  <div class="code-label">app_router.dart</div>
+  <pre><code>GoRoute(
+  path: AppRoutes.tasks,
+  name: 'tasks',
+  builder: (context, state) =&gt; const TaskListPage(),
+),</code></pre>
+</div>
+<p>
+  guard เดิม default deny signed-out route จึงปกป้อง <code>/tasks</code>
+  โดยไม่เพิ่ม condition ต่อ route แต่ต้องมี test พิสูจน์ policy
+</p>
+
+<h2 id="home">Home entry point</h2>
+<div class="code-block">
+  <div class="code-label">Home action</div>
+  <pre><code>AppButton(
+  label: 'Open task manager',
+  onPressed: () =&gt; context.go(AppRoutes.tasks),
+)</code></pre>
+</div>
+<p>
+  ใช้ชื่อ action ที่บอกผลลัพธ์ ไม่ใช้ “Click here” และรักษา minimum touch
+  target/keyboard semantics จาก shared button
+</p>
+
+<h2 id="flow">End-to-end capstone flow</h2>
+<figure class="diagram flow-diagram" aria-labelledby="capstone-flow-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">LG</span><span class="rail-copy"><strong>Fake login</strong><small>demo@example.com</small></span></li>
+    <li><span class="rail-node">HM</span><span class="rail-copy"><strong>Home</strong><small>authenticated shell</small></span></li>
+    <li><span class="rail-node">RT</span><span class="rail-copy"><strong>/tasks</strong><small>guard allows session</small></span></li>
+    <li><span class="rail-node">LD</span><span class="rail-copy"><strong>Load</strong><small>offline repository seed</small></span></li>
+    <li><span class="rail-node">CR</span><span class="rail-copy"><strong>CRUD</strong><small>create, edit, toggle, delete</small></span></li>
+    <li><span class="rail-node">SO</span><span class="rail-copy"><strong>Sign out</strong><small>guard returns login</small></span></li>
+  </ol>
+  <figcaption>Capstone ใช้ Authentication reference เดิมและเพิ่ม Tasks โดยไม่ข้าม boundary</figcaption>
+</figure>
+<p class="diagram-description" id="capstone-flow-title">
+  Flow นี้เป็น demo integration ไม่ใช่ production session เพราะ user restore,
+  token expiry/refresh และ real authentication datasource ยังเป็น production gap
+</p>
+
+<h2 id="route-tests">Route tests</h2>
+<div class="code-block">
+  <div class="code-label">Signed-out and signed-in</div>
+  <pre><code>testWidgets('redirects signed-out tasks route to login', (tester) async {
+  await tester.pumpWidget(buildTestApp(user: null));
+  router.go('/tasks');
+  await tester.pumpAndSettle();
+  expect(find.byType(LoginPage), findsOneWidget);
+});
+
+testWidgets('renders tasks for an authenticated user', (tester) async {
+  await tester.pumpWidget(buildTestApp(user: TestData.user));
+  router.go('/tasks');
+  await tester.pumpAndSettle();
+  expect(find.byType(TaskListPage), findsOneWidget);
+});</code></pre>
+</div>
+
+<h2 id="verification">Verification ladder</h2>
+<div class="code-block">
+  <div class="code-label">จากเร็วไปกว้าง</div>
+  <pre><code>flutter test test/features/tasks/domain
+flutter test test/features/tasks/application
+flutter test test/features/tasks/data
+flutter test test/features/tasks/presentation
+flutter test test/app/router
+flutter analyze
+flutter test</code></pre>
+</div>
+<p>
+  เมื่อ focused test fail แก้จุดนั้นก่อนรันทั้งหมด หลังทั้งหมดผ่านจึง build
+  target จริงเพื่อจับ platform/compiler issue
+</p>
+
+<h2 id="manual-smoke">Manual smoke checklist</h2>
+<ol>
+  <li>cold start แสดง Login</li>
+  <li>invalid form ไม่เรียก repository</li>
+  <li>demo login ไป Home</li>
+  <li>เปิด Tasks และเห็น seed 3 รายการ</li>
+  <li>filter/create/edit/toggle/delete ทำงาน</li>
+  <li>large text และ narrow viewport ไม่ overflow</li>
+  <li>sign out จาก Home แล้ว /tasks ถูก guard</li>
+</ol>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>Router import internal provider/data files ของ Tasks</li>
+  <li>เพิ่ม route แต่ไม่ทดสอบ signed-out</li>
+  <li>ใช้ navigation เป็น business outcome ใน use case</li>
+  <li>ถือว่า widget tests แทน cold-start/plugin integration</li>
+  <li>เรียก demo flow ว่า production-ready</li>
+</ul>

@@ -1,0 +1,163 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>แปลง requirement เป็น invariant และ domain type</li>
+  <li>เขียน failing tests ก่อน entity/use case</li>
+  <li>ออกแบบ repository contract โดยไม่รู้ datasource implementation</li>
+  <li>แยก UI validation feedback จาก domain rule</li>
+</ul>
+
+<h2 id="requirements">Requirement ของ Task</h2>
+<ul>
+  <li>Task มี id, title, description, completion และ createdAt</li>
+  <li>title หลัง trim ต้องไม่ว่างและไม่เกิน 120 ตัวอักษร</li>
+  <li>description ไม่เกิน 500 ตัวอักษร</li>
+  <li>การแก้ไขต้องไม่เปลี่ยน id/createdAt</li>
+  <li>filter มี all, open และ completed</li>
+</ul>
+
+<div class="callout callout-bridge">
+  <strong>จาก TypeScript interface</strong>
+  interface บอก shape ได้ แต่ invariant ต้องมี creation/update path
+  ที่ไม่ปล่อย invalid object หลุดออกมา Dart class + use case ทำ contract นี้
+  ให้ analyzer และ test มองเห็น
+</div>
+
+<h2 id="red">RED: เขียน behavior ก่อน class</h2>
+<div class="code-block">
+  <div class="code-label">test/features/tasks/domain/task_test.dart</div>
+  <pre><code>test('creates a task with trimmed text', () {
+  final result = Task.create(
+    id: 'task-1',
+    title: '  Learn Dart  ',
+    description: '  Practice records  ',
+    createdAt: DateTime(2026, 7, 24),
+  );
+
+  expect(result, isA&lt;Success&lt;Task&gt;&gt;());
+  final task = (result as Success&lt;Task&gt;).data;
+  expect(task.title, 'Learn Dart');
+  expect(task.description, 'Practice records');
+});
+
+test('rejects an empty title', () {
+  final result = Task.create(
+    id: 'task-1',
+    title: '   ',
+    createdAt: DateTime(2026, 7, 24),
+  );
+
+  expect(result, isA&lt;Error&lt;Task&gt;&gt;());
+});</code></pre>
+</div>
+<p>
+  รัน test แล้วต้อง fail เพราะ <code>Task.create</code> ยังไม่มี
+  นี่พิสูจน์ว่า test ตรวจ behavior ใหม่จริง ไม่ใช่เขียนตาม implementation
+</p>
+
+<h2 id="green">GREEN: minimal entity</h2>
+<div class="code-block">
+  <div class="code-label">Task.create</div>
+  <pre><code>static Result&lt;Task&gt; create({
+  required String id,
+  required String title,
+  String description = '',
+  required DateTime createdAt,
+}) {
+  final cleanTitle = title.trim();
+  final cleanDescription = description.trim();
+
+  if (cleanTitle.isEmpty) {
+    return const Error(ValidationFailure(message: 'กรุณากรอกชื่องาน'));
+  }
+  if (cleanTitle.length &gt; 120 || cleanDescription.length &gt; 500) {
+    return const Error(
+      ValidationFailure(message: 'ข้อมูลยาวเกินขอบเขตที่กำหนด'),
+    );
+  }
+
+  return Success(Task._(
+    id: id,
+    title: cleanTitle,
+    description: cleanDescription,
+    isCompleted: false,
+    createdAt: createdAt,
+  ));
+}</code></pre>
+</div>
+
+<h2 id="filter">Filter เป็น domain vocabulary</h2>
+<div class="code-block">
+  <div class="code-label">TaskFilter</div>
+  <pre><code>enum TaskFilter {
+  all,
+  open,
+  completed;
+
+  bool matches(Task task) =&gt; switch (this) {
+    TaskFilter.all =&gt; true,
+    TaskFilter.open =&gt; !task.isCompleted,
+    TaskFilter.completed =&gt; task.isCompleted,
+  };
+}</code></pre>
+</div>
+<p>
+  label ภาษาไทยไม่อยู่ใน Domain เพราะต้อง localize ใน Presentation แต่
+  matching rule เป็น domain behavior ที่ test โดยไม่เปิด Flutter ได้
+</p>
+
+<h2 id="repository">Repository contract</h2>
+<div class="code-block">
+  <div class="code-label">domain/repositories/task_repository.dart</div>
+  <pre><code>abstract interface class TaskRepository {
+  Future&lt;Result&lt;List&lt;Task&gt;&gt;&gt; getTasks();
+  Future&lt;Result&lt;Task&gt;&gt; create({
+    required String title,
+    required String description,
+  });
+  Future&lt;Result&lt;Task&gt;&gt; update(Task task);
+  Future&lt;Result&lt;Task&gt;&gt; toggle(String id);
+  Future&lt;Result&lt;void&gt;&gt; delete(String id);
+}</code></pre>
+</div>
+<p>
+  Contract พูดภาษา Task ไม่พูด JSON, Dio, database row หรือ secure storage
+  ทำให้ application tests ใช้ fake repository ได้
+</p>
+
+<h2 id="use-case">Use case รับผิดชอบ orchestration</h2>
+<div class="code-block">
+  <div class="code-label">CreateTask</div>
+  <pre><code>final class CreateTask {
+  const CreateTask(this._repository);
+  final TaskRepository _repository;
+
+  Future&lt;Result&lt;Task&gt;&gt; call({
+    required String title,
+    String description = '',
+  }) {
+    return _repository.create(
+      title: title,
+      description: description,
+    );
+  }
+}</code></pre>
+</div>
+
+<h2 id="test-boundaries">สิ่งที่ test ในแต่ละระดับ</h2>
+<table class="comparison-table">
+  <thead><tr><th>ระดับ</th><th>Behavior</th><th>ไม่สนใจ</th></tr></thead>
+  <tbody>
+    <tr><td>Entity</td><td>invariant, copy, filter</td><td>Riverpod/Widget</td></tr>
+    <tr><td>Use case</td><td>validation/orchestration/delegation</td><td>HTTP shape</td></tr>
+    <tr><td>Repository</td><td>mapping/failure policy</td><td>layout</td></tr>
+  </tbody>
+</table>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>เริ่มจาก TaskCard แล้วค่อยเดาว่า Task ต้องมี field อะไร</li>
+  <li>ให้ entity import Flutter เพื่อใช้ Color/Icon</li>
+  <li>ให้ repository คืน DTO</li>
+  <li>ใช้ exception กับ validation ที่เป็น expected outcome ทุกครั้ง</li>
+  <li>เขียน test หลัง class แล้ว test ผ่านทันทีโดยไม่พิสูจน์ RED</li>
+</ul>

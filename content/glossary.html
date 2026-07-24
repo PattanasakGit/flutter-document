@@ -1,0 +1,138 @@
+<h2 id="how-to-read">วิธีอ่าน Glossary</h2>
+<p>
+  คอลัมน์ React/Next.js เป็นสะพานเริ่มต้น ไม่ใช่ความหมายเท่ากันทุกมิติ
+  ให้จำ Flutter concept และข้อจำกัดของ analogy เป็นหลัก
+</p>
+
+<h2 id="language">Language และ runtime</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>React / TypeScript</th><th>Dart / Flutter</th><th>ข้อแตกต่างสำคัญ</th></tr></thead>
+    <tbody>
+      <tr><td>TypeScript</td><td>Dart</td><td>Dart เป็นทั้ง language/runtime/toolchain ไม่ใช่ type layer บน JavaScript</td></tr>
+      <tr><td><code>let</code></td><td><code>var</code></td><td>Dart infer static type หลัง assign ไม่เปลี่ยนชนิดตามใจ</td></tr>
+      <tr><td><code>const</code></td><td><code>final</code></td><td><code>final</code> กำหนดครั้งเดียวตอน runtime</td></tr>
+      <tr><td>literal compile-time</td><td><code>const</code></td><td>Dart const ต้องประเมินได้ตอน compile และ canonicalize ได้</td></tr>
+      <tr><td><code>T | null</code></td><td><code>T?</code></td><td>non-null เป็น default ใน sound null safety</td></tr>
+      <tr><td><code>value!</code></td><td><code>value!</code></td><td>ทั้งคู่ assert non-null; ไม่ใช่ validation</td></tr>
+      <tr><td>optional chaining</td><td><code>?.</code></td><td>แนวคิดใกล้กัน</td></tr>
+      <tr><td>nullish coalescing</td><td><code>??</code></td><td>แนวคิดใกล้กัน</td></tr>
+      <tr><td>destructuring</td><td>patterns/records</td><td>Dart patterns ใช้กับ switch/if-case/exhaustiveness ได้</td></tr>
+      <tr><td>union type</td><td>sealed class + pattern switch</td><td>Dart ใช้ subtype hierarchy เพื่อ exhaustive branching</td></tr>
+      <tr><td>interface</td><td><code>abstract interface class</code></td><td>Dart class มี implicit interface แต่ modifier บอก intent ชัดกว่า</td></tr>
+      <tr><td>object spread</td><td><code>copyWith</code>/records</td><td>Dart ไม่มี generic object spread แบบ JS object</td></tr>
+      <tr><td><code>Promise&lt;T&gt;</code></td><td><code>Future&lt;T&gt;</code></td><td>single async result ใกล้กัน</td></tr>
+      <tr><td>Observable/event stream</td><td><code>Stream&lt;T&gt;</code></td><td>หลาย async events และต้องจัด lifecycle subscription</td></tr>
+      <tr><td>npm scripts</td><td>Dart/Flutter commands</td><td>ไม่มี package.json script เป็นมาตรฐานเดียว; ใช้ tooling/CI/task runner ของ repo</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="ui-runtime">UI และ rendering</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>React / Web</th><th>Flutter</th><th>ข้อแตกต่างสำคัญ</th></tr></thead>
+    <tbody>
+      <tr><td>JSX element</td><td>Widget</td><td>Widget เป็น immutable configuration ไม่ใช่ DOM node</td></tr>
+      <tr><td>DOM node</td><td>ไม่มีคู่ตรง; ใกล้ Element + RenderObject</td><td>Element รักษา identity, RenderObject layout/paint</td></tr>
+      <tr><td>Virtual DOM reconciliation</td><td>Widget-to-Element update</td><td>กลไกและ rendering pipeline คนละแบบ</td></tr>
+      <tr><td>React component function</td><td><code>build</code></td><td>build ควร pure-ish และเรียกได้บ่อย</td></tr>
+      <tr><td>props</td><td>constructor fields</td><td>Widget fields ปกติเป็น final</td></tr>
+      <tr><td>component state</td><td><code>State&lt;T&gt;</code></td><td>State object ผูกกับ Element lifecycle</td></tr>
+      <tr><td><code>useState</code></td><td><code>StatefulWidget</code> + <code>setState</code></td><td>ไม่มี hooks ใน Flutter core; Riverpod hooks เป็น package แยก</td></tr>
+      <tr><td><code>useEffect</code></td><td><code>initState/didUpdateWidget/dispose</code></td><td>อย่า map dependency array ตรง ๆ; คิดตาม owner/lifecycle</td></tr>
+      <tr><td><code>useContext</code></td><td><code>BuildContext</code>/InheritedWidget</td><td>BuildContext เป็นตำแหน่งใน Element tree ไม่ใช่ global bag</td></tr>
+      <tr><td><code>key</code></td><td><code>Key</code></td><td>รักษา identity ระหว่าง sibling; GlobalKey มีต้นทุนสูงกว่า</td></tr>
+      <tr><td>CSS box model</td><td>constraints → size → position</td><td>Flutter ไม่มี cascading layout rules แบบ CSS</td></tr>
+      <tr><td>Flexbox</td><td>Row/Column/Flex</td><td>คล้ายแนวแกน แต่ constraints/overflow behavior ต่าง</td></tr>
+      <tr><td>CSS media query</td><td>MediaQuery/LayoutBuilder</td><td>เลือกจาก screen metrics หรือ local constraints ให้ถูก</td></tr>
+      <tr><td>CSS theme variables</td><td>ThemeData/ThemeExtension</td><td>typed theme ผ่าน widget tree</td></tr>
+      <tr><td>browser paint/composite</td><td>RenderObject paint/layers/raster</td><td>ต้องดู UI thread และ raster thread/frame budget</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="app-state">State, routing และ data</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>React / Next.js</th><th>Flutter Boilerplate</th><th>ข้อแตกต่างสำคัญ</th></tr></thead>
+    <tbody>
+      <tr><td>Context provider</td><td>Riverpod Provider</td><td>Riverpod graph ไม่ต้องพึ่ง BuildContext และ override ใน test ได้</td></tr>
+      <tr><td>Redux/Zustand store</td><td>Notifier/AsyncNotifier</td><td>แยก provider ตาม owner/feature ไม่จำเป็นต้องมี store เดียว</td></tr>
+      <tr><td>selector</td><td><code>ref.watch(provider.select(...))</code></td><td>ใช้ลด rebuild หลังวัด</td></tr>
+      <tr><td>dependency injection container</td><td>Provider graph</td><td>provider เป็นทั้ง DI และ reactive state node</td></tr>
+      <tr><td>React Router</td><td>GoRouter</td><td>declarative routes/redirect ใกล้กัน แต่ mobile lifecycle/deep link ต่าง</td></tr>
+      <tr><td>Next middleware/auth guard</td><td>GoRouter redirect</td><td>ทำงานใน client; server security ยังต้องอยู่ backend</td></tr>
+      <tr><td>pathname</td><td><code>GoRouterState.uri</code></td><td>ใช้ URI/deep-link state ไม่พึ่ง browser global</td></tr>
+      <tr><td>route loader</td><td>provider/controller load</td><td>Flutter route ไม่ได้มี server loader แบบ Next เป็น default</td></tr>
+      <tr><td>fetch/Axios</td><td>Dio</td><td>HTTP client + interceptor; plugin/platform policy ต่าง</td></tr>
+      <tr><td>API response type</td><td>DTO</td><td>DTO ต้อง validate/map ก่อนออกจาก data boundary</td></tr>
+      <tr><td>service module</td><td>Datasource</td><td>adapter ต่อ HTTP/local DB/plugin</td></tr>
+      <tr><td>data access abstraction</td><td>Repository</td><td>contract ใช้ domain types และ typed failure</td></tr>
+      <tr><td>React Query cache</td><td>Provider cache + repository policy</td><td>Riverpod ไม่ได้ให้ HTTP cache semantics ครบโดยอัตโนมัติ</td></tr>
+      <tr><td>localStorage</td><td>preferences/local DB</td><td>storage API แตกตาม platform; web localStorage ไม่เท่ากับ mobile DB</td></tr>
+      <tr><td>secure httpOnly cookie</td><td>backend/session + secure storage</td><td>ไม่มีคู่ตรงบน native; threat model ต่างจาก browser</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="architecture-testing">Architecture, tooling และ testing</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Web ecosystem</th><th>Flutter Boilerplate</th><th>ข้อแตกต่างสำคัญ</th></tr></thead>
+    <tbody>
+      <tr><td>feature folder</td><td><code>features/x</code></td><td>ใช้ public surface คุม internal imports</td></tr>
+      <tr><td>domain model</td><td>Entity/value object</td><td>ไม่ใช่ API shape หรือ UI view model</td></tr>
+      <tr><td>application service</td><td>Controller/use case</td><td>ประสาน domain/repository/state</td></tr>
+      <tr><td>adapter</td><td>RepositoryImpl/Datasource</td><td>แปล external mechanism เข้า contract</td></tr>
+      <tr><td>design system component</td><td><code>shared/widgets</code></td><td>ย้ายเมื่อ reuse/stability ถูกพิสูจน์</td></tr>
+      <tr><td>ESLint</td><td>analyzer/lints</td><td>static analysis integrated กับ Dart type system</td></tr>
+      <tr><td>Prettier</td><td><code>dart format</code></td><td>official formatter ไม่มี style options จำนวนมาก</td></tr>
+      <tr><td>code generation</td><td>build_runner</td><td>สร้าง <code>.g.dart/.freezed.dart</code> จาก annotation/source</td></tr>
+      <tr><td>Jest unit test</td><td><code>package:test/flutter_test</code></td><td>matcher/AAA คล้ายกัน</td></tr>
+      <tr><td>React Testing Library</td><td><code>testWidgets</code> + Finder</td><td>pump frames และ semantics เป็นหัวใจ</td></tr>
+      <tr><td>MSW/fake server</td><td>fake datasource/repository</td><td>เลือก fake ที่ boundary ต่ำสุดซึ่งพิสูจน์ risk</td></tr>
+      <tr><td>Playwright/Cypress</td><td><code>integration_test</code></td><td>รัน app บนอุปกรณ์/target จริงมากขึ้น</td></tr>
+      <tr><td>Storybook</td><td>widget catalog/package ภายนอก</td><td>ไม่มีหนึ่ง solution ใน core</td></tr>
+      <tr><td>Chrome DevTools</td><td>Flutter DevTools</td><td>Inspector, CPU, memory, network, performance สำหรับ Flutter</td></tr>
+      <tr><td>HMR</td><td>hot reload</td><td>รักษา state บางส่วน; initialization/native change อาจต้อง restart</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="mobile-specific">แนวคิด mobile ที่ Web developer ต้องเพิ่ม</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>คำศัพท์</th><th>ความหมายใช้งาน</th><th>จุดเสี่ยง</th></tr></thead>
+    <tbody>
+      <tr><td>App lifecycle</td><td>inactive/paused/resumed/detached</td><td>request, camera, timer, save draft</td></tr>
+      <tr><td>Cold start</td><td>process เริ่มใหม่ทั้งหมด</td><td>session restore/config/migration</td></tr>
+      <tr><td>Platform channel</td><td>Dart ติดต่อ native code</td><td>threading, error, platform availability</td></tr>
+      <tr><td>Permission</td><td>สิทธิ์ OS ที่ผู้ใช้ควบคุม</td><td>denied/permanently denied/restricted</td></tr>
+      <tr><td>Safe area</td><td>พื้นที่หลบ notch/system UI</td><td>action ถูกบัง</td></tr>
+      <tr><td>Logical pixel</td><td>หน่วย layout ไม่เท่ากับ physical pixel</td><td>density/device variance</td></tr>
+      <tr><td>App signing</td><td>identity ของ artifact</td><td>key rotation/store update</td></tr>
+      <tr><td>Deep link</td><td>URL เปิด route ใน app</td><td>validation/auth/unknown route</td></tr>
+      <tr><td>Background execution</td><td>งานเมื่อ app ไม่ foreground</td><td>OS จำกัดและต่าง platform</td></tr>
+      <tr><td>Store review</td><td>นโยบายการเผยแพร่ platform</td><td>privacy, payments, permissions</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="anti-analogy">เมื่อใดควรหยุดเทียบกับ React</h2>
+<ul>
+  <li>เมื่อกำลังแก้ layout: ใช้ constraints model ไม่แปล CSS property</li>
+  <li>เมื่อกำลังจัด lifecycle: ดู owner และ app lifecycle ไม่ copy dependency array</li>
+  <li>เมื่อกำลังทำ security: native token/storage ไม่เท่ากับ httpOnly cookie</li>
+  <li>เมื่อกำลัง profile: ดู Flutter frame pipeline ไม่เทียบ DOM repaint อย่างเดียว</li>
+  <li>เมื่อออกแบบ architecture: เริ่มจาก boundary/risk ไม่ copy folder จาก Next.js</li>
+</ul>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>เรียก Widget ว่า DOM node จนพยายาม mutate มัน</li>
+  <li>ย้ายทุก server concern จาก Next.js มาไว้ใน mobile client</li>
+  <li>คิดว่า Riverpod คือ Redux store เดียวและทำ global state ทุกอย่าง</li>
+  <li>ใช้ secure storage เหมือน localStorage หรือ database</li>
+  <li>เชื่อ analogy โดยไม่อ่านคอลัมน์ข้อแตกต่าง</li>
+</ul>

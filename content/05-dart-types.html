@@ -1,0 +1,143 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>อ่าน entrypoint และ declaration ของ Dart ได้</li>
+  <li>ใช้ type inference โดยไม่ทำให้ public API คลุมเครือ</li>
+  <li>แยก <code>final</code>, <code>const</code> และ mutable variable</li>
+  <li>ใช้ named parameter, enum, record และ switch expression</li>
+</ul>
+
+<div class="callout callout-bridge">
+  <strong>จาก TypeScript</strong>
+  Dart เป็น statically typed แบบ nominal เป็นหลัก class/interface identity
+  มีความหมาย ไม่ใช่ structural typing แบบ TypeScript ที่ object shape ตรงกัน
+  แล้ว assign ได้เสมอ
+</div>
+
+<h2 id="entrypoint">โครงสร้างโปรแกรมและ main</h2>
+<div class="code-block">
+  <div class="code-label">Dart</div>
+  <pre><code>import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const App());
+}</code></pre>
+</div>
+<p>
+  ทุก Dart application เริ่มจาก top-level <code>main</code> ซึ่งคืน
+  <code>void</code> หรือ <code>Future&lt;void&gt;</code> ได้ ใน Boilerplate
+  entrypoint เรียก shared bootstrap พร้อม environment config ต่างกัน
+</p>
+
+<h2 id="variables">var, explicit type, final และ const</h2>
+<div class="code-block">
+  <div class="code-label">Dart variables</div>
+  <pre><code>var title = 'Write tests';        // inferred String, เปลี่ยนค่าได้
+String owner = 'Pattanasak';      // explicit String
+final createdAt = DateTime.now(); // กำหนดครั้งเดียวตอน runtime
+const maxTitleLength = 120;       // compile-time constant
+
+title = 'Review tests';
+// createdAt = DateTime.now();    // compile error</code></pre>
+</div>
+<table class="comparison-table">
+  <thead><tr><th>Dart</th><th>TypeScript mental bridge</th><th>หมายเหตุ</th></tr></thead>
+  <tbody>
+    <tr><td><code>var</code></td><td><code>let</code> พร้อม inferred type</td><td>Dart ไม่เปลี่ยน type ภายหลัง</td></tr>
+    <tr><td><code>final</code></td><td><code>const</code> binding</td><td>ค่าภายใน object อาจ mutable ถ้า type อนุญาต</td></tr>
+    <tr><td><code>const</code></td><td>compile-time value</td><td>สร้าง canonical immutable instance ได้</td></tr>
+    <tr><td><code>dynamic</code></td><td>คล้าย <code>any</code></td><td>ปิด static checking; หลีกเลี่ยงที่ boundary</td></tr>
+    <tr><td><code>Object?</code></td><td>คล้าย <code>unknown</code></td><td>ต้องตรวจ type ก่อนใช้</td></tr>
+  </tbody>
+</table>
+
+<h2 id="functions">Named และ required parameters</h2>
+<div class="code-block">
+  <div class="code-label">Dart API design</div>
+  <pre><code>Task createTask({
+  required String title,
+  String description = '',
+  DateTime? dueAt,
+}) {
+  return Task(
+    id: 'generated-id',
+    title: title.trim(),
+    description: description.trim(),
+    dueAt: dueAt,
+  );
+}
+
+final task = createTask(
+  title: 'Learn Dart',
+  dueAt: DateTime(2026, 8, 1),
+);</code></pre>
+</div>
+<p>
+  Named parameter ทำให้ call site อ่านความหมายได้และลด bug จาก parameter
+  ที่ type เหมือนกันหลายตัว ใช้ <code>required</code> เมื่อ null/default
+  ไม่ใช่ state ที่ถูกต้อง
+</p>
+
+<h2 id="enums-records">Enum และ Record</h2>
+<div class="code-block">
+  <div class="code-label">Dart 3</div>
+  <pre><code>enum TaskFilter { all, open, completed }
+
+typedef TaskSummary = ({
+  int total,
+  int open,
+  int completed,
+});
+
+TaskSummary summarize(List&lt;Task&gt; tasks) {
+  final completed = tasks.where((task) =&gt; task.isCompleted).length;
+  return (
+    total: tasks.length,
+    open: tasks.length - completed,
+    completed: completed,
+  );
+}
+
+final (:total, :open, :completed) = summarize(tasks);</code></pre>
+</div>
+<p>
+  Record เหมาะกับค่าชั่วคราวหลายช่องที่ไม่มี domain identity ถ้าค่านั้นมี
+  behavior, invariant หรือใช้ข้าม boundary ให้สร้าง named class แทน
+</p>
+
+<h2 id="switch">Exhaustive switch expression</h2>
+<div class="code-block">
+  <div class="code-label">Dart</div>
+  <pre><code>String filterLabel(TaskFilter filter) =&gt; switch (filter) {
+  TaskFilter.all =&gt; 'ทั้งหมด',
+  TaskFilter.open =&gt; 'ยังไม่เสร็จ',
+  TaskFilter.completed =&gt; 'เสร็จแล้ว',
+};</code></pre>
+</div>
+<p>
+  เมื่อเพิ่ม enum value ใหม่ analyzer บังคับให้จัดการครบ ต่างจาก
+  <code>default</code> กว้าง ๆ ที่อาจซ่อน state ใหม่
+</p>
+
+<h2 id="type-boundary">Type ที่ boundary</h2>
+<p>
+  ภายใน function สั้นใช้ inference ได้ แต่ public fields, return type,
+  repository contract และ provider ควรบอก type ชัดเพื่อเป็น API ให้คนและ AI
+</p>
+<div class="code-block">
+  <div class="code-label">ชัดเจนกว่า dynamic</div>
+  <pre><code>abstract interface class TaskRepository {
+  Future&lt;Result&lt;List&lt;Task&gt;&gt;&gt; getTasks();
+}
+
+// หลีกเลี่ยง
+Future getTasks() async =&gt; fetchSomething();</code></pre>
+</div>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>ใช้ <code>dynamic</code> เพื่อให้ analyzer เงียบ แล้วเลื่อน error ไป runtime</li>
+  <li>ใช้ <code>var</code> ใน public field จนคนอ่านไม่รู้ contract</li>
+  <li>คิดว่า <code>final List</code> ทำให้สมาชิก list immutable</li>
+  <li>ใช้ positional parameter หลายตัวที่เป็น <code>String</code> เหมือนกัน</li>
+  <li>สร้าง class สำหรับค่าชั่วคราวทุกคู่ ทั้งที่ Record สื่อ intent ได้พอ</li>
+</ul>

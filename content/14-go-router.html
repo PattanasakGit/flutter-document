@@ -1,0 +1,117 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>กำหนด route table และ named paths ที่มีเจ้าของชัด</li>
+  <li>เขียน redirect เป็น policy ที่ deterministic</li>
+  <li>เชื่อม auth state กับ router refresh โดยไม่เกิด loop</li>
+  <li>ทดสอบ signed-in, signed-out และ unknown route</li>
+</ul>
+
+<h2 id="route-table">Route table</h2>
+<div class="code-block">
+  <div class="code-label">Typed constants</div>
+  <pre><code>abstract final class AppRoutes {
+  static const login = '/login';
+  static const home = '/';
+  static const tasks = '/tasks';
+}</code></pre>
+</div>
+<p>
+  รวม path policy ไว้จุดเดียว ลด string literal กระจาย แต่ feature ยัง export
+  page/public route surface เท่าที่ router ต้องใช้
+</p>
+
+<h2 id="guard">Authentication guard flow</h2>
+<figure class="diagram flow-diagram" aria-labelledby="guard-flow-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">URL</span><span class="rail-copy"><strong>Incoming location</strong><small>/login, /, /tasks, unknown</small></span></li>
+    <li><span class="rail-node">SS</span><span class="rail-copy"><strong>Session state</strong><small>initializing, anonymous, authenticated</small></span></li>
+    <li><span class="rail-node">PL</span><span class="rail-copy"><strong>Redirect policy</strong><small>pure decision ไม่มี navigation side effect</small></span></li>
+    <li><span class="rail-node">PG</span><span class="rail-copy"><strong>Destination page</strong><small>login, requested route, not found</small></span></li>
+  </ol>
+  <figcaption>guard ตัดสินจาก location + session และคืน path/null เท่านั้น</figcaption>
+</figure>
+<p class="diagram-description" id="guard-flow-title">
+  Session ต้องมี initializing state เพื่อไม่ redirect ไป login ก่อนอ่าน storage
+  เสร็จ และควรเก็บ intended location สำหรับกลับหลัง authentication
+</p>
+
+<h2 id="policy">Redirect policy ที่ test แยกได้</h2>
+<div class="code-block">
+  <div class="code-label">Pure policy</div>
+  <pre><code>String? redirectFor({
+  required String location,
+  required bool isAuthenticated,
+}) {
+  final public = location == AppRoutes.login;
+  if (!isAuthenticated) {
+    return public ? null : AppRoutes.login;
+  }
+  if (public) return AppRoutes.home;
+  return null;
+}</code></pre>
+</div>
+<p>
+  Default deny เมื่อ signed-out ทำให้ route ใหม่ไม่เปิดโดยลืม guard
+  แต่ production session ต้องเพิ่ม initializing/expired state มากกว่า bool
+</p>
+
+<h2 id="router">ประกอบ GoRouter</h2>
+<div class="code-block">
+  <div class="code-label">Router provider</div>
+  <pre><code>GoRouter(
+  initialLocation: AppRoutes.home,
+  refreshListenable: refreshNotifier,
+  redirect: (context, state) =&gt; redirectFor(
+    location: state.matchedLocation,
+    isAuthenticated: ref.read(authenticationSessionProvider) != null,
+  ),
+  routes: [
+    GoRoute(path: AppRoutes.login, builder: (_, __) =&gt; const LoginPage()),
+    GoRoute(path: AppRoutes.home, builder: (_, __) =&gt; const HomePage()),
+    GoRoute(path: AppRoutes.tasks, builder: (_, __) =&gt; const TaskListPage()),
+  ],
+)</code></pre>
+</div>
+
+<h2 id="navigation">go, push และ back stack</h2>
+<table class="comparison-table">
+  <thead><tr><th>Action</th><th>ความหมาย</th><th>ใช้เมื่อ</th></tr></thead>
+  <tbody>
+    <tr><td>context.go</td><td>เปลี่ยน location ตาม declarative route</td><td>top-level destination</td></tr>
+    <tr><td>context.push</td><td>เพิ่ม page บน stack</td><td>detail/subflow ที่กลับได้</td></tr>
+    <tr><td>context.pop</td><td>ย้อน stack</td><td>ปิด detail/form เมื่อมี parent</td></tr>
+    <tr><td>named route</td><td>อ้าง route identity</td><td>ลด coupling กับ path format</td></tr>
+  </tbody>
+</table>
+
+<h2 id="testing">Router test</h2>
+<div class="code-block">
+  <div class="code-label">Widget/router behavior</div>
+  <pre><code>await tester.pumpWidget(
+  ProviderScope(
+    overrides: [authenticationSessionProvider.overrideWithValue(null)],
+    child: const App(),
+  ),
+);
+
+router.go('/tasks');
+await tester.pumpAndSettle();
+expect(find.byType(LoginPage), findsOneWidget);</code></pre>
+</div>
+
+<h2 id="loops">ป้องกัน redirect loop</h2>
+<ul>
+  <li>เมื่ออยู่ปลายทางที่ถูกต้องให้คืน null</li>
+  <li>อย่า mutate auth state ภายใน redirect</li>
+  <li>refresh เฉพาะเมื่อ state ที่ guard ใช้เปลี่ยน</li>
+  <li>แยก unknown-route presentation ออกจาก auth policy</li>
+</ul>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>guard จาก LoginController UI state แทน session abstraction</li>
+  <li>redirect ก่อน session restore เสร็จ</li>
+  <li>ใช้ push สำหรับ top-level route จน back stack ซ้ำ</li>
+  <li>เปิด route ใหม่แต่ไม่มี signed-out test</li>
+  <li>คืน location เดิมซ้ำจาก redirect จน loop</li>
+</ul>

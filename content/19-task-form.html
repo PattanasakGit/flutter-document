@@ -1,0 +1,135 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>สร้าง form เดียวที่ใช้ create และ edit ได้</li>
+  <li>วาง validation ใกล้ input และ domain validation ที่ boundary</li>
+  <li>จัดการ controller/focus lifecycle</li>
+  <li>ป้องกัน duplicate submit และ unsaved dismissal</li>
+</ul>
+
+<h2 id="contract">Form contract</h2>
+<div class="code-block">
+  <div class="code-label">TaskFormValue</div>
+  <pre><code>final class TaskFormValue {
+  const TaskFormValue({
+    required this.title,
+    required this.description,
+  });
+
+  final String title;
+  final String description;
+}</code></pre>
+</div>
+<p>
+  Widget คืน value ที่ typed ผ่าน callback ไม่ส่ง TextEditingController
+  ออกไป controller/application จึงไม่ผูกกับ Flutter text input implementation
+</p>
+
+<h2 id="widget">Form Widget</h2>
+<div class="code-block">
+  <div class="code-label">TaskFormSheet</div>
+  <pre><code>Form(
+  key: _formKey,
+  child: ListView(
+    padding: const EdgeInsets.all(24),
+    children: [
+      TextFormField(
+        controller: _titleController,
+        autofocus: true,
+        textInputAction: TextInputAction.next,
+        decoration: const InputDecoration(
+          labelText: 'ชื่องาน',
+          helperText: 'จำเป็น · ไม่เกิน 120 ตัวอักษร',
+        ),
+        validator: validateTaskTitle,
+      ),
+      const SizedBox(height: 16),
+      TextFormField(
+        controller: _descriptionController,
+        minLines: 3,
+        maxLines: 6,
+        decoration: const InputDecoration(
+          labelText: 'รายละเอียด',
+          helperText: 'ไม่เกิน 500 ตัวอักษร',
+        ),
+      ),
+    ],
+  ),
+)</code></pre>
+</div>
+
+<h2 id="validation">สองชั้นของ validation</h2>
+<table class="comparison-table">
+  <thead><tr><th>ชั้น</th><th>หน้าที่</th><th>เหตุผล</th></tr></thead>
+  <tbody>
+    <tr><td>Presentation validator</td><td>feedback เร็ว, focus field, localized text</td><td>UX</td></tr>
+    <tr><td>Domain/use case</td><td>บังคับ invariant แม้ถูกเรียกจากที่อื่น</td><td>correctness</td></tr>
+  </tbody>
+</table>
+<p>
+  อย่าพึ่ง UI validator อย่างเดียว เพราะ import/script/AI call อื่นอาจเรียก
+  repository โดยไม่ผ่าน form
+</p>
+
+<h2 id="submit">Submit flow</h2>
+<div class="code-block">
+  <div class="code-label">Prevent duplicates</div>
+  <pre><code>Future&lt;void&gt; _submit() async {
+  if (_submitting) return;
+  if (!_formKey.currentState!.validate()) {
+    _titleFocusNode.requestFocus();
+    return;
+  }
+
+  setState(() =&gt; _submitting = true);
+  final success = await widget.onSubmit(
+    TaskFormValue(
+      title: _titleController.text,
+      description: _descriptionController.text,
+    ),
+  );
+  if (!mounted) return;
+  setState(() =&gt; _submitting = false);
+  if (success) Navigator.of(context).pop();
+}</code></pre>
+</div>
+
+<h2 id="keyboard">Keyboard และ scroll</h2>
+<ul>
+  <li>ใช้ scrollable body เพื่อไม่ overflow เมื่อ keyboard เปิด</li>
+  <li>อ่าน <code>MediaQuery.viewInsetsOf(context).bottom</code> ถ้าทำ custom sheet padding</li>
+  <li>กำหนด textInputAction และ onFieldSubmitted ตามลำดับ</li>
+  <li>ปุ่ม Save ต้องเข้าถึงด้วย keyboard และ screen reader</li>
+  <li>อย่า fixed height ครอบข้อความ error/helper</li>
+</ul>
+
+<h2 id="edit">Create กับ Edit</h2>
+<p>
+  ส่ง <code>initialValue</code> ที่ optional เข้า form และกำหนด controller
+  ใน <code>initState</code> ถ้า parent เปลี่ยน Task ขณะ State เดิมอยู่
+  ใช้ <code>didUpdateWidget</code> หรือ route สร้าง identity ใหม่ตาม use case
+</p>
+
+<h2 id="dismiss">Unsaved changes</h2>
+<p>
+  เปรียบเทียบ current text กับ initial value ก่อน dismiss หากต่างให้ confirm
+  โดยเฉพาะ form ยาว อย่าขัด system back gesture โดยไม่มี alternative
+</p>
+
+<h2 id="tests">Widget tests ที่จำเป็น</h2>
+<ul>
+  <li>empty title แสดง error ใต้ field และไม่เรียก callback</li>
+  <li>valid input ส่ง trimmed value</li>
+  <li>ระหว่าง submit ปุ่ม disable/มี progress</li>
+  <li>submit success ปิด sheet</li>
+  <li>submit failure ยังเปิด form และแสดง recovery</li>
+  <li>200% text scale ไม่ overflow</li>
+</ul>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>ใช้ placeholder แทน label</li>
+  <li>validate ทุก keystrokeจนผู้ใช้เห็น error ก่อนพิมพ์จบ</li>
+  <li>ไม่ dispose controller/focus node</li>
+  <li>ปิด form แม้ save fail</li>
+  <li>ใช้ GlobalKey เพื่อเข้าถึง widget แทน callback/state flow</li>
+</ul>

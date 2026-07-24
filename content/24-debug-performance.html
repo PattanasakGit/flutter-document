@@ -1,0 +1,147 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>debug แบบ reproduce → observe → hypothesize → isolate → verify</li>
+  <li>เลือก Flutter Inspector, debugger, logs, Network, CPU และ Memory ให้ตรงอาการ</li>
+  <li>แยก rebuild, relayout และ repaint ออกจากกัน</li>
+  <li>ปรับ performance หลังมีหลักฐานและเก็บ regression test</li>
+</ul>
+
+<h2 id="workflow">Debugging loop</h2>
+<figure class="diagram flow-diagram" aria-labelledby="debug-loop-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">01</span><span class="rail-copy"><strong>Reproduce</strong><small>ขั้นตอนและ environment คงที่</small></span></li>
+    <li><span class="rail-node">02</span><span class="rail-copy"><strong>Observe</strong><small>error, state, timeline, request</small></span></li>
+    <li><span class="rail-node">03</span><span class="rail-copy"><strong>Hypothesize</strong><small>สาเหตุที่ทดสอบได้หนึ่งข้อ</small></span></li>
+    <li><span class="rail-node">04</span><span class="rail-copy"><strong>Isolate</strong><small>ลดพื้นที่และสร้าง failing test</small></span></li>
+    <li><span class="rail-node">05</span><span class="rail-copy"><strong>Fix</strong><small>แก้ root cause เล็กที่สุด</small></span></li>
+    <li><span class="rail-node">06</span><span class="rail-copy"><strong>Verify</strong><small>test เดิม + suite + manual path</small></span></li>
+  </ol>
+  <figcaption>วงจร debugging ที่ลดการแก้แบบเดาสุ่ม</figcaption>
+</figure>
+<p class="diagram-description" id="debug-loop-title">
+  ถ้าขั้น Observe ยังไม่มีหลักฐาน อย่าเริ่มจากล้าง cache หรือเปลี่ยน dependency
+  หลายตัวพร้อมกัน เพราะจะทำให้ไม่รู้ว่าสาเหตุจริงคืออะไร
+</p>
+
+<h2 id="tool-map">เลือกเครื่องมือจากคำถาม</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>คำถาม</th><th>เครื่องมือ</th><th>หลักฐาน</th></tr></thead>
+    <tbody>
+      <tr><td>Widget นี้มาจากไหน/constraints เท่าไร</td><td>Flutter Inspector</td><td>tree, properties, layout bounds</td></tr>
+      <tr><td>ค่าผิดตรงบรรทัดใด</td><td>Debugger + conditional breakpoint</td><td>stack, locals, watches</td></tr>
+      <tr><td>API ช้า/ผิด payload หรือไม่</td><td>Network view + Dio log ที่ redact</td><td>timeline, status, body shape</td></tr>
+      <tr><td>เฟรมกระตุกจากอะไร</td><td>Performance view</td><td>UI/raster frame timing</td></tr>
+      <tr><td>CPU ใช้กับ function ใด</td><td>CPU profiler</td><td>bottom-up/call tree</td></tr>
+      <tr><td>object เพิ่มไม่ลดหรือไม่</td><td>Memory view</td><td>snapshot/diff/allocation</td></tr>
+      <tr><td>ส่วนใด rebuild บ่อย</td><td>rebuild diagnostics</td><td>count และ timeline</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="vscode">VS Code debugging</h2>
+<ol>
+  <li>วาง breakpoint ที่ application boundary ไม่ใช่ทุกบรรทัด</li>
+  <li>ใช้ conditional breakpoint เช่น <code>task.id == 't-42'</code></li>
+  <li>ดู Call Stack เพื่อหาผู้เรียก ไม่ดูเฉพาะบรรทัดที่ throw</li>
+  <li>เพิ่ม Watch สำหรับ state ที่เป็น invariant</li>
+  <li>Hot restart เมื่อแก้ initialization/global state; hot reload เมื่อแก้ UI body</li>
+</ol>
+
+<h2 id="logs">Structured logs ที่ปลอดภัย</h2>
+<div class="code-block">
+  <div class="code-label">Log context ไม่ log secret</div>
+  <pre><code>logger.warning(
+  'task_load_failed',
+  error: failure,
+  stackTrace: stackTrace,
+  context: {
+    'screen': 'task_list',
+    'filter': filter.name,
+    'requestId': requestId,
+  },
+);</code></pre>
+</div>
+<p>
+  ห้าม log access token, password, authorization header, full personal payload
+  หรือ secure-storage content แม้อยู่ใน debug build ที่อาจถูกส่งเข้า CI artifact
+</p>
+
+<h2 id="render-pipeline">Build, layout และ paint</h2>
+<div class="callout note">
+  <strong>Rebuild ไม่เท่ากับ repaint เสมอไป</strong>
+  Widget configuration ใหม่อาจทำให้ Element update แต่ RenderObject
+  ไม่ต้อง layout/paint หาก geometry และ visual properties ไม่เปลี่ยน
+</div>
+<ul>
+  <li><strong>Build:</strong> สร้าง configuration subtree ใหม่</li>
+  <li><strong>Layout:</strong> คำนวณ size/position ตาม constraints</li>
+  <li><strong>Paint:</strong> บันทึก drawing commands</li>
+  <li><strong>Raster:</strong> engine แปลง layer เป็น pixel</li>
+</ul>
+
+<h2 id="rebuilds">ลด rebuild อย่างมีเหตุผล</h2>
+<div class="code-block">
+  <div class="code-label">watch เฉพาะ slice ที่ใช้</div>
+  <pre><code>final pendingCount = ref.watch(
+  taskControllerProvider.select(
+    (value) =&gt; value.valueOrNull?.pendingCount ?? 0,
+  ),
+);</code></pre>
+</div>
+<p>
+  ใช้ <code>select</code> เมื่อวัดแล้วพบว่า widget กว้างเกินจำเป็นจริง
+  อย่าแยก provider ทุก property จน graph เข้าใจยากเพียงเพื่อหวัง performance
+</p>
+
+<h2 id="lists">รายการยาว</h2>
+<div class="code-block">
+  <div class="code-label">Lazy list</div>
+  <pre><code>ListView.builder(
+  itemCount: tasks.length,
+  itemBuilder: (context, index) {
+    final task = tasks[index];
+    return TaskTile(
+      key: ValueKey(task.id),
+      task: task,
+    );
+  },
+)</code></pre>
+</div>
+<p>
+  ใช้ stable key ตาม identity, หลีกเลี่ยง synchronous parsing หนักใน
+  <code>itemBuilder</code> และ paginate เมื่อ dataset ใหญ่จริง
+</p>
+
+<h2 id="jank">อ่าน frame budget</h2>
+<p>
+  ที่ 60Hz เฟรมมีเวลาประมาณ 16.7ms; ที่ 120Hz ประมาณ 8.3ms
+  ให้ profile ด้วย mode/device ใกล้ release เพราะ debug instrumentation
+  ทำให้ตัวเลขไม่แทนประสบการณ์จริง
+</p>
+
+<h2 id="memory">Memory leak ที่พบบ่อย</h2>
+<ul>
+  <li>ไม่ dispose controller/subscription/timer ที่ widget เป็นเจ้าของ</li>
+  <li>callback อายุยาวจับ <code>BuildContext</code> หรือ object graph ใหญ่</li>
+  <li>cache ไม่มี eviction policy</li>
+  <li>เก็บภาพ byte ขนาดใหญ่ใน global state</li>
+</ul>
+
+<h2 id="case-study">Case study: filter แล้ว UI กระตุก</h2>
+<ol>
+  <li>บันทึก CPU timeline ขณะพิมพ์ค้นหา 20 ตัวอักษร</li>
+  <li>พบ sort + lowercase ทั้งรายการเกิดทุก keystroke ใน build</li>
+  <li>ย้าย normalization ไปตอนรับข้อมูล และ derive filtered list ใน controller</li>
+  <li>debounce เฉพาะ remote search; local list เล็กไม่ต้อง debounce</li>
+  <li>รัน benchmark flow เดิมและเก็บตัวเลขก่อน/หลัง</li>
+</ol>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>ใช้ <code>flutter clean</code> เป็นขั้นแรกทุกอาการ</li>
+  <li>จับ exception แล้วทิ้ง stack trace</li>
+  <li>optimize จากความรู้สึกโดยไม่ profile</li>
+  <li>มอง rebuild count อย่างเดียวโดยไม่ดู frame time</li>
+  <li>วัด performance บน simulator/debug mode แล้วสรุป production</li>
+</ul>

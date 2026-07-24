@@ -1,0 +1,98 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>หา source จาก responsibility ได้เร็ว</li>
+  <li>เข้าใจ dependency direction ของแต่ละ layer</li>
+  <li>ใช้ nearest-home rule ก่อนสร้าง shared abstraction</li>
+  <li>อ่าน AGENTS.md เป็น executable team contract</li>
+</ul>
+
+<h2 id="topology">Repository topology</h2>
+<div class="code-block">
+  <div class="code-label">Source map</div>
+  <pre><code>lib/
+├── app/                 # bootstrap, config, router, theme
+├── core/                # errors, network, storage, result, logging
+├── features/
+│   ├── authentication/  # full vertical slice
+│   ├── home/            # presentation-only example
+│   └── tasks/           # capstone feature
+├── shared/              # proven cross-feature code
+└── main_*.dart          # environment entrypoints
+
+test/                    # mirrors responsibility
+docs/                    # architecture and team rules
+scripts/                 # repeatable quality commands</code></pre>
+</div>
+
+<h2 id="feature-flow">Feature-first dependency graph</h2>
+<figure class="diagram flow-diagram" aria-labelledby="feature-flow-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">UI</span><span class="rail-copy"><strong>Presentation</strong><small>Widget, page, controller</small></span></li>
+    <li><span class="rail-node">UC</span><span class="rail-copy"><strong>Application</strong><small>workflow/use case</small></span></li>
+    <li><span class="rail-node">DM</span><span class="rail-copy"><strong>Domain</strong><small>entity, rule, repository contract</small></span></li>
+    <li><span class="rail-node">DT</span><span class="rail-copy"><strong>Data</strong><small>contract implementation, DTO, datasource</small></span></li>
+  </ol>
+  <figcaption>Presentation และ Data พึ่ง abstraction ที่ชั้นใน ไม่ย้อนให้ Domain รู้ plugin</figcaption>
+</figure>
+<p class="diagram-description" id="feature-flow-title">
+  Request ไหล UI → application → repository แต่ dependency ของ Data ชี้เข้า
+  Domain contract ทำให้ business code ไม่ import Dio หรือ secure storage plugin
+</p>
+
+<h2 id="layers">เมื่อใดต้องมีแต่ละ layer</h2>
+<table class="comparison-table">
+  <thead><tr><th>Layer</th><th>สร้างเมื่อ</th><th>ไม่ควรมี</th></tr></thead>
+  <tbody>
+    <tr><td>Presentation</td><td>feature มี UI/state interaction</td><td>Dio, DTO, plugin exception</td></tr>
+    <tr><td>Application</td><td>workflow มี orchestration/validation ที่ใช้ซ้ำ</td><td>BuildContext, Widget</td></tr>
+    <tr><td>Domain</td><td>มี entity/rule/contract</td><td>Flutter/plugin/import Data</td></tr>
+    <tr><td>Data</td><td>มี API/storage/platform boundary</td><td>UI state และ Widget</td></tr>
+  </tbody>
+</table>
+
+<h2 id="nearest-home">Nearest-home rule</h2>
+<ol>
+  <li>เริ่มไฟล์ใหม่ใน feature ที่ใช้</li>
+  <li>ถ้าใช้ซ้ำภายใน feature ให้วางระดับ feature</li>
+  <li>เมื่อ feature ที่สองต้องใช้ ให้ประเมิน abstraction จากสอง use cases จริง</li>
+  <li>ย้ายไป shared/core เฉพาะ business-neutral responsibility</li>
+</ol>
+<p>
+  การสร้าง shared ก่อนมีผู้ใช้จริงทำให้ API ออกแบบจากการเดาและ AI มีโอกาส
+  เลือก abstraction กว้างเกิน scope
+</p>
+
+<h2 id="core-shared">Core กับ Shared ต่างกัน</h2>
+<ul>
+  <li><strong>Core:</strong> infrastructure กลาง เช่น ApiClient, Result, logger, storage wrapper</li>
+  <li><strong>Shared:</strong> UI/validator ที่พิสูจน์ว่าใช้ข้าม feature</li>
+  <li><strong>Feature public surface:</strong> export เฉพาะสิ่งที่ feature อื่นจำเป็นต้องรู้</li>
+</ul>
+
+<h2 id="agents">AGENTS.md สำหรับ Dev และ AI</h2>
+<p>
+  อ่านก่อนแก้ source เพราะระบุ import boundary, error flow, naming, testing,
+  environment และข้อห้ามเรื่อง secrets Dev ใช้เป็น review checklist ส่วน AI
+  ใช้ลด ambiguity ก่อน generate code
+</p>
+
+<h2 id="adding-feature">Decision flow ก่อนเพิ่ม feature</h2>
+<div class="code-block">
+  <div class="code-label">คำถามตามลำดับ</div>
+  <pre><code>1. User-visible responsibility คืออะไร?
+2. Presentation อย่างเดียวพอหรือมี business rule?
+3. มี external I/O หรือไม่?
+4. Contract ควรอยู่ Domain หรือ Core?
+5. State owner และ lifetime คืออะไร?
+6. Test ต่ำสุดที่พิสูจน์ behavior คือระดับใด?
+7. Public surface ที่ feature อื่นต้องใช้มีอะไร?</code></pre>
+</div>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>สร้าง global folders เช่น screens/services/models แล้ว feature กระจายทั้ง repo</li>
+  <li>บังคับทุก feature มี 4 layers แม้เป็น static page</li>
+  <li>ให้ Presentation import DTO เพราะสะดวก</li>
+  <li>export internal controller/model ทุกไฟล์จาก barrel</li>
+  <li>กฎอยู่แต่ในเอกสารโดยไม่ให้ test/analyzer/CI ช่วย enforce</li>
+</ul>

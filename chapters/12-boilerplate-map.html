@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="อ่าน app, core, features, shared, tests, docs และ entrypoints จาก responsibility ไม่ใช่ชื่อ folder">
+  <title>แผนที่ AI-first Flutter Boilerplate — Flutter Field Guide</title>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script defer src="../assets/js/site.js"></script>
+  <script defer src="../assets/js/catalog.js"></script>
+</head>
+<body data-root="../">
+  <a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
+  <noscript><p class="noscript-note">เนื้อหาทั้งหมดยังอ่านได้ แต่ search, theme, quiz และ progress ต้องเปิด JavaScript</p></noscript>
+  <div class="site-shell">
+    <aside class="sidebar" aria-label="เมนูหลักสูตร">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
+        <span><strong>Flutter Field Guide</strong><small>Web → Mobile</small></span>
+      </a>
+      <div class="sidebar-tools">
+        <button class="search-trigger" type="button" data-search-trigger>ค้นหาบทเรียน <kbd>/</kbd></button>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </div>
+      <div class="course-progress">
+        <div class="progress-meta"><span>ความคืบหน้า</span><strong data-progress-count>0 / 28</strong></div>
+        <div class="progress-track" aria-hidden="true"><div class="progress-value" data-progress-value></div></div>
+      </div>
+      <p class="nav-heading">A · Orientation & Setup</p>
+<nav class="course-nav">
+<a href="../chapters/01-orientation.html"><span class="nav-index">01</span>เริ่มใช้คู่มือและตั้งเป้าหมายระบบ</a>
+<a href="../chapters/02-react-to-flutter.html"><span class="nav-index">02</span>แผนที่ความคิดจาก React และ Next.js สู่ Flutter</a>
+<a href="../chapters/03-macos-toolchain.html"><span class="nav-index">03</span>ติดตั้ง Flutter toolchain บน macOS และ VS Code</a>
+<a href="../chapters/04-clone-and-run.html"><span class="nav-index">04</span>Clone, Generate, Run และตรวจ Boilerplate</a>
+</nav>
+<p class="nav-heading">B · Dart for TypeScript</p>
+<nav class="course-nav">
+<a href="../chapters/05-dart-types.html"><span class="nav-index">05</span>Dart Types และโครงสร้างโปรแกรมสำหรับ TypeScript Developer</a>
+<a href="../chapters/06-null-collections-patterns.html"><span class="nav-index">06</span>Null Safety, Collections และ Pattern Matching</a>
+<a href="../chapters/07-functions-classes-generics.html"><span class="nav-index">07</span>Functions, Classes, Immutability และ Generics</a>
+<a href="../chapters/08-async-errors-results.html"><span class="nav-index">08</span>Future, Stream, Exception และ Typed Result</a>
+</nav>
+<p class="nav-heading">C · Flutter Fundamentals</p>
+<nav class="course-nav">
+<a href="../chapters/09-widget-runtime.html"><span class="nav-index">09</span>Widget, Element, RenderObject และ BuildContext</a>
+<a href="../chapters/10-layout-theme-forms.html"><span class="nav-index">10</span>Constraints, Responsive Layout, Theme และ Form</a>
+<a href="../chapters/11-state-lifecycle.html"><span class="nav-index">11</span>State Ownership และ Lifecycle</a>
+</nav>
+<p class="nav-heading">D · Boilerplate Architecture</p>
+<nav class="course-nav">
+<a href="../chapters/12-boilerplate-map.html" aria-current="page"><span class="nav-index">12</span>แผนที่ AI-first Flutter Boilerplate</a>
+<a href="../chapters/13-riverpod.html"><span class="nav-index">13</span>Riverpod: State Graph และ Dependency Injection</a>
+<a href="../chapters/14-go-router.html"><span class="nav-index">14</span>GoRouter, Redirect และ Authentication Guard</a>
+<a href="../chapters/15-network-storage-errors.html"><span class="nav-index">15</span>Dio, DTO, Repository, Failure และ Secure Storage</a>
+</nav>
+<p class="nav-heading">E · Task Management</p>
+<nav class="course-nav">
+<a href="../chapters/16-task-domain.html"><span class="nav-index">16</span>Capstone: Model Task Domain ด้วย Test-first</a>
+<a href="../chapters/17-offline-repository.html"><span class="nav-index">17</span>Capstone: Offline Datasource และ Repository</a>
+<a href="../chapters/18-task-riverpod.html"><span class="nav-index">18</span>Capstone: Task State และ Filter ด้วย Riverpod</a>
+<a href="../chapters/19-task-form.html"><span class="nav-index">19</span>Capstone: Create/Edit Form และ Validation</a>
+<a href="../chapters/20-task-mutations.html"><span class="nav-index">20</span>Capstone: Toggle, Update, Delete และ Feedback</a>
+<a href="../chapters/21-dio-datasource.html"><span class="nav-index">21</span>Capstone: Real-API-ready Dio Datasource</a>
+<a href="../chapters/22-capstone-integration.html"><span class="nav-index">22</span>Capstone: Route, Shell และ End-to-end Flow</a>
+</nav>
+<p class="nav-heading">F · Quality & Delivery</p>
+<nav class="course-nav">
+<a href="../chapters/23-testing.html"><span class="nav-index">23</span>Test Strategy: Unit ถึง Integration</a>
+<a href="../chapters/24-debug-performance.html"><span class="nav-index">24</span>Debugging, DevTools และ Performance</a>
+<a href="../chapters/25-production-concerns.html"><span class="nav-index">25</span>Environment, Security, Accessibility และ Localization</a>
+<a href="../chapters/26-build-release.html"><span class="nav-index">26</span>Build Android, iOS และ Web</a>
+<a href="../chapters/27-production-checklist.html"><span class="nav-index">27</span>Production Readiness และ Next-system Checklist</a>
+<a href="../chapters/28-ai-workflow.html"><span class="nav-index">28</span>ใช้ AI พัฒนา Flutter อย่างมีขอบเขตและหลักฐาน</a>
+</nav>
+<p class="nav-heading">Reference</p>
+<nav class="course-nav">
+<a href="../reference/commands.html"><span class="nav-index">R</span>Command Cookbook</a>
+<a href="../reference/glossary.html"><span class="nav-index">R</span>React/Next.js ↔ Flutter Glossary</a>
+<a href="../reference/architecture-decisions.html"><span class="nav-index">R</span>Architecture Decision Matrix</a>
+<a href="../reference/troubleshooting.html"><span class="nav-index">R</span>Troubleshooting Catalog</a>
+</nav>
+
+      <div class="sidebar-footer"><p>Offline-first · ภาษาไทย · Flutter 3.44</p></div>
+    </aside>
+    <div class="site-main">
+      <header class="mobile-bar">
+        <button class="nav-trigger" type="button" data-nav-trigger aria-expanded="false">เมนู</button>
+        <strong>12 · แผนที่ AI-first Flutter Boilerplate</strong>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </header>
+      <main id="main-content" class="lesson-wrap">
+        <article class="lesson">
+          <header class="lesson-header">
+            <p class="lesson-kicker">D · Boilerplate Architecture · บทที่ 12</p>
+            <h1>แผนที่ AI-first Flutter Boilerplate</h1>
+            <p class="hero-lead">อ่าน app, core, features, shared, tests, docs และ entrypoints จาก responsibility ไม่ใช่ชื่อ folder</p>
+            <div class="lesson-meta">
+              <span>เวลาอ่าน 55 นาที</span>
+              <span>ระดับ กลาง</span>
+              <span>feature-first app core shared AGENTS layers imports</span>
+            </div>
+          </header>
+          <h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>หา source จาก responsibility ได้เร็ว</li>
+  <li>เข้าใจ dependency direction ของแต่ละ layer</li>
+  <li>ใช้ nearest-home rule ก่อนสร้าง shared abstraction</li>
+  <li>อ่าน AGENTS.md เป็น executable team contract</li>
+</ul>
+
+<h2 id="topology">Repository topology</h2>
+<div class="code-block">
+  <div class="code-label">Source map</div>
+  <pre><code>lib/
+├── app/                 # bootstrap, config, router, theme
+├── core/                # errors, network, storage, result, logging
+├── features/
+│   ├── authentication/  # full vertical slice
+│   ├── home/            # presentation-only example
+│   └── tasks/           # capstone feature
+├── shared/              # proven cross-feature code
+└── main_*.dart          # environment entrypoints
+
+test/                    # mirrors responsibility
+docs/                    # architecture and team rules
+scripts/                 # repeatable quality commands</code></pre>
+</div>
+
+<h2 id="feature-flow">Feature-first dependency graph</h2>
+<figure class="diagram flow-diagram" aria-labelledby="feature-flow-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">UI</span><span class="rail-copy"><strong>Presentation</strong><small>Widget, page, controller</small></span></li>
+    <li><span class="rail-node">UC</span><span class="rail-copy"><strong>Application</strong><small>workflow/use case</small></span></li>
+    <li><span class="rail-node">DM</span><span class="rail-copy"><strong>Domain</strong><small>entity, rule, repository contract</small></span></li>
+    <li><span class="rail-node">DT</span><span class="rail-copy"><strong>Data</strong><small>contract implementation, DTO, datasource</small></span></li>
+  </ol>
+  <figcaption>Presentation และ Data พึ่ง abstraction ที่ชั้นใน ไม่ย้อนให้ Domain รู้ plugin</figcaption>
+</figure>
+<p class="diagram-description" id="feature-flow-title">
+  Request ไหล UI → application → repository แต่ dependency ของ Data ชี้เข้า
+  Domain contract ทำให้ business code ไม่ import Dio หรือ secure storage plugin
+</p>
+
+<h2 id="layers">เมื่อใดต้องมีแต่ละ layer</h2>
+<table class="comparison-table">
+  <thead><tr><th>Layer</th><th>สร้างเมื่อ</th><th>ไม่ควรมี</th></tr></thead>
+  <tbody>
+    <tr><td>Presentation</td><td>feature มี UI/state interaction</td><td>Dio, DTO, plugin exception</td></tr>
+    <tr><td>Application</td><td>workflow มี orchestration/validation ที่ใช้ซ้ำ</td><td>BuildContext, Widget</td></tr>
+    <tr><td>Domain</td><td>มี entity/rule/contract</td><td>Flutter/plugin/import Data</td></tr>
+    <tr><td>Data</td><td>มี API/storage/platform boundary</td><td>UI state และ Widget</td></tr>
+  </tbody>
+</table>
+
+<h2 id="nearest-home">Nearest-home rule</h2>
+<ol>
+  <li>เริ่มไฟล์ใหม่ใน feature ที่ใช้</li>
+  <li>ถ้าใช้ซ้ำภายใน feature ให้วางระดับ feature</li>
+  <li>เมื่อ feature ที่สองต้องใช้ ให้ประเมิน abstraction จากสอง use cases จริง</li>
+  <li>ย้ายไป shared/core เฉพาะ business-neutral responsibility</li>
+</ol>
+<p>
+  การสร้าง shared ก่อนมีผู้ใช้จริงทำให้ API ออกแบบจากการเดาและ AI มีโอกาส
+  เลือก abstraction กว้างเกิน scope
+</p>
+
+<h2 id="core-shared">Core กับ Shared ต่างกัน</h2>
+<ul>
+  <li><strong>Core:</strong> infrastructure กลาง เช่น ApiClient, Result, logger, storage wrapper</li>
+  <li><strong>Shared:</strong> UI/validator ที่พิสูจน์ว่าใช้ข้าม feature</li>
+  <li><strong>Feature public surface:</strong> export เฉพาะสิ่งที่ feature อื่นจำเป็นต้องรู้</li>
+</ul>
+
+<h2 id="agents">AGENTS.md สำหรับ Dev และ AI</h2>
+<p>
+  อ่านก่อนแก้ source เพราะระบุ import boundary, error flow, naming, testing,
+  environment และข้อห้ามเรื่อง secrets Dev ใช้เป็น review checklist ส่วน AI
+  ใช้ลด ambiguity ก่อน generate code
+</p>
+
+<h2 id="adding-feature">Decision flow ก่อนเพิ่ม feature</h2>
+<div class="code-block">
+  <div class="code-label">คำถามตามลำดับ</div>
+  <pre><code>1. User-visible responsibility คืออะไร?
+2. Presentation อย่างเดียวพอหรือมี business rule?
+3. มี external I/O หรือไม่?
+4. Contract ควรอยู่ Domain หรือ Core?
+5. State owner และ lifetime คืออะไร?
+6. Test ต่ำสุดที่พิสูจน์ behavior คือระดับใด?
+7. Public surface ที่ feature อื่นต้องใช้มีอะไร?</code></pre>
+</div>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>สร้าง global folders เช่น screens/services/models แล้ว feature กระจายทั้ง repo</li>
+  <li>บังคับทุก feature มี 4 layers แม้เป็น static page</li>
+  <li>ให้ Presentation import DTO เพราะสะดวก</li>
+  <li>export internal controller/model ทุกไฟล์จาก barrel</li>
+  <li>กฎอยู่แต่ในเอกสารโดยไม่ให้ test/analyzer/CI ช่วย enforce</li>
+</ul>
+
+          <section class="checkpoint" id="checkpoint">
+  <h2>Checkpoint ก่อนเดินต่อ</h2>
+  <ol>
+    <li>อธิบายหัวข้อนี้ด้วยภาษาของตนเองโดยไม่เปิดคู่มือ</li>
+    <li>ชี้ไฟล์หรือคำสั่งใน Boilerplate ที่สัมพันธ์กับบทนี้ได้</li>
+    <li>รันตัวอย่างหรือ verification ที่บทกำหนดและอ่านผลลัพธ์ได้</li>
+  </ol>
+</section>
+<section class="quiz" id="quiz">
+  <h2>Quiz ตรวจ mental model</h2>
+  <p><strong>ควรวาง utility ใหม่ใน shared เมื่อใด?</strong></p>
+  <div class="quiz-options"><button class="quiz-option" type="button" data-correct="false">ทันทีที่สร้าง</button><button class="quiz-option" type="button" data-correct="true">เมื่อมีการใช้ข้าม feature ที่พิสูจน์แล้ว</button><button class="quiz-option" type="button" data-correct="false">เมื่อไฟล์มีเกิน 20 บรรทัด</button></div>
+  <p class="quiz-feedback" aria-live="polite"></p>
+</section>
+<section class="exercise" id="practice">
+  <h2>Practice</h2>
+  <p>เลือก feature ใหม่และวาด nearest-home path โดยยังไม่สร้าง shared abstraction</p>
+  <p><strong>Definition of done:</strong> อธิบายเหตุผลของ design, แสดงผลลัพธ์ที่รันจริง และไม่มี warning ที่ถูกมองข้าม</p>
+</section>
+
+          <nav class="chapter-pagination" aria-label="เปลี่ยนบทเรียน">
+            <a href="../chapters/11-state-lifecycle.html">ก่อนหน้า<br><strong>State Ownership และ Lifecycle</strong></a>
+            <a href="../chapters/13-riverpod.html">บทถัดไป<br><strong>Riverpod: State Graph และ Dependency Injection</strong></a>
+          </nav>
+        </article>
+        <aside class="lesson-toc" aria-label="สารบัญบท">
+          <strong>ในบทนี้</strong>
+          <a href="#objectives">เป้าหมายของบท</a>
+<a href="#topology">Repository topology</a>
+<a href="#feature-flow">Feature-first dependency graph</a>
+<a href="#layers">เมื่อใดต้องมีแต่ละ layer</a>
+<a href="#nearest-home">Nearest-home rule</a>
+<a href="#core-shared">Core กับ Shared ต่างกัน</a>
+<a href="#agents">AGENTS.md สำหรับ Dev และ AI</a>
+<a href="#adding-feature">Decision flow ก่อนเพิ่ม feature</a>
+<a href="#mistakes">ข้อผิดพลาดที่พบบ่อย</a>
+<a href="#checkpoint">Checkpoint</a>
+<a href="#quiz">Quiz</a>
+<a href="#practice">Practice</a>
+          <button class="chapter-complete" type="button" data-current-chapter="12-boilerplate-map" aria-pressed="false">
+            ทำเครื่องหมายว่าเรียนจบบทนี้
+          </button>
+        </aside>
+      </main>
+    </div>
+  </div>
+  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
+    <div class="search-head">
+      <label><span id="search-title" class="visually-hidden">ค้นหาคู่มือ</span><input id="search-input" type="search" placeholder="ค้นหา Dart, Riverpod, routing, build…" autocomplete="off"></label>
+      <button class="search-close" type="button" data-search-close>ปิด</button>
+    </div>
+    <div class="search-results" id="search-results" aria-live="polite"></div>
+  </dialog>
+</body>
+</html>

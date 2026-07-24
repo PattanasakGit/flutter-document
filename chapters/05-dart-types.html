@@ -1,0 +1,300 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="เรียน variable, inference, final, const, named parameter, enum, record และ switch expression">
+  <title>Dart Types และโครงสร้างโปรแกรมสำหรับ TypeScript Developer — Flutter Field Guide</title>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script defer src="../assets/js/site.js"></script>
+  <script defer src="../assets/js/catalog.js"></script>
+</head>
+<body data-root="../">
+  <a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
+  <noscript><p class="noscript-note">เนื้อหาทั้งหมดยังอ่านได้ แต่ search, theme, quiz และ progress ต้องเปิด JavaScript</p></noscript>
+  <div class="site-shell">
+    <aside class="sidebar" aria-label="เมนูหลักสูตร">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
+        <span><strong>Flutter Field Guide</strong><small>Web → Mobile</small></span>
+      </a>
+      <div class="sidebar-tools">
+        <button class="search-trigger" type="button" data-search-trigger>ค้นหาบทเรียน <kbd>/</kbd></button>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </div>
+      <div class="course-progress">
+        <div class="progress-meta"><span>ความคืบหน้า</span><strong data-progress-count>0 / 28</strong></div>
+        <div class="progress-track" aria-hidden="true"><div class="progress-value" data-progress-value></div></div>
+      </div>
+      <p class="nav-heading">A · Orientation & Setup</p>
+<nav class="course-nav">
+<a href="../chapters/01-orientation.html"><span class="nav-index">01</span>เริ่มใช้คู่มือและตั้งเป้าหมายระบบ</a>
+<a href="../chapters/02-react-to-flutter.html"><span class="nav-index">02</span>แผนที่ความคิดจาก React และ Next.js สู่ Flutter</a>
+<a href="../chapters/03-macos-toolchain.html"><span class="nav-index">03</span>ติดตั้ง Flutter toolchain บน macOS และ VS Code</a>
+<a href="../chapters/04-clone-and-run.html"><span class="nav-index">04</span>Clone, Generate, Run และตรวจ Boilerplate</a>
+</nav>
+<p class="nav-heading">B · Dart for TypeScript</p>
+<nav class="course-nav">
+<a href="../chapters/05-dart-types.html" aria-current="page"><span class="nav-index">05</span>Dart Types และโครงสร้างโปรแกรมสำหรับ TypeScript Developer</a>
+<a href="../chapters/06-null-collections-patterns.html"><span class="nav-index">06</span>Null Safety, Collections และ Pattern Matching</a>
+<a href="../chapters/07-functions-classes-generics.html"><span class="nav-index">07</span>Functions, Classes, Immutability และ Generics</a>
+<a href="../chapters/08-async-errors-results.html"><span class="nav-index">08</span>Future, Stream, Exception และ Typed Result</a>
+</nav>
+<p class="nav-heading">C · Flutter Fundamentals</p>
+<nav class="course-nav">
+<a href="../chapters/09-widget-runtime.html"><span class="nav-index">09</span>Widget, Element, RenderObject และ BuildContext</a>
+<a href="../chapters/10-layout-theme-forms.html"><span class="nav-index">10</span>Constraints, Responsive Layout, Theme และ Form</a>
+<a href="../chapters/11-state-lifecycle.html"><span class="nav-index">11</span>State Ownership และ Lifecycle</a>
+</nav>
+<p class="nav-heading">D · Boilerplate Architecture</p>
+<nav class="course-nav">
+<a href="../chapters/12-boilerplate-map.html"><span class="nav-index">12</span>แผนที่ AI-first Flutter Boilerplate</a>
+<a href="../chapters/13-riverpod.html"><span class="nav-index">13</span>Riverpod: State Graph และ Dependency Injection</a>
+<a href="../chapters/14-go-router.html"><span class="nav-index">14</span>GoRouter, Redirect และ Authentication Guard</a>
+<a href="../chapters/15-network-storage-errors.html"><span class="nav-index">15</span>Dio, DTO, Repository, Failure และ Secure Storage</a>
+</nav>
+<p class="nav-heading">E · Task Management</p>
+<nav class="course-nav">
+<a href="../chapters/16-task-domain.html"><span class="nav-index">16</span>Capstone: Model Task Domain ด้วย Test-first</a>
+<a href="../chapters/17-offline-repository.html"><span class="nav-index">17</span>Capstone: Offline Datasource และ Repository</a>
+<a href="../chapters/18-task-riverpod.html"><span class="nav-index">18</span>Capstone: Task State และ Filter ด้วย Riverpod</a>
+<a href="../chapters/19-task-form.html"><span class="nav-index">19</span>Capstone: Create/Edit Form และ Validation</a>
+<a href="../chapters/20-task-mutations.html"><span class="nav-index">20</span>Capstone: Toggle, Update, Delete และ Feedback</a>
+<a href="../chapters/21-dio-datasource.html"><span class="nav-index">21</span>Capstone: Real-API-ready Dio Datasource</a>
+<a href="../chapters/22-capstone-integration.html"><span class="nav-index">22</span>Capstone: Route, Shell และ End-to-end Flow</a>
+</nav>
+<p class="nav-heading">F · Quality & Delivery</p>
+<nav class="course-nav">
+<a href="../chapters/23-testing.html"><span class="nav-index">23</span>Test Strategy: Unit ถึง Integration</a>
+<a href="../chapters/24-debug-performance.html"><span class="nav-index">24</span>Debugging, DevTools และ Performance</a>
+<a href="../chapters/25-production-concerns.html"><span class="nav-index">25</span>Environment, Security, Accessibility และ Localization</a>
+<a href="../chapters/26-build-release.html"><span class="nav-index">26</span>Build Android, iOS และ Web</a>
+<a href="../chapters/27-production-checklist.html"><span class="nav-index">27</span>Production Readiness และ Next-system Checklist</a>
+<a href="../chapters/28-ai-workflow.html"><span class="nav-index">28</span>ใช้ AI พัฒนา Flutter อย่างมีขอบเขตและหลักฐาน</a>
+</nav>
+<p class="nav-heading">Reference</p>
+<nav class="course-nav">
+<a href="../reference/commands.html"><span class="nav-index">R</span>Command Cookbook</a>
+<a href="../reference/glossary.html"><span class="nav-index">R</span>React/Next.js ↔ Flutter Glossary</a>
+<a href="../reference/architecture-decisions.html"><span class="nav-index">R</span>Architecture Decision Matrix</a>
+<a href="../reference/troubleshooting.html"><span class="nav-index">R</span>Troubleshooting Catalog</a>
+</nav>
+
+      <div class="sidebar-footer"><p>Offline-first · ภาษาไทย · Flutter 3.44</p></div>
+    </aside>
+    <div class="site-main">
+      <header class="mobile-bar">
+        <button class="nav-trigger" type="button" data-nav-trigger aria-expanded="false">เมนู</button>
+        <strong>05 · Dart Types และโครงสร้างโปรแกรมสำหรับ TypeScript Developer</strong>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </header>
+      <main id="main-content" class="lesson-wrap">
+        <article class="lesson">
+          <header class="lesson-header">
+            <p class="lesson-kicker">B · Dart for TypeScript · บทที่ 05</p>
+            <h1>Dart Types และโครงสร้างโปรแกรมสำหรับ TypeScript Developer</h1>
+            <p class="hero-lead">เรียน variable, inference, final, const, named parameter, enum, record และ switch expression</p>
+            <div class="lesson-meta">
+              <span>เวลาอ่าน 45 นาที</span>
+              <span>ระดับ พื้นฐาน</span>
+              <span>Dart TypeScript final const enum record switch</span>
+            </div>
+          </header>
+          <h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>อ่าน entrypoint และ declaration ของ Dart ได้</li>
+  <li>ใช้ type inference โดยไม่ทำให้ public API คลุมเครือ</li>
+  <li>แยก <code>final</code>, <code>const</code> และ mutable variable</li>
+  <li>ใช้ named parameter, enum, record และ switch expression</li>
+</ul>
+
+<div class="callout callout-bridge">
+  <strong>จาก TypeScript</strong>
+  Dart เป็น statically typed แบบ nominal เป็นหลัก class/interface identity
+  มีความหมาย ไม่ใช่ structural typing แบบ TypeScript ที่ object shape ตรงกัน
+  แล้ว assign ได้เสมอ
+</div>
+
+<h2 id="entrypoint">โครงสร้างโปรแกรมและ main</h2>
+<div class="code-block">
+  <div class="code-label">Dart</div>
+  <pre><code>import 'package:flutter/material.dart';
+
+void main() {
+  runApp(const App());
+}</code></pre>
+</div>
+<p>
+  ทุก Dart application เริ่มจาก top-level <code>main</code> ซึ่งคืน
+  <code>void</code> หรือ <code>Future&lt;void&gt;</code> ได้ ใน Boilerplate
+  entrypoint เรียก shared bootstrap พร้อม environment config ต่างกัน
+</p>
+
+<h2 id="variables">var, explicit type, final และ const</h2>
+<div class="code-block">
+  <div class="code-label">Dart variables</div>
+  <pre><code>var title = 'Write tests';        // inferred String, เปลี่ยนค่าได้
+String owner = 'Pattanasak';      // explicit String
+final createdAt = DateTime.now(); // กำหนดครั้งเดียวตอน runtime
+const maxTitleLength = 120;       // compile-time constant
+
+title = 'Review tests';
+// createdAt = DateTime.now();    // compile error</code></pre>
+</div>
+<table class="comparison-table">
+  <thead><tr><th>Dart</th><th>TypeScript mental bridge</th><th>หมายเหตุ</th></tr></thead>
+  <tbody>
+    <tr><td><code>var</code></td><td><code>let</code> พร้อม inferred type</td><td>Dart ไม่เปลี่ยน type ภายหลัง</td></tr>
+    <tr><td><code>final</code></td><td><code>const</code> binding</td><td>ค่าภายใน object อาจ mutable ถ้า type อนุญาต</td></tr>
+    <tr><td><code>const</code></td><td>compile-time value</td><td>สร้าง canonical immutable instance ได้</td></tr>
+    <tr><td><code>dynamic</code></td><td>คล้าย <code>any</code></td><td>ปิด static checking; หลีกเลี่ยงที่ boundary</td></tr>
+    <tr><td><code>Object?</code></td><td>คล้าย <code>unknown</code></td><td>ต้องตรวจ type ก่อนใช้</td></tr>
+  </tbody>
+</table>
+
+<h2 id="functions">Named และ required parameters</h2>
+<div class="code-block">
+  <div class="code-label">Dart API design</div>
+  <pre><code>Task createTask({
+  required String title,
+  String description = '',
+  DateTime? dueAt,
+}) {
+  return Task(
+    id: 'generated-id',
+    title: title.trim(),
+    description: description.trim(),
+    dueAt: dueAt,
+  );
+}
+
+final task = createTask(
+  title: 'Learn Dart',
+  dueAt: DateTime(2026, 8, 1),
+);</code></pre>
+</div>
+<p>
+  Named parameter ทำให้ call site อ่านความหมายได้และลด bug จาก parameter
+  ที่ type เหมือนกันหลายตัว ใช้ <code>required</code> เมื่อ null/default
+  ไม่ใช่ state ที่ถูกต้อง
+</p>
+
+<h2 id="enums-records">Enum และ Record</h2>
+<div class="code-block">
+  <div class="code-label">Dart 3</div>
+  <pre><code>enum TaskFilter { all, open, completed }
+
+typedef TaskSummary = ({
+  int total,
+  int open,
+  int completed,
+});
+
+TaskSummary summarize(List&lt;Task&gt; tasks) {
+  final completed = tasks.where((task) =&gt; task.isCompleted).length;
+  return (
+    total: tasks.length,
+    open: tasks.length - completed,
+    completed: completed,
+  );
+}
+
+final (:total, :open, :completed) = summarize(tasks);</code></pre>
+</div>
+<p>
+  Record เหมาะกับค่าชั่วคราวหลายช่องที่ไม่มี domain identity ถ้าค่านั้นมี
+  behavior, invariant หรือใช้ข้าม boundary ให้สร้าง named class แทน
+</p>
+
+<h2 id="switch">Exhaustive switch expression</h2>
+<div class="code-block">
+  <div class="code-label">Dart</div>
+  <pre><code>String filterLabel(TaskFilter filter) =&gt; switch (filter) {
+  TaskFilter.all =&gt; 'ทั้งหมด',
+  TaskFilter.open =&gt; 'ยังไม่เสร็จ',
+  TaskFilter.completed =&gt; 'เสร็จแล้ว',
+};</code></pre>
+</div>
+<p>
+  เมื่อเพิ่ม enum value ใหม่ analyzer บังคับให้จัดการครบ ต่างจาก
+  <code>default</code> กว้าง ๆ ที่อาจซ่อน state ใหม่
+</p>
+
+<h2 id="type-boundary">Type ที่ boundary</h2>
+<p>
+  ภายใน function สั้นใช้ inference ได้ แต่ public fields, return type,
+  repository contract และ provider ควรบอก type ชัดเพื่อเป็น API ให้คนและ AI
+</p>
+<div class="code-block">
+  <div class="code-label">ชัดเจนกว่า dynamic</div>
+  <pre><code>abstract interface class TaskRepository {
+  Future&lt;Result&lt;List&lt;Task&gt;&gt;&gt; getTasks();
+}
+
+// หลีกเลี่ยง
+Future getTasks() async =&gt; fetchSomething();</code></pre>
+</div>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>ใช้ <code>dynamic</code> เพื่อให้ analyzer เงียบ แล้วเลื่อน error ไป runtime</li>
+  <li>ใช้ <code>var</code> ใน public field จนคนอ่านไม่รู้ contract</li>
+  <li>คิดว่า <code>final List</code> ทำให้สมาชิก list immutable</li>
+  <li>ใช้ positional parameter หลายตัวที่เป็น <code>String</code> เหมือนกัน</li>
+  <li>สร้าง class สำหรับค่าชั่วคราวทุกคู่ ทั้งที่ Record สื่อ intent ได้พอ</li>
+</ul>
+
+          <section class="checkpoint" id="checkpoint">
+  <h2>Checkpoint ก่อนเดินต่อ</h2>
+  <ol>
+    <li>อธิบายหัวข้อนี้ด้วยภาษาของตนเองโดยไม่เปิดคู่มือ</li>
+    <li>ชี้ไฟล์หรือคำสั่งใน Boilerplate ที่สัมพันธ์กับบทนี้ได้</li>
+    <li>รันตัวอย่างหรือ verification ที่บทกำหนดและอ่านผลลัพธ์ได้</li>
+  </ol>
+</section>
+<section class="quiz" id="quiz">
+  <h2>Quiz ตรวจ mental model</h2>
+  <p><strong>final และ const ต่างกันอย่างไร?</strong></p>
+  <div class="quiz-options"><button class="quiz-option" type="button" data-correct="false">ไม่ต่างกัน</button><button class="quiz-option" type="button" data-correct="true">final กำหนดครั้งเดียวตอน runtime; const ต้องเป็น compile-time constant</button><button class="quiz-option" type="button" data-correct="false">const เปลี่ยนค่าได้</button></div>
+  <p class="quiz-feedback" aria-live="polite"></p>
+</section>
+<section class="exercise" id="practice">
+  <h2>Practice</h2>
+  <p>สร้าง record สรุปจำนวน task เปิด/เสร็จ และใช้ switch expression แสดงสถานะ</p>
+  <p><strong>Definition of done:</strong> อธิบายเหตุผลของ design, แสดงผลลัพธ์ที่รันจริง และไม่มี warning ที่ถูกมองข้าม</p>
+</section>
+
+          <nav class="chapter-pagination" aria-label="เปลี่ยนบทเรียน">
+            <a href="../chapters/04-clone-and-run.html">ก่อนหน้า<br><strong>Clone, Generate, Run และตรวจ Boilerplate</strong></a>
+            <a href="../chapters/06-null-collections-patterns.html">บทถัดไป<br><strong>Null Safety, Collections และ Pattern Matching</strong></a>
+          </nav>
+        </article>
+        <aside class="lesson-toc" aria-label="สารบัญบท">
+          <strong>ในบทนี้</strong>
+          <a href="#objectives">เป้าหมายของบท</a>
+<a href="#entrypoint">โครงสร้างโปรแกรมและ main</a>
+<a href="#variables">var, explicit type, final และ const</a>
+<a href="#functions">Named และ required parameters</a>
+<a href="#enums-records">Enum และ Record</a>
+<a href="#switch">Exhaustive switch expression</a>
+<a href="#type-boundary">Type ที่ boundary</a>
+<a href="#mistakes">ข้อผิดพลาดที่พบบ่อย</a>
+<a href="#checkpoint">Checkpoint</a>
+<a href="#quiz">Quiz</a>
+<a href="#practice">Practice</a>
+          <button class="chapter-complete" type="button" data-current-chapter="05-dart-types" aria-pressed="false">
+            ทำเครื่องหมายว่าเรียนจบบทนี้
+          </button>
+        </aside>
+      </main>
+    </div>
+  </div>
+  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
+    <div class="search-head">
+      <label><span id="search-title" class="visually-hidden">ค้นหาคู่มือ</span><input id="search-input" type="search" placeholder="ค้นหา Dart, Riverpod, routing, build…" autocomplete="off"></label>
+      <button class="search-close" type="button" data-search-close>ปิด</button>
+    </div>
+    <div class="search-results" id="search-results" aria-live="polite"></div>
+  </dialog>
+</body>
+</html>

@@ -1,0 +1,142 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>อ่าน <code>T</code> และ <code>T?</code> เป็นคนละ state space</li>
+  <li>ใช้ promotion, <code>?.</code>, <code>??</code> และ pattern แทนการกด <code>!</code></li>
+  <li>แปลง List/Map/Set โดยไม่สร้าง side effect ที่ซ่อนอยู่</li>
+  <li>ใช้ collection-if, collection-for และ spread สร้าง Widget/list</li>
+</ul>
+
+<h2 id="null-model">Null safety คือการออกแบบ state</h2>
+<div class="code-block">
+  <div class="code-label">Dart</div>
+  <pre><code>String? description;
+
+if (description != null) {
+  // promoted เป็น String ภายใน block
+  print(description.length);
+}
+
+final visibleText = description?.trim().isNotEmpty == true
+    ? description!.trim()
+    : 'ไม่มีรายละเอียด';</code></pre>
+</div>
+<p>
+  ตัวอย่างสุดท้ายยังใช้ <code>!</code> แม้มีเหตุผล แต่เขียนให้ promotion
+  ชัดกว่าจะอ่านง่ายกว่า:
+</p>
+<div class="code-block">
+  <div class="code-label">หลีกเลี่ยง !</div>
+  <pre><code>String displayDescription(String? value) {
+  final trimmed = value?.trim();
+  if (trimmed == null || trimmed.isEmpty) {
+    return 'ไม่มีรายละเอียด';
+  }
+  return trimmed;
+}</code></pre>
+</div>
+
+<h2 id="operators">เครื่องมือ null-safe</h2>
+<table class="comparison-table">
+  <thead><tr><th>Syntax</th><th>ความหมาย</th><th>ใช้เมื่อ</th></tr></thead>
+  <tbody>
+    <tr><td><code>T?</code></td><td>type ยอมรับ null</td><td>null มีความหมายใน domain/UI</td></tr>
+    <tr><td><code>value?.x</code></td><td>เรียกเมื่อไม่ null</td><td>ผล null ต่อได้อย่างปลอดภัย</td></tr>
+    <tr><td><code>a ?? b</code></td><td>fallback เมื่อ a null</td><td>มี default ที่ถูก domain</td></tr>
+    <tr><td><code>a ??= b</code></td><td>กำหนดเมื่อ null</td><td>lazy initialize mutable variable</td></tr>
+    <tr><td><code>value!</code></td><td>บังคับว่าไม่ null</td><td>มี invariant ที่พิสูจน์ได้แต่ analyzer ไม่เห็น</td></tr>
+    <tr><td><code>late</code></td><td>สัญญาว่ากำหนดก่อนอ่าน</td><td>lifecycle/framework บังคับ initialization ภายหลัง</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-warning">
+  <strong><code>!</code> และ <code>late</code> คือหนี้ของหลักฐาน</strong>
+  ถ้าสัญญาผิด แอปจะ throw ตอน runtime ทุกครั้งที่ใช้ ให้ใส่เฉพาะเมื่อ lifecycle
+  หรือ guard พิสูจน์ invariant จริง ไม่ใช้เพื่อให้ compile ผ่าน
+</div>
+
+<h2 id="collections">List, Set และ Map</h2>
+<div class="code-block">
+  <div class="code-label">Collections</div>
+  <pre><code>final tasks = &lt;Task&gt;[taskA, taskB];
+final selectedIds = &lt;String&gt;{'a', 'b'};
+final byId = &lt;String, Task&gt;{
+  for (final task in tasks) task.id: task,
+};
+
+final openTitles = tasks
+    .where((task) =&gt; !task.isCompleted)
+    .map((task) =&gt; task.title)
+    .toList(growable: false);</code></pre>
+</div>
+<p>
+  <code>Iterable</code> จาก <code>where/map</code> เป็น lazy จนถูก iterate
+  ใช้ <code>toList(growable: false)</code> เมื่อ boundary ต้องการ snapshot
+  ที่ caller เพิ่มสมาชิกไม่ได้
+</p>
+
+<h2 id="collection-control">Collection-if, for และ spread</h2>
+<div class="code-block">
+  <div class="code-label">สร้าง Widget list แบบ declarative</div>
+  <pre><code>Column(
+  children: [
+    const Text('Tasks'),
+    if (isLoading) const CircularProgressIndicator(),
+    for (final task in visibleTasks)
+      TaskCard(task: task),
+    ...extraActions,
+  ],
+)</code></pre>
+</div>
+<p>
+  นี่ไม่ใช่ template directive แยกภาษาเหมือน JSX expression แต่เป็น
+  collection literal ของ Dart โดยตรง compiler จึงตรวจ type ของสมาชิกทุกตัว
+</p>
+
+<h2 id="patterns">Patterns และ destructuring</h2>
+<div class="code-block">
+  <div class="code-label">Dart 3 pattern</div>
+  <pre><code>Object payload = {'id': 't1', 'completed': false};
+
+if (payload case {
+  'id': final String id,
+  'completed': final bool completed,
+}) {
+  print('$id: $completed');
+}</code></pre>
+</div>
+<p>
+  Pattern ช่วยตรวจ shape และ bind type พร้อมกัน แต่ API payload ใน production
+  ควรผ่าน DTO decoder ที่ทดสอบได้ ไม่กระจาย map pattern ไปทุก layer
+</p>
+
+<h2 id="switch-patterns">Pattern switch กับ sealed state</h2>
+<div class="code-block">
+  <div class="code-label">Exhaustive UI mapping</div>
+  <pre><code>Widget body = switch (state) {
+  TaskLoading() =&gt; const LoadingView(),
+  TaskReady(:final tasks) =&gt; TaskList(tasks: tasks),
+  TaskFailed(:final failure) =&gt; ErrorView(message: failure.message),
+};</code></pre>
+</div>
+<p>
+  รูปแบบนี้ทำให้ loading พร้อม error หรือ success ที่ไม่มี data เกิดไม่ได้
+  ต่างจาก enum + nullable fields ที่สร้าง combination ผิดได้
+</p>
+
+<h2 id="immutability">Collection immutability</h2>
+<div class="code-block">
+  <div class="code-label">ส่ง snapshot ไม่ส่ง mutable source</div>
+  <pre><code>List&lt;Task&gt; get tasks =&gt; List.unmodifiable(_tasks);
+
+// หลีกเลี่ยง เพราะ caller แก้ state ภายในได้
+List&lt;Task&gt; get tasks =&gt; _tasks;</code></pre>
+</div>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>ใส่ <code>!</code> หลังทุก API field แทนการ validate schema</li>
+  <li>ใช้ <code>late</code> กับค่าที่จริงควรผ่าน constructor</li>
+  <li>คืน internal mutable list จาก repository</li>
+  <li>เรียก <code>first</code> โดยไม่รู้ว่า list ว่างได้หรือไม่</li>
+  <li>ใช้ <code>map</code> เพื่อ side effect แทน <code>for</code></li>
+</ul>

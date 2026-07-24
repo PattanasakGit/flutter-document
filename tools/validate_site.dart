@@ -5,6 +5,42 @@ final _attributePattern = RegExp(
   caseSensitive: false,
 );
 
+const _expectedPages = <String>{
+  'index.html',
+  'chapters/01-orientation.html',
+  'chapters/02-react-to-flutter.html',
+  'chapters/03-macos-toolchain.html',
+  'chapters/04-clone-and-run.html',
+  'chapters/05-dart-types.html',
+  'chapters/06-null-collections-patterns.html',
+  'chapters/07-functions-classes-generics.html',
+  'chapters/08-async-errors-results.html',
+  'chapters/09-widget-runtime.html',
+  'chapters/10-layout-theme-forms.html',
+  'chapters/11-state-lifecycle.html',
+  'chapters/12-boilerplate-map.html',
+  'chapters/13-riverpod.html',
+  'chapters/14-go-router.html',
+  'chapters/15-network-storage-errors.html',
+  'chapters/16-task-domain.html',
+  'chapters/17-offline-repository.html',
+  'chapters/18-task-riverpod.html',
+  'chapters/19-task-form.html',
+  'chapters/20-task-mutations.html',
+  'chapters/21-dio-datasource.html',
+  'chapters/22-capstone-integration.html',
+  'chapters/23-testing.html',
+  'chapters/24-debug-performance.html',
+  'chapters/25-production-concerns.html',
+  'chapters/26-build-release.html',
+  'chapters/27-production-checklist.html',
+  'chapters/28-ai-workflow.html',
+  'reference/commands.html',
+  'reference/glossary.html',
+  'reference/architecture-decisions.html',
+  'reference/troubleshooting.html',
+};
+
 void main() {
   final root = Directory.current;
   final htmlFiles = <File>[
@@ -18,6 +54,12 @@ void main() {
     stderr.writeln('No HTML files found.');
     exitCode = 1;
     return;
+  }
+
+  for (final expectedPage in _expectedPages) {
+    if (!File(expectedPage).existsSync()) {
+      errors.add('Missing required page: $expectedPage');
+    }
   }
 
   var localLinkCount = 0;

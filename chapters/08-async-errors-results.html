@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="แยก asynchronous value, event stream, expected failure และ programming error ออกจากกัน">
+  <title>Future, Stream, Exception และ Typed Result — Flutter Field Guide</title>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script defer src="../assets/js/site.js"></script>
+  <script defer src="../assets/js/catalog.js"></script>
+</head>
+<body data-root="../">
+  <a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
+  <noscript><p class="noscript-note">เนื้อหาทั้งหมดยังอ่านได้ แต่ search, theme, quiz และ progress ต้องเปิด JavaScript</p></noscript>
+  <div class="site-shell">
+    <aside class="sidebar" aria-label="เมนูหลักสูตร">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
+        <span><strong>Flutter Field Guide</strong><small>Web → Mobile</small></span>
+      </a>
+      <div class="sidebar-tools">
+        <button class="search-trigger" type="button" data-search-trigger>ค้นหาบทเรียน <kbd>/</kbd></button>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </div>
+      <div class="course-progress">
+        <div class="progress-meta"><span>ความคืบหน้า</span><strong data-progress-count>0 / 28</strong></div>
+        <div class="progress-track" aria-hidden="true"><div class="progress-value" data-progress-value></div></div>
+      </div>
+      <p class="nav-heading">A · Orientation & Setup</p>
+<nav class="course-nav">
+<a href="../chapters/01-orientation.html"><span class="nav-index">01</span>เริ่มใช้คู่มือและตั้งเป้าหมายระบบ</a>
+<a href="../chapters/02-react-to-flutter.html"><span class="nav-index">02</span>แผนที่ความคิดจาก React และ Next.js สู่ Flutter</a>
+<a href="../chapters/03-macos-toolchain.html"><span class="nav-index">03</span>ติดตั้ง Flutter toolchain บน macOS และ VS Code</a>
+<a href="../chapters/04-clone-and-run.html"><span class="nav-index">04</span>Clone, Generate, Run และตรวจ Boilerplate</a>
+</nav>
+<p class="nav-heading">B · Dart for TypeScript</p>
+<nav class="course-nav">
+<a href="../chapters/05-dart-types.html"><span class="nav-index">05</span>Dart Types และโครงสร้างโปรแกรมสำหรับ TypeScript Developer</a>
+<a href="../chapters/06-null-collections-patterns.html"><span class="nav-index">06</span>Null Safety, Collections และ Pattern Matching</a>
+<a href="../chapters/07-functions-classes-generics.html"><span class="nav-index">07</span>Functions, Classes, Immutability และ Generics</a>
+<a href="../chapters/08-async-errors-results.html" aria-current="page"><span class="nav-index">08</span>Future, Stream, Exception และ Typed Result</a>
+</nav>
+<p class="nav-heading">C · Flutter Fundamentals</p>
+<nav class="course-nav">
+<a href="../chapters/09-widget-runtime.html"><span class="nav-index">09</span>Widget, Element, RenderObject และ BuildContext</a>
+<a href="../chapters/10-layout-theme-forms.html"><span class="nav-index">10</span>Constraints, Responsive Layout, Theme และ Form</a>
+<a href="../chapters/11-state-lifecycle.html"><span class="nav-index">11</span>State Ownership และ Lifecycle</a>
+</nav>
+<p class="nav-heading">D · Boilerplate Architecture</p>
+<nav class="course-nav">
+<a href="../chapters/12-boilerplate-map.html"><span class="nav-index">12</span>แผนที่ AI-first Flutter Boilerplate</a>
+<a href="../chapters/13-riverpod.html"><span class="nav-index">13</span>Riverpod: State Graph และ Dependency Injection</a>
+<a href="../chapters/14-go-router.html"><span class="nav-index">14</span>GoRouter, Redirect และ Authentication Guard</a>
+<a href="../chapters/15-network-storage-errors.html"><span class="nav-index">15</span>Dio, DTO, Repository, Failure และ Secure Storage</a>
+</nav>
+<p class="nav-heading">E · Task Management</p>
+<nav class="course-nav">
+<a href="../chapters/16-task-domain.html"><span class="nav-index">16</span>Capstone: Model Task Domain ด้วย Test-first</a>
+<a href="../chapters/17-offline-repository.html"><span class="nav-index">17</span>Capstone: Offline Datasource และ Repository</a>
+<a href="../chapters/18-task-riverpod.html"><span class="nav-index">18</span>Capstone: Task State และ Filter ด้วย Riverpod</a>
+<a href="../chapters/19-task-form.html"><span class="nav-index">19</span>Capstone: Create/Edit Form และ Validation</a>
+<a href="../chapters/20-task-mutations.html"><span class="nav-index">20</span>Capstone: Toggle, Update, Delete และ Feedback</a>
+<a href="../chapters/21-dio-datasource.html"><span class="nav-index">21</span>Capstone: Real-API-ready Dio Datasource</a>
+<a href="../chapters/22-capstone-integration.html"><span class="nav-index">22</span>Capstone: Route, Shell และ End-to-end Flow</a>
+</nav>
+<p class="nav-heading">F · Quality & Delivery</p>
+<nav class="course-nav">
+<a href="../chapters/23-testing.html"><span class="nav-index">23</span>Test Strategy: Unit ถึง Integration</a>
+<a href="../chapters/24-debug-performance.html"><span class="nav-index">24</span>Debugging, DevTools และ Performance</a>
+<a href="../chapters/25-production-concerns.html"><span class="nav-index">25</span>Environment, Security, Accessibility และ Localization</a>
+<a href="../chapters/26-build-release.html"><span class="nav-index">26</span>Build Android, iOS และ Web</a>
+<a href="../chapters/27-production-checklist.html"><span class="nav-index">27</span>Production Readiness และ Next-system Checklist</a>
+<a href="../chapters/28-ai-workflow.html"><span class="nav-index">28</span>ใช้ AI พัฒนา Flutter อย่างมีขอบเขตและหลักฐาน</a>
+</nav>
+<p class="nav-heading">Reference</p>
+<nav class="course-nav">
+<a href="../reference/commands.html"><span class="nav-index">R</span>Command Cookbook</a>
+<a href="../reference/glossary.html"><span class="nav-index">R</span>React/Next.js ↔ Flutter Glossary</a>
+<a href="../reference/architecture-decisions.html"><span class="nav-index">R</span>Architecture Decision Matrix</a>
+<a href="../reference/troubleshooting.html"><span class="nav-index">R</span>Troubleshooting Catalog</a>
+</nav>
+
+      <div class="sidebar-footer"><p>Offline-first · ภาษาไทย · Flutter 3.44</p></div>
+    </aside>
+    <div class="site-main">
+      <header class="mobile-bar">
+        <button class="nav-trigger" type="button" data-nav-trigger aria-expanded="false">เมนู</button>
+        <strong>08 · Future, Stream, Exception และ Typed Result</strong>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </header>
+      <main id="main-content" class="lesson-wrap">
+        <article class="lesson">
+          <header class="lesson-header">
+            <p class="lesson-kicker">B · Dart for TypeScript · บทที่ 08</p>
+            <h1>Future, Stream, Exception และ Typed Result</h1>
+            <p class="hero-lead">แยก asynchronous value, event stream, expected failure และ programming error ออกจากกัน</p>
+            <div class="lesson-meta">
+              <span>เวลาอ่าน 62 นาที</span>
+              <span>ระดับ พื้นฐาน</span>
+              <span>Future Stream async await exception sealed Result Failure</span>
+            </div>
+          </header>
+          <h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>แยก synchronous value, Future และ Stream</li>
+  <li>เข้าใจ event loop ในระดับที่ป้องกัน UI blocking และ stale async result</li>
+  <li>วาง exception boundary และ typed failure</li>
+  <li>ใช้ sealed Result กับ exhaustive switch</li>
+</ul>
+
+<h2 id="future">Future และ async/await</h2>
+<div class="code-block">
+  <div class="code-label">Dart async</div>
+  <pre><code>Future&lt;List&lt;Task&gt;&gt; loadTasks() async {
+  final response = await apiClient.get&lt;List&lt;Object?&gt;&gt;('/tasks');
+  return response.map(TaskDto.fromJson).map((dto) =&gt; dto.toEntity()).toList();
+}</code></pre>
+</div>
+<p>
+  Function ที่มี <code>async</code> คืน Future ทันที เมื่อถึง
+  <code>await</code> execution ยอมคืน control ให้ event loop ไม่ได้สร้าง
+  thread ใหม่อัตโนมัติ งาน CPU หนักยัง block UI isolate
+</p>
+
+<div class="callout callout-bridge">
+  <strong>เทียบกับ JavaScript Promise</strong>
+  mental model ของ <code>await</code> คล้ายกัน แต่ Dart มี type ของ
+  <code>Future&lt;T&gt;</code>, isolate และ Flutter lifecycle ที่ต้องตรวจ
+  <code>mounted</code> ก่อนใช้ context หลัง async gap
+</div>
+
+<h2 id="context-gap">BuildContext หลัง await</h2>
+<div class="code-block">
+  <div class="code-label">Presentation guard</div>
+  <pre><code>onPressed: () async {
+  final saved = await controller.save();
+  if (!context.mounted) return;
+
+  if (saved) {
+    Navigator.of(context).pop();
+  }
+}</code></pre>
+</div>
+<p>
+  ระหว่าง await ผู้ใช้อาจปิดหน้า Element ที่ context อ้างถึงถูก unmount
+  การใช้ context ต่อโดยไม่ตรวจทำให้เกิด lifecycle error
+</p>
+
+<h2 id="stream">Stream สำหรับค่าหลายเหตุการณ์</h2>
+<div class="code-block">
+  <div class="code-label">Stream</div>
+  <pre><code>Stream&lt;int&gt; countdown(int from) async* {
+  for (var value = from; value &gt;= 0; value -= 1) {
+    yield value;
+    await Future&lt;void&gt;.delayed(const Duration(seconds: 1));
+  }
+}
+
+await for (final value in countdown(3)) {
+  print(value);
+}</code></pre>
+</div>
+<p>
+  ใช้ Stream เมื่อ source ส่งหลายค่า เช่น connectivity, WebSocket หรือ database
+  watch อย่าเปลี่ยน Future ที่คืนครั้งเดียวเป็น Stream เพียงเพราะ “reactive”
+</p>
+
+<h2 id="exceptions">วาง exception boundary</h2>
+<figure class="diagram flow-diagram" aria-labelledby="error-flow-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">01</span><span class="rail-copy"><strong>Dio/plugin</strong><small>transport-specific exception</small></span></li>
+    <li><span class="rail-node">02</span><span class="rail-copy"><strong>AppException</strong><small>จำแนก network, timeout, auth, schema</small></span></li>
+    <li><span class="rail-node">03</span><span class="rail-copy"><strong>Failure</strong><small>ภาษาของ application/domain</small></span></li>
+    <li><span class="rail-node">04</span><span class="rail-copy"><strong>Result&lt;T&gt;</strong><small>expected success/failure</small></span></li>
+    <li><span class="rail-node">05</span><span class="rail-copy"><strong>State/UI</strong><small>แสดง recovery ที่เหมาะ</small></span></li>
+  </ol>
+  <figcaption>exception ถูกแปลครั้งเดียวที่ boundary และไม่รั่วถึง UI</figcaption>
+</figure>
+<p class="diagram-description" id="error-flow-title">
+  error pipeline รักษารายละเอียด diagnostic ภายในและให้ presentation รับเฉพาะ
+  failure ที่ตัดสินใจได้ เช่น retry, login ใหม่ หรือแก้ input
+</p>
+
+<h2 id="result">Sealed Result</h2>
+<div class="code-block">
+  <div class="code-label">Consume Result</div>
+  <pre><code>final result = await repository.getTasks();
+
+return switch (result) {
+  Success(:final data) =&gt; TaskReady(tasks: data),
+  Error(:final failure) =&gt; TaskFailed(failure: failure),
+};</code></pre>
+</div>
+<p>
+  expected failure เช่น network unavailable ไม่จำเป็นต้องใช้ try/catch
+  ทุก controller เพราะ repository เปลี่ยนเป็น value ที่ exhaustively handle ได้
+</p>
+
+<h2 id="programming-errors">อย่าซ่อน programming error</h2>
+<table class="comparison-table">
+  <thead><tr><th>เหตุการณ์</th><th>จัดการ</th><th>เหตุผล</th></tr></thead>
+  <tbody>
+    <tr><td>ผู้ใช้กรอก title ว่าง</td><td>ValidationFailure</td><td>คาดหมายและแก้ได้</td></tr>
+    <tr><td>HTTP timeout</td><td>TimeoutFailure</td><td>แสดง retry ได้</td></tr>
+    <tr><td>Server JSON ผิด contract</td><td>Schema/Unknown AppException พร้อม diagnostic</td><td>boundary ต้องจำแนกและ report</td></tr>
+    <tr><td>Index out of range จาก bug</td><td>ปล่อยให้ error reporter เห็น</td><td>catch เป็น UnknownFailure อาจซ่อน defect</td></tr>
+  </tbody>
+</table>
+
+<h2 id="concurrency">Stale result และ duplicate submission</h2>
+<p>
+  ปุ่ม async ต้อง disable ระหว่างส่ง และ controller ต้องตัดสินใจเมื่อ request
+  เก่ากลับมาหลัง request ใหม่ วิธีพื้นฐานคือเก็บ operation ID หรือไม่เปิด
+  concurrent operation หาก use case ไม่รองรับ
+</p>
+<div class="code-block">
+  <div class="code-label">Guard submission</div>
+  <pre><code>if (state.isSaving) return;
+state = state.copyWith(isSaving: true);
+try {
+  await _saveTask();
+} finally {
+  state = state.copyWith(isSaving: false);
+}</code></pre>
+</div>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>เรียก async function โดยไม่ await แล้ว error หลุดจาก flow</li>
+  <li>catch <code>Object</code> ทุกชั้นและคืนข้อความ “Something went wrong”</li>
+  <li>ใช้ Stream สำหรับ request ครั้งเดียวจน lifecycle ซับซ้อน</li>
+  <li>ใช้ BuildContext หลัง await โดยไม่ตรวจ mounted</li>
+  <li>อนุญาตกด Save ซ้ำจนเกิด duplicate record</li>
+</ul>
+
+          <section class="checkpoint" id="checkpoint">
+  <h2>Checkpoint ก่อนเดินต่อ</h2>
+  <ol>
+    <li>อธิบายหัวข้อนี้ด้วยภาษาของตนเองโดยไม่เปิดคู่มือ</li>
+    <li>ชี้ไฟล์หรือคำสั่งใน Boilerplate ที่สัมพันธ์กับบทนี้ได้</li>
+    <li>รันตัวอย่างหรือ verification ที่บทกำหนดและอ่านผลลัพธ์ได้</li>
+  </ol>
+</section>
+<section class="quiz" id="quiz">
+  <h2>Quiz ตรวจ mental model</h2>
+  <p><strong>สิ่งใดควรเป็น Failure มากกว่า throw แบบไม่จำแนก?</strong></p>
+  <div class="quiz-options"><button class="quiz-option" type="button" data-correct="false">Validation ที่ผู้ใช้แก้ได้</button><button class="quiz-option" type="button" data-correct="true">Null dereference จาก bug</button><button class="quiz-option" type="button" data-correct="false">Syntax error</button></div>
+  <p class="quiz-feedback" aria-live="polite"></p>
+</section>
+<section class="exercise" id="practice">
+  <h2>Practice</h2>
+  <p>เขียนฟังก์ชัน Future<Result<Task>> แล้วใช้ exhaustive switch จัดการ success/failure</p>
+  <p><strong>Definition of done:</strong> อธิบายเหตุผลของ design, แสดงผลลัพธ์ที่รันจริง และไม่มี warning ที่ถูกมองข้าม</p>
+</section>
+
+          <nav class="chapter-pagination" aria-label="เปลี่ยนบทเรียน">
+            <a href="../chapters/07-functions-classes-generics.html">ก่อนหน้า<br><strong>Functions, Classes, Immutability และ Generics</strong></a>
+            <a href="../chapters/09-widget-runtime.html">บทถัดไป<br><strong>Widget, Element, RenderObject และ BuildContext</strong></a>
+          </nav>
+        </article>
+        <aside class="lesson-toc" aria-label="สารบัญบท">
+          <strong>ในบทนี้</strong>
+          <a href="#objectives">เป้าหมายของบท</a>
+<a href="#future">Future และ async/await</a>
+<a href="#context-gap">BuildContext หลัง await</a>
+<a href="#stream">Stream สำหรับค่าหลายเหตุการณ์</a>
+<a href="#exceptions">วาง exception boundary</a>
+<a href="#result">Sealed Result</a>
+<a href="#programming-errors">อย่าซ่อน programming error</a>
+<a href="#concurrency">Stale result และ duplicate submission</a>
+<a href="#mistakes">ข้อผิดพลาดที่พบบ่อย</a>
+<a href="#checkpoint">Checkpoint</a>
+<a href="#quiz">Quiz</a>
+<a href="#practice">Practice</a>
+          <button class="chapter-complete" type="button" data-current-chapter="08-async-errors-results" aria-pressed="false">
+            ทำเครื่องหมายว่าเรียนจบบทนี้
+          </button>
+        </aside>
+      </main>
+    </div>
+  </div>
+  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
+    <div class="search-head">
+      <label><span id="search-title" class="visually-hidden">ค้นหาคู่มือ</span><input id="search-input" type="search" placeholder="ค้นหา Dart, Riverpod, routing, build…" autocomplete="off"></label>
+      <button class="search-close" type="button" data-search-close>ปิด</button>
+    </div>
+    <div class="search-results" id="search-results" aria-live="polite"></div>
+  </dialog>
+</body>
+</html>

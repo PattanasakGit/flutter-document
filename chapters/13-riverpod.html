@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ใช้ provider เป็น dependency graph และ controller เป็นเจ้าของ application state ที่ทดสอบได้">
+  <title>Riverpod: State Graph และ Dependency Injection — Flutter Field Guide</title>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script defer src="../assets/js/site.js"></script>
+  <script defer src="../assets/js/catalog.js"></script>
+</head>
+<body data-root="../">
+  <a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
+  <noscript><p class="noscript-note">เนื้อหาทั้งหมดยังอ่านได้ แต่ search, theme, quiz และ progress ต้องเปิด JavaScript</p></noscript>
+  <div class="site-shell">
+    <aside class="sidebar" aria-label="เมนูหลักสูตร">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
+        <span><strong>Flutter Field Guide</strong><small>Web → Mobile</small></span>
+      </a>
+      <div class="sidebar-tools">
+        <button class="search-trigger" type="button" data-search-trigger>ค้นหาบทเรียน <kbd>/</kbd></button>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </div>
+      <div class="course-progress">
+        <div class="progress-meta"><span>ความคืบหน้า</span><strong data-progress-count>0 / 28</strong></div>
+        <div class="progress-track" aria-hidden="true"><div class="progress-value" data-progress-value></div></div>
+      </div>
+      <p class="nav-heading">A · Orientation & Setup</p>
+<nav class="course-nav">
+<a href="../chapters/01-orientation.html"><span class="nav-index">01</span>เริ่มใช้คู่มือและตั้งเป้าหมายระบบ</a>
+<a href="../chapters/02-react-to-flutter.html"><span class="nav-index">02</span>แผนที่ความคิดจาก React และ Next.js สู่ Flutter</a>
+<a href="../chapters/03-macos-toolchain.html"><span class="nav-index">03</span>ติดตั้ง Flutter toolchain บน macOS และ VS Code</a>
+<a href="../chapters/04-clone-and-run.html"><span class="nav-index">04</span>Clone, Generate, Run และตรวจ Boilerplate</a>
+</nav>
+<p class="nav-heading">B · Dart for TypeScript</p>
+<nav class="course-nav">
+<a href="../chapters/05-dart-types.html"><span class="nav-index">05</span>Dart Types และโครงสร้างโปรแกรมสำหรับ TypeScript Developer</a>
+<a href="../chapters/06-null-collections-patterns.html"><span class="nav-index">06</span>Null Safety, Collections และ Pattern Matching</a>
+<a href="../chapters/07-functions-classes-generics.html"><span class="nav-index">07</span>Functions, Classes, Immutability และ Generics</a>
+<a href="../chapters/08-async-errors-results.html"><span class="nav-index">08</span>Future, Stream, Exception และ Typed Result</a>
+</nav>
+<p class="nav-heading">C · Flutter Fundamentals</p>
+<nav class="course-nav">
+<a href="../chapters/09-widget-runtime.html"><span class="nav-index">09</span>Widget, Element, RenderObject และ BuildContext</a>
+<a href="../chapters/10-layout-theme-forms.html"><span class="nav-index">10</span>Constraints, Responsive Layout, Theme และ Form</a>
+<a href="../chapters/11-state-lifecycle.html"><span class="nav-index">11</span>State Ownership และ Lifecycle</a>
+</nav>
+<p class="nav-heading">D · Boilerplate Architecture</p>
+<nav class="course-nav">
+<a href="../chapters/12-boilerplate-map.html"><span class="nav-index">12</span>แผนที่ AI-first Flutter Boilerplate</a>
+<a href="../chapters/13-riverpod.html" aria-current="page"><span class="nav-index">13</span>Riverpod: State Graph และ Dependency Injection</a>
+<a href="../chapters/14-go-router.html"><span class="nav-index">14</span>GoRouter, Redirect และ Authentication Guard</a>
+<a href="../chapters/15-network-storage-errors.html"><span class="nav-index">15</span>Dio, DTO, Repository, Failure และ Secure Storage</a>
+</nav>
+<p class="nav-heading">E · Task Management</p>
+<nav class="course-nav">
+<a href="../chapters/16-task-domain.html"><span class="nav-index">16</span>Capstone: Model Task Domain ด้วย Test-first</a>
+<a href="../chapters/17-offline-repository.html"><span class="nav-index">17</span>Capstone: Offline Datasource และ Repository</a>
+<a href="../chapters/18-task-riverpod.html"><span class="nav-index">18</span>Capstone: Task State และ Filter ด้วย Riverpod</a>
+<a href="../chapters/19-task-form.html"><span class="nav-index">19</span>Capstone: Create/Edit Form และ Validation</a>
+<a href="../chapters/20-task-mutations.html"><span class="nav-index">20</span>Capstone: Toggle, Update, Delete และ Feedback</a>
+<a href="../chapters/21-dio-datasource.html"><span class="nav-index">21</span>Capstone: Real-API-ready Dio Datasource</a>
+<a href="../chapters/22-capstone-integration.html"><span class="nav-index">22</span>Capstone: Route, Shell และ End-to-end Flow</a>
+</nav>
+<p class="nav-heading">F · Quality & Delivery</p>
+<nav class="course-nav">
+<a href="../chapters/23-testing.html"><span class="nav-index">23</span>Test Strategy: Unit ถึง Integration</a>
+<a href="../chapters/24-debug-performance.html"><span class="nav-index">24</span>Debugging, DevTools และ Performance</a>
+<a href="../chapters/25-production-concerns.html"><span class="nav-index">25</span>Environment, Security, Accessibility และ Localization</a>
+<a href="../chapters/26-build-release.html"><span class="nav-index">26</span>Build Android, iOS และ Web</a>
+<a href="../chapters/27-production-checklist.html"><span class="nav-index">27</span>Production Readiness และ Next-system Checklist</a>
+<a href="../chapters/28-ai-workflow.html"><span class="nav-index">28</span>ใช้ AI พัฒนา Flutter อย่างมีขอบเขตและหลักฐาน</a>
+</nav>
+<p class="nav-heading">Reference</p>
+<nav class="course-nav">
+<a href="../reference/commands.html"><span class="nav-index">R</span>Command Cookbook</a>
+<a href="../reference/glossary.html"><span class="nav-index">R</span>React/Next.js ↔ Flutter Glossary</a>
+<a href="../reference/architecture-decisions.html"><span class="nav-index">R</span>Architecture Decision Matrix</a>
+<a href="../reference/troubleshooting.html"><span class="nav-index">R</span>Troubleshooting Catalog</a>
+</nav>
+
+      <div class="sidebar-footer"><p>Offline-first · ภาษาไทย · Flutter 3.44</p></div>
+    </aside>
+    <div class="site-main">
+      <header class="mobile-bar">
+        <button class="nav-trigger" type="button" data-nav-trigger aria-expanded="false">เมนู</button>
+        <strong>13 · Riverpod: State Graph และ Dependency Injection</strong>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </header>
+      <main id="main-content" class="lesson-wrap">
+        <article class="lesson">
+          <header class="lesson-header">
+            <p class="lesson-kicker">D · Boilerplate Architecture · บทที่ 13</p>
+            <h1>Riverpod: State Graph และ Dependency Injection</h1>
+            <p class="hero-lead">ใช้ provider เป็น dependency graph และ controller เป็นเจ้าของ application state ที่ทดสอบได้</p>
+            <div class="lesson-meta">
+              <span>เวลาอ่าน 70 นาที</span>
+              <span>ระดับ กลาง</span>
+              <span>Riverpod provider ref watch read listen override codegen</span>
+            </div>
+          </header>
+          <h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>มอง Riverpod เป็น dependency/state graph ไม่ใช่ global variable</li>
+  <li>เลือก <code>watch</code>, <code>read</code> และ <code>listen</code></li>
+  <li>สร้าง controller ที่รับ dependency ผ่าน provider</li>
+  <li>override provider ใน test โดยไม่เรียก network/plugin</li>
+</ul>
+
+<h2 id="graph">Provider graph</h2>
+<figure class="diagram flow-diagram" aria-labelledby="riverpod-flow-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">DS</span><span class="rail-copy"><strong>Datasource provider</strong><small>external implementation</small></span></li>
+    <li><span class="rail-node">RP</span><span class="rail-copy"><strong>Repository provider</strong><small>maps boundary to domain</small></span></li>
+    <li><span class="rail-node">UC</span><span class="rail-copy"><strong>Use case provider</strong><small>application workflow</small></span></li>
+    <li><span class="rail-node">CT</span><span class="rail-copy"><strong>Controller provider</strong><small>owns state transitions</small></span></li>
+    <li><span class="rail-node">UI</span><span class="rail-copy"><strong>ConsumerWidget</strong><small>watches state and renders</small></span></li>
+  </ol>
+  <figcaption>Dependency ถูกประกอบจากล่างขึ้นบนและ override ได้ที่จุดใดจุดหนึ่ง</figcaption>
+</figure>
+<p class="diagram-description" id="riverpod-flow-title">
+  Test controller สามารถ override repository provider แล้วใช้ graph ส่วนที่เหลือจริง
+  โดยไม่สร้าง mock ของทุก function
+</p>
+
+<h2 id="provider">Provider สำหรับ dependency</h2>
+<div class="code-block">
+  <div class="code-label">Annotation-based provider</div>
+  <pre><code>@riverpod
+TaskRepository taskRepository(Ref ref) {
+  return TaskRepositoryImpl(
+    ref.watch(taskLocalDatasourceProvider),
+  );
+}</code></pre>
+</div>
+<p>
+  Generated provider เพิ่ม compile-time type และชื่อที่สม่ำเสมอ
+  หลังแก้ annotation ต้องรัน build_runner และ review generated diff
+</p>
+
+<h2 id="controller">Notifier/controller</h2>
+<div class="code-block">
+  <div class="code-label">Riverpod controller</div>
+  <pre><code>@riverpod
+class TaskListController extends _$TaskListController {
+  @override
+  TaskListState build() {
+    return const TaskListState.loading();
+  }
+
+  Future&lt;void&gt; load() async {
+    final getTasks = ref.read(getTasksProvider);
+    final result = await getTasks();
+    state = switch (result) {
+      Success(:final data) =&gt; TaskListState.ready(tasks: data),
+      Error(:final failure) =&gt; TaskListState.failed(failure: failure),
+    };
+  }
+}</code></pre>
+</div>
+
+<h2 id="watch-read-listen">watch, read, listen</h2>
+<table class="comparison-table">
+  <thead><tr><th>API</th><th>ใช้เมื่อ</th><th>ตัวอย่าง</th></tr></thead>
+  <tbody>
+    <tr><td>ref.watch</td><td>ค่าที่เปลี่ยนแล้วต้อง recompute/rebuild</td><td>Widget watch task state</td></tr>
+    <tr><td>ref.read</td><td>อ่านครั้งเดียวใน event/method</td><td>onPressed เรียก controller</td></tr>
+    <tr><td>ref.listen</td><td>ทำ presentation side effect จาก transition</td><td>failure ใหม่แสดง SnackBar</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-warning">
+  <strong>อย่าใช้ read เพื่อหลบ rebuild</strong>
+  ถ้า UI แสดงค่าที่เปลี่ยน ต้อง watch ค่าอย่างแม่นยำหรือใช้
+  <code>select</code> ไม่ใช่ read แล้วปล่อย UI stale
+</div>
+
+<h2 id="override">Provider override ใน test</h2>
+<div class="code-block">
+  <div class="code-label">ProviderContainer</div>
+  <pre><code>final container = ProviderContainer(
+  overrides: [
+    taskRepositoryProvider.overrideWithValue(fakeRepository),
+  ],
+);
+addTearDown(container.dispose);
+
+await container.read(taskListControllerProvider.notifier).load();
+expect(
+  container.read(taskListControllerProvider),
+  isA&lt;TaskListReady&gt;(),
+);</code></pre>
+</div>
+
+<h2 id="lifecycle">autoDispose และ keepAlive</h2>
+<p>
+  Provider ที่ไม่มี listener อาจถูก dispose ตาม declaration/lifecycle
+  อย่า keepAlive ทุกตัวเพื่อแก้ “state หาย” ก่อนวิเคราะห์ ownership
+  Session อาจอยู่ระดับ app แต่ form draft อาจควรถูกทิ้งเมื่อออกหน้า
+</p>
+
+<h2 id="select">ลด rebuild ด้วย select เมื่อมีหลักฐาน</h2>
+<div class="code-block">
+  <div class="code-label">Watch field ที่ UI ใช้</div>
+  <pre><code>final completedCount = ref.watch(
+  taskListControllerProvider.select(
+    (state) =&gt; state.completedCount,
+  ),
+);</code></pre>
+</div>
+<p>
+  ใช้เมื่อ profiling พบ subtree rebuild จาก field อื่นจริง
+  อย่าเริ่มด้วย select ทุก fieldจน state API แตกละเอียดและอ่านยาก
+</p>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>เรียก <code>ref.watch</code> ใน onPressed callback</li>
+  <li>สร้าง provider global ที่ไม่มี owner/cleanup policy</li>
+  <li>ให้ controller รับ BuildContext</li>
+  <li>override controller ทั้งตัวทั้งที่ต้องการเปลี่ยน repository boundary</li>
+  <li>ลืม dispose ProviderContainer ใน test</li>
+</ul>
+
+          <section class="checkpoint" id="checkpoint">
+  <h2>Checkpoint ก่อนเดินต่อ</h2>
+  <ol>
+    <li>อธิบายหัวข้อนี้ด้วยภาษาของตนเองโดยไม่เปิดคู่มือ</li>
+    <li>ชี้ไฟล์หรือคำสั่งใน Boilerplate ที่สัมพันธ์กับบทนี้ได้</li>
+    <li>รันตัวอย่างหรือ verification ที่บทกำหนดและอ่านผลลัพธ์ได้</li>
+  </ol>
+</section>
+<section class="quiz" id="quiz">
+  <h2>Quiz ตรวจ mental model</h2>
+  <p><strong>ref.watch เหมาะกับกรณีใด?</strong></p>
+  <div class="quiz-options"><button class="quiz-option" type="button" data-correct="false">อ่านค่าที่ต้องทำให้ provider/widget rebuild เมื่อเปลี่ยน</button><button class="quiz-option" type="button" data-correct="true">event handler แบบครั้งเดียวเท่านั้น</button><button class="quiz-option" type="button" data-correct="false">เขียนไฟล์</button></div>
+  <p class="quiz-feedback" aria-live="polite"></p>
+</section>
+<section class="exercise" id="practice">
+  <h2>Practice</h2>
+  <p>สร้าง ProviderContainer override repository แล้วทดสอบ controller โดยไม่เรียก plugin หรือ network</p>
+  <p><strong>Definition of done:</strong> อธิบายเหตุผลของ design, แสดงผลลัพธ์ที่รันจริง และไม่มี warning ที่ถูกมองข้าม</p>
+</section>
+
+          <nav class="chapter-pagination" aria-label="เปลี่ยนบทเรียน">
+            <a href="../chapters/12-boilerplate-map.html">ก่อนหน้า<br><strong>แผนที่ AI-first Flutter Boilerplate</strong></a>
+            <a href="../chapters/14-go-router.html">บทถัดไป<br><strong>GoRouter, Redirect และ Authentication Guard</strong></a>
+          </nav>
+        </article>
+        <aside class="lesson-toc" aria-label="สารบัญบท">
+          <strong>ในบทนี้</strong>
+          <a href="#objectives">เป้าหมายของบท</a>
+<a href="#graph">Provider graph</a>
+<a href="#provider">Provider สำหรับ dependency</a>
+<a href="#controller">Notifier/controller</a>
+<a href="#watch-read-listen">watch, read, listen</a>
+<a href="#override">Provider override ใน test</a>
+<a href="#lifecycle">autoDispose และ keepAlive</a>
+<a href="#select">ลด rebuild ด้วย select เมื่อมีหลักฐาน</a>
+<a href="#mistakes">ข้อผิดพลาดที่พบบ่อย</a>
+<a href="#checkpoint">Checkpoint</a>
+<a href="#quiz">Quiz</a>
+<a href="#practice">Practice</a>
+          <button class="chapter-complete" type="button" data-current-chapter="13-riverpod" aria-pressed="false">
+            ทำเครื่องหมายว่าเรียนจบบทนี้
+          </button>
+        </aside>
+      </main>
+    </div>
+  </div>
+  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
+    <div class="search-head">
+      <label><span id="search-title" class="visually-hidden">ค้นหาคู่มือ</span><input id="search-input" type="search" placeholder="ค้นหา Dart, Riverpod, routing, build…" autocomplete="off"></label>
+      <button class="search-close" type="button" data-search-close>ปิด</button>
+    </div>
+    <div class="search-results" id="search-results" aria-live="polite"></div>
+  </dialog>
+</body>
+</html>

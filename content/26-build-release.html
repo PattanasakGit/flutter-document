@@ -1,0 +1,151 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>เข้าใจ debug, profile และ release mode ว่าพิสูจน์คนละเรื่อง</li>
+  <li>สร้าง Android, iOS และ Web artifact พร้อมระบุ output และข้อกำหนด</li>
+  <li>แยก compile/package success ออกจาก production readiness</li>
+  <li>สร้าง release verification และ rollback evidence ที่ทำซ้ำได้</li>
+</ul>
+
+<h2 id="modes">Build modes</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Mode</th><th>ใช้เมื่อ</th><th>ลักษณะสำคัญ</th></tr></thead>
+    <tbody>
+      <tr><td>debug</td><td>พัฒนาและ hot reload</td><td>assert/debug service เปิด, performance ไม่แทนผู้ใช้จริง</td></tr>
+      <tr><td>profile</td><td>วัด performance บนอุปกรณ์</td><td>instrumentation สำหรับ profiling, ใกล้ release</td></tr>
+      <tr><td>release</td><td>แจกจ่าย</td><td>optimization เปิด, debug service ปิด, ต้องใช้ signing/config จริง</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="preflight">Preflight ที่ต้องผ่านก่อน build</h2>
+<div class="code-block">
+  <div class="code-label">Quality gate</div>
+  <pre><code>flutter --version
+flutter pub get
+dart run build_runner build --delete-conflicting-outputs
+dart format --output=none --set-exit-if-changed .
+flutter analyze
+flutter test
+git status --short</code></pre>
+</div>
+<p>
+  เก็บ Flutter version, dependency lock, commit SHA และ environment name
+  คู่กับ artifact เพื่อให้ reproduce ได้ หาก generated file เปลี่ยนหลัง build
+  ให้ตรวจว่าทีมต้อง commit หรือ regenerate ใน CI ตาม policy
+</p>
+
+<h2 id="android">Android: APK และ App Bundle</h2>
+<div class="code-block">
+  <div class="code-label">Local verification และ store artifact</div>
+  <pre><code># ติดตั้ง/แจกภายในแบบไฟล์เดียว
+flutter build apk \
+  --release \
+  --dart-define=APP_ENV=production
+
+# Play Store
+flutter build appbundle \
+  --release \
+  --dart-define=APP_ENV=production</code></pre>
+</div>
+<ul>
+  <li>APK โดยทั่วไปอยู่ใต้ <code>build/app/outputs/flutter-apk/</code></li>
+  <li>AAB อยู่ใต้ <code>build/app/outputs/bundle/release/</code></li>
+  <li>ตั้ง <code>applicationId</code>, versionCode/versionName และ signing config ให้ถูก environment</li>
+  <li>เก็บ keystore/password ใน protected secret ไม่ commit</li>
+  <li>ทดสอบ release artifact บนอุปกรณ์จริงและ Android version ขั้นต่ำ/เป้าหมาย</li>
+</ul>
+
+<h2 id="ios">iOS: archive และ IPA</h2>
+<div class="code-block">
+  <div class="code-label">ต้องใช้ macOS + Xcode</div>
+  <pre><code>flutter build ios \
+  --release \
+  --dart-define=APP_ENV=production
+
+flutter build ipa \
+  --release \
+  --dart-define=APP_ENV=production</code></pre>
+</div>
+<ul>
+  <li>ตรวจ Bundle Identifier, Team, certificate และ provisioning profile</li>
+  <li>เปิด workspace ไม่ใช่ project เมื่อ CocoaPods สร้าง workspace</li>
+  <li>ตรวจ deployment target, privacy usage descriptions และ capabilities</li>
+  <li>upload ผ่าน Xcode/Transporter/CI แล้วตรวจ processing warning</li>
+  <li>Windows/Linux build iOS ไม่ได้ ต้องใช้ macOS build agent</li>
+</ul>
+
+<h2 id="web">Web release</h2>
+<div class="code-block">
+  <div class="code-label">Build และ serve แบบ static</div>
+  <pre><code>flutter build web \
+  --release \
+  --dart-define=APP_ENV=production
+
+python3 -m http.server 8080 --directory build/web</code></pre>
+</div>
+<p>
+  ทดสอบผ่าน HTTP server ไม่เปิด <code>index.html</code> ตรง ๆ และตั้ง hosting
+  fallback ไป <code>index.html</code> สำหรับ path-based navigation ตรวจ CORS,
+  base href, cache headers และ service-worker update policy
+</p>
+
+<h2 id="platform-matrix">Platform notes</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Host</th><th>Android</th><th>iOS</th><th>Web</th></tr></thead>
+    <tbody>
+      <tr><td>macOS</td><td>ได้</td><td>ได้</td><td>ได้</td></tr>
+      <tr><td>Windows</td><td>ได้</td><td>ไม่ได้</td><td>ได้</td></tr>
+      <tr><td>Linux</td><td>ได้</td><td>ไม่ได้</td><td>ได้</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="versioning">Versioning</h2>
+<div class="code-block">
+  <div class="code-label">pubspec.yaml</div>
+  <pre><code>version: 1.4.0+27
+#         │ │ │  └─ build number / versionCode
+#         └─┴─┴──── semantic version shown to users</code></pre>
+</div>
+<p>
+  กำหนด source of truth หนึ่งที่และให้ CI เพิ่ม build number แบบ monotonic
+  release note ต้องผูก version, commit และ migration ที่เกี่ยวข้อง
+</p>
+
+<h2 id="ci">ตัวอย่าง release pipeline</h2>
+<figure class="diagram flow-diagram" aria-labelledby="release-flow-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">SC</span><span class="rail-copy"><strong>Source</strong><small>tag + locked dependencies</small></span></li>
+    <li><span class="rail-node">QA</span><span class="rail-copy"><strong>Quality</strong><small>format, analyze, tests</small></span></li>
+    <li><span class="rail-node">BL</span><span class="rail-copy"><strong>Build</strong><small>signed immutable artifact</small></span></li>
+    <li><span class="rail-node">SB</span><span class="rail-copy"><strong>SBOM/checksum</strong><small>traceable supply chain</small></span></li>
+    <li><span class="rail-node">ST</span><span class="rail-copy"><strong>Staged rollout</strong><small>small cohort first</small></span></li>
+    <li><span class="rail-node">OB</span><span class="rail-copy"><strong>Observe</strong><small>crash, latency, business signal</small></span></li>
+  </ol>
+  <figcaption>Release pipeline ต้องสร้างหลักฐานและควบคุมการกระจาย ไม่ใช่เพียง compile</figcaption>
+</figure>
+<p class="diagram-description" id="release-flow-title">
+  Artifact ที่ผ่าน QA ต้องเป็นไฟล์เดียวกับที่แจกจริง ไม่ rebuild หลัง approve
+  เพราะ dependency, signing หรือ environment อาจต่างกัน
+</p>
+
+<h2 id="verification">Post-build verification</h2>
+<ol>
+  <li>บันทึก checksum และขนาด artifact</li>
+  <li>ติดตั้ง artifact release บนอุปกรณ์ clean state</li>
+  <li>ทดสอบ cold start, upgrade จาก version ก่อน, login/restore และ critical flow</li>
+  <li>ตรวจ network ชี้ endpoint ถูก environment และไม่มี verbose secret log</li>
+  <li>ตรวจ crash reporting symbolication และ release tag</li>
+  <li>ซ้อม rollback/disable feature ที่เสี่ยงก่อน rollout กว้าง</li>
+</ol>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>ส่ง debug APK ให้ผู้ใช้จริง</li>
+  <li>ทดสอบ source หนึ่ง commit แต่ build อีก commit</li>
+  <li>เก็บ signing password ใน repository</li>
+  <li>build web ผ่านแล้วไม่ทดสอบ deep-link refresh</li>
+  <li>ถือว่า compile success พิสูจน์ auth, API, privacy และ operations แล้ว</li>
+</ul>

@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ใช้ breakpoint, Inspector, CPU, memory, network, rebuild diagnostics และ structured logs หา root cause">
+  <title>Debugging, DevTools และ Performance — Flutter Field Guide</title>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script defer src="../assets/js/site.js"></script>
+  <script defer src="../assets/js/catalog.js"></script>
+</head>
+<body data-root="../">
+  <a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
+  <noscript><p class="noscript-note">เนื้อหาทั้งหมดยังอ่านได้ แต่ search, theme, quiz และ progress ต้องเปิด JavaScript</p></noscript>
+  <div class="site-shell">
+    <aside class="sidebar" aria-label="เมนูหลักสูตร">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
+        <span><strong>Flutter Field Guide</strong><small>Web → Mobile</small></span>
+      </a>
+      <div class="sidebar-tools">
+        <button class="search-trigger" type="button" data-search-trigger>ค้นหาบทเรียน <kbd>/</kbd></button>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </div>
+      <div class="course-progress">
+        <div class="progress-meta"><span>ความคืบหน้า</span><strong data-progress-count>0 / 28</strong></div>
+        <div class="progress-track" aria-hidden="true"><div class="progress-value" data-progress-value></div></div>
+      </div>
+      <p class="nav-heading">A · Orientation & Setup</p>
+<nav class="course-nav">
+<a href="../chapters/01-orientation.html"><span class="nav-index">01</span>เริ่มใช้คู่มือและตั้งเป้าหมายระบบ</a>
+<a href="../chapters/02-react-to-flutter.html"><span class="nav-index">02</span>แผนที่ความคิดจาก React และ Next.js สู่ Flutter</a>
+<a href="../chapters/03-macos-toolchain.html"><span class="nav-index">03</span>ติดตั้ง Flutter toolchain บน macOS และ VS Code</a>
+<a href="../chapters/04-clone-and-run.html"><span class="nav-index">04</span>Clone, Generate, Run และตรวจ Boilerplate</a>
+</nav>
+<p class="nav-heading">B · Dart for TypeScript</p>
+<nav class="course-nav">
+<a href="../chapters/05-dart-types.html"><span class="nav-index">05</span>Dart Types และโครงสร้างโปรแกรมสำหรับ TypeScript Developer</a>
+<a href="../chapters/06-null-collections-patterns.html"><span class="nav-index">06</span>Null Safety, Collections และ Pattern Matching</a>
+<a href="../chapters/07-functions-classes-generics.html"><span class="nav-index">07</span>Functions, Classes, Immutability และ Generics</a>
+<a href="../chapters/08-async-errors-results.html"><span class="nav-index">08</span>Future, Stream, Exception และ Typed Result</a>
+</nav>
+<p class="nav-heading">C · Flutter Fundamentals</p>
+<nav class="course-nav">
+<a href="../chapters/09-widget-runtime.html"><span class="nav-index">09</span>Widget, Element, RenderObject และ BuildContext</a>
+<a href="../chapters/10-layout-theme-forms.html"><span class="nav-index">10</span>Constraints, Responsive Layout, Theme และ Form</a>
+<a href="../chapters/11-state-lifecycle.html"><span class="nav-index">11</span>State Ownership และ Lifecycle</a>
+</nav>
+<p class="nav-heading">D · Boilerplate Architecture</p>
+<nav class="course-nav">
+<a href="../chapters/12-boilerplate-map.html"><span class="nav-index">12</span>แผนที่ AI-first Flutter Boilerplate</a>
+<a href="../chapters/13-riverpod.html"><span class="nav-index">13</span>Riverpod: State Graph และ Dependency Injection</a>
+<a href="../chapters/14-go-router.html"><span class="nav-index">14</span>GoRouter, Redirect และ Authentication Guard</a>
+<a href="../chapters/15-network-storage-errors.html"><span class="nav-index">15</span>Dio, DTO, Repository, Failure และ Secure Storage</a>
+</nav>
+<p class="nav-heading">E · Task Management</p>
+<nav class="course-nav">
+<a href="../chapters/16-task-domain.html"><span class="nav-index">16</span>Capstone: Model Task Domain ด้วย Test-first</a>
+<a href="../chapters/17-offline-repository.html"><span class="nav-index">17</span>Capstone: Offline Datasource และ Repository</a>
+<a href="../chapters/18-task-riverpod.html"><span class="nav-index">18</span>Capstone: Task State และ Filter ด้วย Riverpod</a>
+<a href="../chapters/19-task-form.html"><span class="nav-index">19</span>Capstone: Create/Edit Form และ Validation</a>
+<a href="../chapters/20-task-mutations.html"><span class="nav-index">20</span>Capstone: Toggle, Update, Delete และ Feedback</a>
+<a href="../chapters/21-dio-datasource.html"><span class="nav-index">21</span>Capstone: Real-API-ready Dio Datasource</a>
+<a href="../chapters/22-capstone-integration.html"><span class="nav-index">22</span>Capstone: Route, Shell และ End-to-end Flow</a>
+</nav>
+<p class="nav-heading">F · Quality & Delivery</p>
+<nav class="course-nav">
+<a href="../chapters/23-testing.html"><span class="nav-index">23</span>Test Strategy: Unit ถึง Integration</a>
+<a href="../chapters/24-debug-performance.html" aria-current="page"><span class="nav-index">24</span>Debugging, DevTools และ Performance</a>
+<a href="../chapters/25-production-concerns.html"><span class="nav-index">25</span>Environment, Security, Accessibility และ Localization</a>
+<a href="../chapters/26-build-release.html"><span class="nav-index">26</span>Build Android, iOS และ Web</a>
+<a href="../chapters/27-production-checklist.html"><span class="nav-index">27</span>Production Readiness และ Next-system Checklist</a>
+<a href="../chapters/28-ai-workflow.html"><span class="nav-index">28</span>ใช้ AI พัฒนา Flutter อย่างมีขอบเขตและหลักฐาน</a>
+</nav>
+<p class="nav-heading">Reference</p>
+<nav class="course-nav">
+<a href="../reference/commands.html"><span class="nav-index">R</span>Command Cookbook</a>
+<a href="../reference/glossary.html"><span class="nav-index">R</span>React/Next.js ↔ Flutter Glossary</a>
+<a href="../reference/architecture-decisions.html"><span class="nav-index">R</span>Architecture Decision Matrix</a>
+<a href="../reference/troubleshooting.html"><span class="nav-index">R</span>Troubleshooting Catalog</a>
+</nav>
+
+      <div class="sidebar-footer"><p>Offline-first · ภาษาไทย · Flutter 3.44</p></div>
+    </aside>
+    <div class="site-main">
+      <header class="mobile-bar">
+        <button class="nav-trigger" type="button" data-nav-trigger aria-expanded="false">เมนู</button>
+        <strong>24 · Debugging, DevTools และ Performance</strong>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </header>
+      <main id="main-content" class="lesson-wrap">
+        <article class="lesson">
+          <header class="lesson-header">
+            <p class="lesson-kicker">F · Quality & Delivery · บทที่ 24</p>
+            <h1>Debugging, DevTools และ Performance</h1>
+            <p class="hero-lead">ใช้ breakpoint, Inspector, CPU, memory, network, rebuild diagnostics และ structured logs หา root cause</p>
+            <div class="lesson-meta">
+              <span>เวลาอ่าน 76 นาที</span>
+              <span>ระดับ กลาง</span>
+              <span>debug breakpoint DevTools Inspector CPU memory rebuild performance</span>
+            </div>
+          </header>
+          <h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>debug แบบ reproduce → observe → hypothesize → isolate → verify</li>
+  <li>เลือก Flutter Inspector, debugger, logs, Network, CPU และ Memory ให้ตรงอาการ</li>
+  <li>แยก rebuild, relayout และ repaint ออกจากกัน</li>
+  <li>ปรับ performance หลังมีหลักฐานและเก็บ regression test</li>
+</ul>
+
+<h2 id="workflow">Debugging loop</h2>
+<figure class="diagram flow-diagram" aria-labelledby="debug-loop-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">01</span><span class="rail-copy"><strong>Reproduce</strong><small>ขั้นตอนและ environment คงที่</small></span></li>
+    <li><span class="rail-node">02</span><span class="rail-copy"><strong>Observe</strong><small>error, state, timeline, request</small></span></li>
+    <li><span class="rail-node">03</span><span class="rail-copy"><strong>Hypothesize</strong><small>สาเหตุที่ทดสอบได้หนึ่งข้อ</small></span></li>
+    <li><span class="rail-node">04</span><span class="rail-copy"><strong>Isolate</strong><small>ลดพื้นที่และสร้าง failing test</small></span></li>
+    <li><span class="rail-node">05</span><span class="rail-copy"><strong>Fix</strong><small>แก้ root cause เล็กที่สุด</small></span></li>
+    <li><span class="rail-node">06</span><span class="rail-copy"><strong>Verify</strong><small>test เดิม + suite + manual path</small></span></li>
+  </ol>
+  <figcaption>วงจร debugging ที่ลดการแก้แบบเดาสุ่ม</figcaption>
+</figure>
+<p class="diagram-description" id="debug-loop-title">
+  ถ้าขั้น Observe ยังไม่มีหลักฐาน อย่าเริ่มจากล้าง cache หรือเปลี่ยน dependency
+  หลายตัวพร้อมกัน เพราะจะทำให้ไม่รู้ว่าสาเหตุจริงคืออะไร
+</p>
+
+<h2 id="tool-map">เลือกเครื่องมือจากคำถาม</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>คำถาม</th><th>เครื่องมือ</th><th>หลักฐาน</th></tr></thead>
+    <tbody>
+      <tr><td>Widget นี้มาจากไหน/constraints เท่าไร</td><td>Flutter Inspector</td><td>tree, properties, layout bounds</td></tr>
+      <tr><td>ค่าผิดตรงบรรทัดใด</td><td>Debugger + conditional breakpoint</td><td>stack, locals, watches</td></tr>
+      <tr><td>API ช้า/ผิด payload หรือไม่</td><td>Network view + Dio log ที่ redact</td><td>timeline, status, body shape</td></tr>
+      <tr><td>เฟรมกระตุกจากอะไร</td><td>Performance view</td><td>UI/raster frame timing</td></tr>
+      <tr><td>CPU ใช้กับ function ใด</td><td>CPU profiler</td><td>bottom-up/call tree</td></tr>
+      <tr><td>object เพิ่มไม่ลดหรือไม่</td><td>Memory view</td><td>snapshot/diff/allocation</td></tr>
+      <tr><td>ส่วนใด rebuild บ่อย</td><td>rebuild diagnostics</td><td>count และ timeline</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="vscode">VS Code debugging</h2>
+<ol>
+  <li>วาง breakpoint ที่ application boundary ไม่ใช่ทุกบรรทัด</li>
+  <li>ใช้ conditional breakpoint เช่น <code>task.id == 't-42'</code></li>
+  <li>ดู Call Stack เพื่อหาผู้เรียก ไม่ดูเฉพาะบรรทัดที่ throw</li>
+  <li>เพิ่ม Watch สำหรับ state ที่เป็น invariant</li>
+  <li>Hot restart เมื่อแก้ initialization/global state; hot reload เมื่อแก้ UI body</li>
+</ol>
+
+<h2 id="logs">Structured logs ที่ปลอดภัย</h2>
+<div class="code-block">
+  <div class="code-label">Log context ไม่ log secret</div>
+  <pre><code>logger.warning(
+  'task_load_failed',
+  error: failure,
+  stackTrace: stackTrace,
+  context: {
+    'screen': 'task_list',
+    'filter': filter.name,
+    'requestId': requestId,
+  },
+);</code></pre>
+</div>
+<p>
+  ห้าม log access token, password, authorization header, full personal payload
+  หรือ secure-storage content แม้อยู่ใน debug build ที่อาจถูกส่งเข้า CI artifact
+</p>
+
+<h2 id="render-pipeline">Build, layout และ paint</h2>
+<div class="callout note">
+  <strong>Rebuild ไม่เท่ากับ repaint เสมอไป</strong>
+  Widget configuration ใหม่อาจทำให้ Element update แต่ RenderObject
+  ไม่ต้อง layout/paint หาก geometry และ visual properties ไม่เปลี่ยน
+</div>
+<ul>
+  <li><strong>Build:</strong> สร้าง configuration subtree ใหม่</li>
+  <li><strong>Layout:</strong> คำนวณ size/position ตาม constraints</li>
+  <li><strong>Paint:</strong> บันทึก drawing commands</li>
+  <li><strong>Raster:</strong> engine แปลง layer เป็น pixel</li>
+</ul>
+
+<h2 id="rebuilds">ลด rebuild อย่างมีเหตุผล</h2>
+<div class="code-block">
+  <div class="code-label">watch เฉพาะ slice ที่ใช้</div>
+  <pre><code>final pendingCount = ref.watch(
+  taskControllerProvider.select(
+    (value) =&gt; value.valueOrNull?.pendingCount ?? 0,
+  ),
+);</code></pre>
+</div>
+<p>
+  ใช้ <code>select</code> เมื่อวัดแล้วพบว่า widget กว้างเกินจำเป็นจริง
+  อย่าแยก provider ทุก property จน graph เข้าใจยากเพียงเพื่อหวัง performance
+</p>
+
+<h2 id="lists">รายการยาว</h2>
+<div class="code-block">
+  <div class="code-label">Lazy list</div>
+  <pre><code>ListView.builder(
+  itemCount: tasks.length,
+  itemBuilder: (context, index) {
+    final task = tasks[index];
+    return TaskTile(
+      key: ValueKey(task.id),
+      task: task,
+    );
+  },
+)</code></pre>
+</div>
+<p>
+  ใช้ stable key ตาม identity, หลีกเลี่ยง synchronous parsing หนักใน
+  <code>itemBuilder</code> และ paginate เมื่อ dataset ใหญ่จริง
+</p>
+
+<h2 id="jank">อ่าน frame budget</h2>
+<p>
+  ที่ 60Hz เฟรมมีเวลาประมาณ 16.7ms; ที่ 120Hz ประมาณ 8.3ms
+  ให้ profile ด้วย mode/device ใกล้ release เพราะ debug instrumentation
+  ทำให้ตัวเลขไม่แทนประสบการณ์จริง
+</p>
+
+<h2 id="memory">Memory leak ที่พบบ่อย</h2>
+<ul>
+  <li>ไม่ dispose controller/subscription/timer ที่ widget เป็นเจ้าของ</li>
+  <li>callback อายุยาวจับ <code>BuildContext</code> หรือ object graph ใหญ่</li>
+  <li>cache ไม่มี eviction policy</li>
+  <li>เก็บภาพ byte ขนาดใหญ่ใน global state</li>
+</ul>
+
+<h2 id="case-study">Case study: filter แล้ว UI กระตุก</h2>
+<ol>
+  <li>บันทึก CPU timeline ขณะพิมพ์ค้นหา 20 ตัวอักษร</li>
+  <li>พบ sort + lowercase ทั้งรายการเกิดทุก keystroke ใน build</li>
+  <li>ย้าย normalization ไปตอนรับข้อมูล และ derive filtered list ใน controller</li>
+  <li>debounce เฉพาะ remote search; local list เล็กไม่ต้อง debounce</li>
+  <li>รัน benchmark flow เดิมและเก็บตัวเลขก่อน/หลัง</li>
+</ol>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>ใช้ <code>flutter clean</code> เป็นขั้นแรกทุกอาการ</li>
+  <li>จับ exception แล้วทิ้ง stack trace</li>
+  <li>optimize จากความรู้สึกโดยไม่ profile</li>
+  <li>มอง rebuild count อย่างเดียวโดยไม่ดู frame time</li>
+  <li>วัด performance บน simulator/debug mode แล้วสรุป production</li>
+</ul>
+
+          <section class="checkpoint" id="checkpoint">
+  <h2>Checkpoint ก่อนเดินต่อ</h2>
+  <ol>
+    <li>อธิบายหัวข้อนี้ด้วยภาษาของตนเองโดยไม่เปิดคู่มือ</li>
+    <li>ชี้ไฟล์หรือคำสั่งใน Boilerplate ที่สัมพันธ์กับบทนี้ได้</li>
+    <li>รันตัวอย่างหรือ verification ที่บทกำหนดและอ่านผลลัพธ์ได้</li>
+  </ol>
+</section>
+<section class="quiz" id="quiz">
+  <h2>Quiz ตรวจ mental model</h2>
+  <p><strong>ควร optimize เมื่อใด?</strong></p>
+  <div class="quiz-options"><button class="quiz-option" type="button" data-correct="false">ก่อนวัดเสมอ</button><button class="quiz-option" type="button" data-correct="true">หลังวัดและพบ bottleneck ที่กระทบผู้ใช้</button><button class="quiz-option" type="button" data-correct="false">ทุกครั้งที่เห็น build method</button></div>
+  <p class="quiz-feedback" aria-live="polite"></p>
+</section>
+<section class="exercise" id="practice">
+  <h2>Practice</h2>
+  <p>จำลอง rebuild ที่ไม่จำเป็นหนึ่งจุด วัดก่อนแก้ และบันทึกหลักฐานหลังแก้</p>
+  <p><strong>Definition of done:</strong> อธิบายเหตุผลของ design, แสดงผลลัพธ์ที่รันจริง และไม่มี warning ที่ถูกมองข้าม</p>
+</section>
+
+          <nav class="chapter-pagination" aria-label="เปลี่ยนบทเรียน">
+            <a href="../chapters/23-testing.html">ก่อนหน้า<br><strong>Test Strategy: Unit ถึง Integration</strong></a>
+            <a href="../chapters/25-production-concerns.html">บทถัดไป<br><strong>Environment, Security, Accessibility และ Localization</strong></a>
+          </nav>
+        </article>
+        <aside class="lesson-toc" aria-label="สารบัญบท">
+          <strong>ในบทนี้</strong>
+          <a href="#objectives">เป้าหมายของบท</a>
+<a href="#workflow">Debugging loop</a>
+<a href="#tool-map">เลือกเครื่องมือจากคำถาม</a>
+<a href="#vscode">VS Code debugging</a>
+<a href="#logs">Structured logs ที่ปลอดภัย</a>
+<a href="#render-pipeline">Build, layout และ paint</a>
+<a href="#rebuilds">ลด rebuild อย่างมีเหตุผล</a>
+<a href="#lists">รายการยาว</a>
+<a href="#jank">อ่าน frame budget</a>
+<a href="#memory">Memory leak ที่พบบ่อย</a>
+<a href="#case-study">Case study: filter แล้ว UI กระตุก</a>
+<a href="#mistakes">ข้อผิดพลาดที่พบบ่อย</a>
+<a href="#checkpoint">Checkpoint</a>
+<a href="#quiz">Quiz</a>
+<a href="#practice">Practice</a>
+          <button class="chapter-complete" type="button" data-current-chapter="24-debug-performance" aria-pressed="false">
+            ทำเครื่องหมายว่าเรียนจบบทนี้
+          </button>
+        </aside>
+      </main>
+    </div>
+  </div>
+  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
+    <div class="search-head">
+      <label><span id="search-title" class="visually-hidden">ค้นหาคู่มือ</span><input id="search-input" type="search" placeholder="ค้นหา Dart, Riverpod, routing, build…" autocomplete="off"></label>
+      <button class="search-close" type="button" data-search-close>ปิด</button>
+    </div>
+    <div class="search-results" id="search-results" aria-live="polite"></div>
+  </dialog>
+</body>
+</html>

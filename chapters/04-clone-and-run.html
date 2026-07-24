@@ -1,0 +1,281 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="นำ source ลงเครื่อง อ่าน config สร้าง generated code รัน environment และยืนยัน baseline ก่อนแก้ไข">
+  <title>Clone, Generate, Run และตรวจ Boilerplate — Flutter Field Guide</title>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script defer src="../assets/js/site.js"></script>
+  <script defer src="../assets/js/catalog.js"></script>
+</head>
+<body data-root="../">
+  <a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
+  <noscript><p class="noscript-note">เนื้อหาทั้งหมดยังอ่านได้ แต่ search, theme, quiz และ progress ต้องเปิด JavaScript</p></noscript>
+  <div class="site-shell">
+    <aside class="sidebar" aria-label="เมนูหลักสูตร">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
+        <span><strong>Flutter Field Guide</strong><small>Web → Mobile</small></span>
+      </a>
+      <div class="sidebar-tools">
+        <button class="search-trigger" type="button" data-search-trigger>ค้นหาบทเรียน <kbd>/</kbd></button>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </div>
+      <div class="course-progress">
+        <div class="progress-meta"><span>ความคืบหน้า</span><strong data-progress-count>0 / 28</strong></div>
+        <div class="progress-track" aria-hidden="true"><div class="progress-value" data-progress-value></div></div>
+      </div>
+      <p class="nav-heading">A · Orientation & Setup</p>
+<nav class="course-nav">
+<a href="../chapters/01-orientation.html"><span class="nav-index">01</span>เริ่มใช้คู่มือและตั้งเป้าหมายระบบ</a>
+<a href="../chapters/02-react-to-flutter.html"><span class="nav-index">02</span>แผนที่ความคิดจาก React และ Next.js สู่ Flutter</a>
+<a href="../chapters/03-macos-toolchain.html"><span class="nav-index">03</span>ติดตั้ง Flutter toolchain บน macOS และ VS Code</a>
+<a href="../chapters/04-clone-and-run.html" aria-current="page"><span class="nav-index">04</span>Clone, Generate, Run และตรวจ Boilerplate</a>
+</nav>
+<p class="nav-heading">B · Dart for TypeScript</p>
+<nav class="course-nav">
+<a href="../chapters/05-dart-types.html"><span class="nav-index">05</span>Dart Types และโครงสร้างโปรแกรมสำหรับ TypeScript Developer</a>
+<a href="../chapters/06-null-collections-patterns.html"><span class="nav-index">06</span>Null Safety, Collections และ Pattern Matching</a>
+<a href="../chapters/07-functions-classes-generics.html"><span class="nav-index">07</span>Functions, Classes, Immutability และ Generics</a>
+<a href="../chapters/08-async-errors-results.html"><span class="nav-index">08</span>Future, Stream, Exception และ Typed Result</a>
+</nav>
+<p class="nav-heading">C · Flutter Fundamentals</p>
+<nav class="course-nav">
+<a href="../chapters/09-widget-runtime.html"><span class="nav-index">09</span>Widget, Element, RenderObject และ BuildContext</a>
+<a href="../chapters/10-layout-theme-forms.html"><span class="nav-index">10</span>Constraints, Responsive Layout, Theme และ Form</a>
+<a href="../chapters/11-state-lifecycle.html"><span class="nav-index">11</span>State Ownership และ Lifecycle</a>
+</nav>
+<p class="nav-heading">D · Boilerplate Architecture</p>
+<nav class="course-nav">
+<a href="../chapters/12-boilerplate-map.html"><span class="nav-index">12</span>แผนที่ AI-first Flutter Boilerplate</a>
+<a href="../chapters/13-riverpod.html"><span class="nav-index">13</span>Riverpod: State Graph และ Dependency Injection</a>
+<a href="../chapters/14-go-router.html"><span class="nav-index">14</span>GoRouter, Redirect และ Authentication Guard</a>
+<a href="../chapters/15-network-storage-errors.html"><span class="nav-index">15</span>Dio, DTO, Repository, Failure และ Secure Storage</a>
+</nav>
+<p class="nav-heading">E · Task Management</p>
+<nav class="course-nav">
+<a href="../chapters/16-task-domain.html"><span class="nav-index">16</span>Capstone: Model Task Domain ด้วย Test-first</a>
+<a href="../chapters/17-offline-repository.html"><span class="nav-index">17</span>Capstone: Offline Datasource และ Repository</a>
+<a href="../chapters/18-task-riverpod.html"><span class="nav-index">18</span>Capstone: Task State และ Filter ด้วย Riverpod</a>
+<a href="../chapters/19-task-form.html"><span class="nav-index">19</span>Capstone: Create/Edit Form และ Validation</a>
+<a href="../chapters/20-task-mutations.html"><span class="nav-index">20</span>Capstone: Toggle, Update, Delete และ Feedback</a>
+<a href="../chapters/21-dio-datasource.html"><span class="nav-index">21</span>Capstone: Real-API-ready Dio Datasource</a>
+<a href="../chapters/22-capstone-integration.html"><span class="nav-index">22</span>Capstone: Route, Shell และ End-to-end Flow</a>
+</nav>
+<p class="nav-heading">F · Quality & Delivery</p>
+<nav class="course-nav">
+<a href="../chapters/23-testing.html"><span class="nav-index">23</span>Test Strategy: Unit ถึง Integration</a>
+<a href="../chapters/24-debug-performance.html"><span class="nav-index">24</span>Debugging, DevTools และ Performance</a>
+<a href="../chapters/25-production-concerns.html"><span class="nav-index">25</span>Environment, Security, Accessibility และ Localization</a>
+<a href="../chapters/26-build-release.html"><span class="nav-index">26</span>Build Android, iOS และ Web</a>
+<a href="../chapters/27-production-checklist.html"><span class="nav-index">27</span>Production Readiness และ Next-system Checklist</a>
+<a href="../chapters/28-ai-workflow.html"><span class="nav-index">28</span>ใช้ AI พัฒนา Flutter อย่างมีขอบเขตและหลักฐาน</a>
+</nav>
+<p class="nav-heading">Reference</p>
+<nav class="course-nav">
+<a href="../reference/commands.html"><span class="nav-index">R</span>Command Cookbook</a>
+<a href="../reference/glossary.html"><span class="nav-index">R</span>React/Next.js ↔ Flutter Glossary</a>
+<a href="../reference/architecture-decisions.html"><span class="nav-index">R</span>Architecture Decision Matrix</a>
+<a href="../reference/troubleshooting.html"><span class="nav-index">R</span>Troubleshooting Catalog</a>
+</nav>
+
+      <div class="sidebar-footer"><p>Offline-first · ภาษาไทย · Flutter 3.44</p></div>
+    </aside>
+    <div class="site-main">
+      <header class="mobile-bar">
+        <button class="nav-trigger" type="button" data-nav-trigger aria-expanded="false">เมนู</button>
+        <strong>04 · Clone, Generate, Run และตรวจ Boilerplate</strong>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </header>
+      <main id="main-content" class="lesson-wrap">
+        <article class="lesson">
+          <header class="lesson-header">
+            <p class="lesson-kicker">A · Orientation & Setup · บทที่ 04</p>
+            <h1>Clone, Generate, Run และตรวจ Boilerplate</h1>
+            <p class="hero-lead">นำ source ลงเครื่อง อ่าน config สร้าง generated code รัน environment และยืนยัน baseline ก่อนแก้ไข</p>
+            <div class="lesson-meta">
+              <span>เวลาอ่าน 36 นาที</span>
+              <span>ระดับ เริ่มต้น</span>
+              <span>git clone pub get build_runner environment demo login</span>
+            </div>
+          </header>
+          <h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>Clone source จาก GitHub และสร้าง working copy ที่สะอาด</li>
+  <li>เข้าใจลำดับ pub get → codegen → analyze → test → run</li>
+  <li>รัน Development, Staging และ Production composition อย่างถูก target</li>
+  <li>ยืนยัน baseline ก่อนสร้าง feature</li>
+</ul>
+
+<h2 id="clone">Clone และตรวจ identity</h2>
+<div class="code-block">
+  <div class="code-label">Terminal</div>
+  <pre><code>git clone git@github.com:PattanasakGit/flutter-boilerplate.git
+cd flutter-boilerplate
+git status --short --branch
+git log -5 --oneline
+flutter --version</code></pre>
+</div>
+<p>
+  ผลที่ต้องการคือ working tree ไม่มี modified/untracked source และ Flutter
+  ตรงกับ baseline ใน <code>.fvmrc</code> ถ้าจะสร้าง product ใหม่ ให้สร้าง
+  repository ใหม่หรือเปลี่ยน remote อย่างมีเจตนา อย่าเผลอ push กลับ starter
+</p>
+
+<h2 id="install">ติดตั้ง dependency และ generate</h2>
+<div class="code-block">
+  <div class="code-label">Bootstrap</div>
+  <pre><code>flutter pub get
+dart run build_runner build
+git diff --exit-code</code></pre>
+</div>
+<p>
+  <code>pub get</code> อ่าน constraint จาก <code>pubspec.yaml</code> และใช้
+  exact graph จาก <code>pubspec.lock</code> ส่วน build_runner สร้าง Riverpod,
+  Freezed และ JSON code หลังจาก generate แล้ว <code>git diff --exit-code</code>
+  ต้องไม่พบ stale generated files ใน clean clone
+</p>
+
+<div class="callout callout-bridge">
+  <strong>เทียบกับ Next.js</strong>
+  <code>flutter pub get</code> ใกล้กับ install จาก lockfile ส่วน build_runner
+  คล้าย code generation step ไม่ใช่ dev server และ generated files ของ
+  repository นี้ตั้งใจ commit เพื่อให้ clone วิเคราะห์ได้ทันที
+</div>
+
+<h2 id="quality">ยืนยัน baseline</h2>
+<div class="code-block">
+  <div class="code-label">Quality gate</div>
+  <pre><code>./scripts/format.sh
+./scripts/generate.sh
+./scripts/analyze.sh
+./scripts/test.sh</code></pre>
+</div>
+<table class="comparison-table">
+  <thead><tr><th>คำสั่ง</th><th>ตรวจอะไร</th><th>ไม่ตรวจอะไร</th></tr></thead>
+  <tbody>
+    <tr><td>format</td><td>รูปแบบ Dart ที่ canonical</td><td>logic correctness</td></tr>
+    <tr><td>generate</td><td>generated source ตรง annotation</td><td>UX</td></tr>
+    <tr><td>analyze</td><td>type/lint/static issue</td><td>runtime platform config</td></tr>
+    <tr><td>test</td><td>behavior ที่มี test ครอบคลุม</td><td>behavior ที่ไม่เคยเขียน test</td></tr>
+  </tbody>
+</table>
+
+<h2 id="run">รันแต่ละ environment</h2>
+<div class="code-block">
+  <div class="code-label">Entrypoints</div>
+  <pre><code>flutter run -t lib/main_development.dart
+flutter run -t lib/main_staging.dart
+flutter run -t lib/main_production.dart</code></pre>
+</div>
+<p>
+  <code>-t</code> เลือก Dart entrypoint ต่างจาก native flavor ทั้งสาม
+  composition ใช้ fake authentication เหมือนกันใน starter ปัจจุบัน
+  Development เปิด logging/debug banner ส่วน Staging/Production ปิด
+</p>
+
+<h2 id="demo">สำรวจ Authentication vertical slice</h2>
+<ol>
+  <li>กรอก <code>demo@example.com</code> และ <code>password123</code></li>
+  <li>สังเกต validation ก่อน repository ถูกเรียก</li>
+  <li>สังเกต loading state ทำให้ปุ่มถูก disable</li>
+  <li>หลัง success router redirect ไป Home</li>
+  <li>กด Sign out แล้ว router กลับ Login</li>
+</ol>
+<p>
+  จากนั้นอ่านตาม flow:
+</p>
+<div class="code-block">
+  <div class="code-label">Source trail</div>
+  <pre><code>login_page.dart
+  → login_form.dart
+  → login_controller.dart
+  → login_use_case.dart
+  → authentication_repository_impl.dart
+  → authentication_remote_datasource.dart</code></pre>
+</div>
+
+<h2 id="hot-reload">Hot reload, hot restart และ cold start</h2>
+<table class="comparison-table">
+  <thead><tr><th>Action</th><th>รักษา state</th><th>ใช้เมื่อ</th></tr></thead>
+  <tbody>
+    <tr><td>Hot reload</td><td>ส่วนใหญ่รักษา</td><td>แก้ UI/method body</td></tr>
+    <tr><td>Hot restart</td><td>เริ่ม Dart state ใหม่</td><td>แก้ initialization/provider graph</td></tr>
+    <tr><td>Cold start</td><td>เริ่ม process/platform ใหม่</td><td>ตรวจ bootstrap, session restore, plugin config</td></tr>
+  </tbody>
+</table>
+
+<h2 id="rename">ก่อนใช้เป็น product ใหม่</h2>
+<ul>
+  <li>เปลี่ยน package/app name และ reverse-domain identifiers</li>
+  <li>เปลี่ยน remote repository</li>
+  <li>กำหนด environment strategy และ native flavors</li>
+  <li>แทน fake datasource ด้วย implementation ที่ fail closed</li>
+  <li>ตั้ง signing, icons, localization, privacy และ observability</li>
+</ul>
+
+<h2 id="mistakes">ปัญหาที่พบบ่อย</h2>
+<ul>
+  <li>รัน <code>flutter run</code> โดยไม่ใส่ <code>-t</code> ทั้งที่ไม่มี default main</li>
+  <li>แก้ generated <code>.g.dart</code> ด้วยมือ</li>
+  <li>เห็น Production label แล้วคิดว่าเชื่อม backend จริง</li>
+  <li>ใช้ <code>flutter clean</code> เป็นคำตอบแรกโดยไม่อ่าน error</li>
+  <li>เริ่ม feature ขณะที่ baseline test เดิมยัง fail</li>
+</ul>
+
+          <section class="checkpoint" id="checkpoint">
+  <h2>Checkpoint ก่อนเดินต่อ</h2>
+  <ol>
+    <li>อธิบายหัวข้อนี้ด้วยภาษาของตนเองโดยไม่เปิดคู่มือ</li>
+    <li>ชี้ไฟล์หรือคำสั่งใน Boilerplate ที่สัมพันธ์กับบทนี้ได้</li>
+    <li>รันตัวอย่างหรือ verification ที่บทกำหนดและอ่านผลลัพธ์ได้</li>
+  </ol>
+</section>
+<section class="quiz" id="quiz">
+  <h2>Quiz ตรวจ mental model</h2>
+  <p><strong>เหตุใดควรรัน baseline test ก่อนเริ่ม feature?</strong></p>
+  <div class="quiz-options"><button class="quiz-option" type="button" data-correct="false">เพื่อให้ build ช้าลง</button><button class="quiz-option" type="button" data-correct="true">เพื่อแยกปัญหาเดิมออกจากสิ่งที่เราแก้</button><button class="quiz-option" type="button" data-correct="false">เพื่อสร้าง production token</button></div>
+  <p class="quiz-feedback" aria-live="polite"></p>
+</section>
+<section class="exercise" id="practice">
+  <h2>Practice</h2>
+  <p>Clone ใหม่ในโฟลเดอร์ที่ไม่ sync cloud แล้วบันทึกผล generate, analyze และ test</p>
+  <p><strong>Definition of done:</strong> อธิบายเหตุผลของ design, แสดงผลลัพธ์ที่รันจริง และไม่มี warning ที่ถูกมองข้าม</p>
+</section>
+
+          <nav class="chapter-pagination" aria-label="เปลี่ยนบทเรียน">
+            <a href="../chapters/03-macos-toolchain.html">ก่อนหน้า<br><strong>ติดตั้ง Flutter toolchain บน macOS และ VS Code</strong></a>
+            <a href="../chapters/05-dart-types.html">บทถัดไป<br><strong>Dart Types และโครงสร้างโปรแกรมสำหรับ TypeScript Developer</strong></a>
+          </nav>
+        </article>
+        <aside class="lesson-toc" aria-label="สารบัญบท">
+          <strong>ในบทนี้</strong>
+          <a href="#objectives">เป้าหมายของบท</a>
+<a href="#clone">Clone และตรวจ identity</a>
+<a href="#install">ติดตั้ง dependency และ generate</a>
+<a href="#quality">ยืนยัน baseline</a>
+<a href="#run">รันแต่ละ environment</a>
+<a href="#demo">สำรวจ Authentication vertical slice</a>
+<a href="#hot-reload">Hot reload, hot restart และ cold start</a>
+<a href="#rename">ก่อนใช้เป็น product ใหม่</a>
+<a href="#mistakes">ปัญหาที่พบบ่อย</a>
+<a href="#checkpoint">Checkpoint</a>
+<a href="#quiz">Quiz</a>
+<a href="#practice">Practice</a>
+          <button class="chapter-complete" type="button" data-current-chapter="04-clone-and-run" aria-pressed="false">
+            ทำเครื่องหมายว่าเรียนจบบทนี้
+          </button>
+        </aside>
+      </main>
+    </div>
+  </div>
+  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
+    <div class="search-head">
+      <label><span id="search-title" class="visually-hidden">ค้นหาคู่มือ</span><input id="search-input" type="search" placeholder="ค้นหา Dart, Riverpod, routing, build…" autocomplete="off"></label>
+      <button class="search-close" type="button" data-search-close>ปิด</button>
+    </div>
+    <div class="search-results" id="search-results" aria-live="polite"></div>
+  </dialog>
+</body>
+</html>

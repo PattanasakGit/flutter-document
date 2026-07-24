@@ -120,11 +120,13 @@
       return;
     }
 
+    var root = document.body.dataset.root || "";
     results.innerHTML = matches
       .slice(0, 12)
       .map(function (chapter) {
         return (
           '<a class="search-result" href="' +
+          root +
           chapter.url +
           '"><strong>' +
           escapeHtml(chapter.title) +
@@ -285,7 +287,11 @@
     setTheme(storedTheme);
     bindEvents();
     addCopyButtons();
-    updateProgressUI();
+    if (window.FlutterGuideCatalog) {
+      registerChapters(window.FlutterGuideCatalog);
+    } else {
+      updateProgressUI();
+    }
   }
 
   window.FlutterGuide = {

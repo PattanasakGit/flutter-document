@@ -1,0 +1,123 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>Clone source จาก GitHub และสร้าง working copy ที่สะอาด</li>
+  <li>เข้าใจลำดับ pub get → codegen → analyze → test → run</li>
+  <li>รัน Development, Staging และ Production composition อย่างถูก target</li>
+  <li>ยืนยัน baseline ก่อนสร้าง feature</li>
+</ul>
+
+<h2 id="clone">Clone และตรวจ identity</h2>
+<div class="code-block">
+  <div class="code-label">Terminal</div>
+  <pre><code>git clone git@github.com:PattanasakGit/flutter-boilerplate.git
+cd flutter-boilerplate
+git status --short --branch
+git log -5 --oneline
+flutter --version</code></pre>
+</div>
+<p>
+  ผลที่ต้องการคือ working tree ไม่มี modified/untracked source และ Flutter
+  ตรงกับ baseline ใน <code>.fvmrc</code> ถ้าจะสร้าง product ใหม่ ให้สร้าง
+  repository ใหม่หรือเปลี่ยน remote อย่างมีเจตนา อย่าเผลอ push กลับ starter
+</p>
+
+<h2 id="install">ติดตั้ง dependency และ generate</h2>
+<div class="code-block">
+  <div class="code-label">Bootstrap</div>
+  <pre><code>flutter pub get
+dart run build_runner build
+git diff --exit-code</code></pre>
+</div>
+<p>
+  <code>pub get</code> อ่าน constraint จาก <code>pubspec.yaml</code> และใช้
+  exact graph จาก <code>pubspec.lock</code> ส่วน build_runner สร้าง Riverpod,
+  Freezed และ JSON code หลังจาก generate แล้ว <code>git diff --exit-code</code>
+  ต้องไม่พบ stale generated files ใน clean clone
+</p>
+
+<div class="callout callout-bridge">
+  <strong>เทียบกับ Next.js</strong>
+  <code>flutter pub get</code> ใกล้กับ install จาก lockfile ส่วน build_runner
+  คล้าย code generation step ไม่ใช่ dev server และ generated files ของ
+  repository นี้ตั้งใจ commit เพื่อให้ clone วิเคราะห์ได้ทันที
+</div>
+
+<h2 id="quality">ยืนยัน baseline</h2>
+<div class="code-block">
+  <div class="code-label">Quality gate</div>
+  <pre><code>./scripts/format.sh
+./scripts/generate.sh
+./scripts/analyze.sh
+./scripts/test.sh</code></pre>
+</div>
+<table class="comparison-table">
+  <thead><tr><th>คำสั่ง</th><th>ตรวจอะไร</th><th>ไม่ตรวจอะไร</th></tr></thead>
+  <tbody>
+    <tr><td>format</td><td>รูปแบบ Dart ที่ canonical</td><td>logic correctness</td></tr>
+    <tr><td>generate</td><td>generated source ตรง annotation</td><td>UX</td></tr>
+    <tr><td>analyze</td><td>type/lint/static issue</td><td>runtime platform config</td></tr>
+    <tr><td>test</td><td>behavior ที่มี test ครอบคลุม</td><td>behavior ที่ไม่เคยเขียน test</td></tr>
+  </tbody>
+</table>
+
+<h2 id="run">รันแต่ละ environment</h2>
+<div class="code-block">
+  <div class="code-label">Entrypoints</div>
+  <pre><code>flutter run -t lib/main_development.dart
+flutter run -t lib/main_staging.dart
+flutter run -t lib/main_production.dart</code></pre>
+</div>
+<p>
+  <code>-t</code> เลือก Dart entrypoint ต่างจาก native flavor ทั้งสาม
+  composition ใช้ fake authentication เหมือนกันใน starter ปัจจุบัน
+  Development เปิด logging/debug banner ส่วน Staging/Production ปิด
+</p>
+
+<h2 id="demo">สำรวจ Authentication vertical slice</h2>
+<ol>
+  <li>กรอก <code>demo@example.com</code> และ <code>password123</code></li>
+  <li>สังเกต validation ก่อน repository ถูกเรียก</li>
+  <li>สังเกต loading state ทำให้ปุ่มถูก disable</li>
+  <li>หลัง success router redirect ไป Home</li>
+  <li>กด Sign out แล้ว router กลับ Login</li>
+</ol>
+<p>
+  จากนั้นอ่านตาม flow:
+</p>
+<div class="code-block">
+  <div class="code-label">Source trail</div>
+  <pre><code>login_page.dart
+  → login_form.dart
+  → login_controller.dart
+  → login_use_case.dart
+  → authentication_repository_impl.dart
+  → authentication_remote_datasource.dart</code></pre>
+</div>
+
+<h2 id="hot-reload">Hot reload, hot restart และ cold start</h2>
+<table class="comparison-table">
+  <thead><tr><th>Action</th><th>รักษา state</th><th>ใช้เมื่อ</th></tr></thead>
+  <tbody>
+    <tr><td>Hot reload</td><td>ส่วนใหญ่รักษา</td><td>แก้ UI/method body</td></tr>
+    <tr><td>Hot restart</td><td>เริ่ม Dart state ใหม่</td><td>แก้ initialization/provider graph</td></tr>
+    <tr><td>Cold start</td><td>เริ่ม process/platform ใหม่</td><td>ตรวจ bootstrap, session restore, plugin config</td></tr>
+  </tbody>
+</table>
+
+<h2 id="rename">ก่อนใช้เป็น product ใหม่</h2>
+<ul>
+  <li>เปลี่ยน package/app name และ reverse-domain identifiers</li>
+  <li>เปลี่ยน remote repository</li>
+  <li>กำหนด environment strategy และ native flavors</li>
+  <li>แทน fake datasource ด้วย implementation ที่ fail closed</li>
+  <li>ตั้ง signing, icons, localization, privacy และ observability</li>
+</ul>
+
+<h2 id="mistakes">ปัญหาที่พบบ่อย</h2>
+<ul>
+  <li>รัน <code>flutter run</code> โดยไม่ใส่ <code>-t</code> ทั้งที่ไม่มี default main</li>
+  <li>แก้ generated <code>.g.dart</code> ด้วยมือ</li>
+  <li>เห็น Production label แล้วคิดว่าเชื่อม backend จริง</li>
+  <li>ใช้ <code>flutter clean</code> เป็นคำตอบแรกโดยไม่อ่าน error</li>
+  <li>เริ่ม feature ขณะที่ baseline test เดิมยัง fail</li>
+</ul>

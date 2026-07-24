@@ -1,0 +1,182 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>เลือก test level จากความเสี่ยง ไม่ใช่จากเปอร์เซ็นต์ coverage</li>
+  <li>ทดสอบ Domain, Repository, Riverpod controller, Widget และ Router แยกบทบาทกัน</li>
+  <li>ใช้ fake ที่ deterministic และ override dependency ผ่าน ProviderContainer</li>
+  <li>สร้าง critical-flow integration test โดยไม่ทำให้ test suite เปราะ</li>
+</ul>
+
+<h2 id="pyramid">Test portfolio ที่เหมาะกับ Boilerplate</h2>
+<figure class="diagram layer-diagram" aria-labelledby="test-portfolio-title">
+  <div class="layer-stack">
+    <div class="layer layer-ui"><strong>Integration / smoke</strong><span>critical user flow จำนวนน้อย</span></div>
+    <div class="layer layer-app"><strong>Widget / router</strong><span>render, input, semantics, redirect</span></div>
+    <div class="layer layer-data"><strong>Repository / controller</strong><span>mapping, state transition, failures</span></div>
+    <div class="layer layer-domain"><strong>Domain unit</strong><span>invariant, filter, pure behavior จำนวนมาก</span></div>
+  </div>
+  <figcaption>ฐานกว้างเป็น test ที่เร็วและระบุต้นเหตุได้ ส่วนยอดพิสูจน์การประกอบระบบ</figcaption>
+</figure>
+<p class="diagram-description" id="test-portfolio-title">
+  รูปทรงไม่ได้กำหนดสัดส่วนตายตัว ให้เพิ่ม test ตรง boundary ที่ความเสียหายสูง
+  และคง end-to-end ไว้เฉพาะ flow ที่ต้องพิสูจน์หลายชั้นร่วมกันจริง ๆ
+</p>
+
+<h2 id="levels">แต่ละระดับพิสูจน์อะไร</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>ระดับ</th><th>สิ่งที่ใช้จริง</th><th>สิ่งที่แทน</th><th>คำถามที่ตอบ</th></tr></thead>
+    <tbody>
+      <tr><td>Domain unit</td><td>Entity/value logic</td><td>ไม่มี</td><td>Invariant และ behavior ถูกหรือไม่</td></tr>
+      <tr><td>Repository</td><td>Repository + mapper</td><td>Datasource</td><td>ข้อมูลและ failure ถูกแปลงหรือไม่</td></tr>
+      <tr><td>Controller</td><td>Provider graph</td><td>Repository</td><td>Action ทำให้ state เปลี่ยนถูกลำดับหรือไม่</td></tr>
+      <tr><td>Widget</td><td>Page/widget จริง</td><td>Provider boundary</td><td>ผู้ใช้เห็นและกดสิ่งที่ควรได้หรือไม่</td></tr>
+      <tr><td>Router</td><td>GoRouter policy</td><td>Auth state</td><td>URL และ session แต่ละแบบไปที่ใด</td></tr>
+      <tr><td>Integration</td><td>หลาย layer + platform</td><td>เฉพาะ external boundary</td><td>critical flow ทำงานร่วมกันหรือไม่</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="arrange-act-assert">AAA และชื่อ test แบบ behavior</h2>
+<div class="code-block">
+  <div class="code-label">task_test.dart</div>
+  <pre><code>test('rename trims the title and preserves task identity', () {
+  // Arrange
+  final task = Task(id: 't-1', title: 'Draft guide');
+
+  // Act
+  final renamed = task.rename('  Publish guide  ');
+
+  // Assert
+  expect(renamed.id, task.id);
+  expect(renamed.title, 'Publish guide');
+});</code></pre>
+</div>
+<p>
+  ชื่อ test บอก precondition และ outcome ที่สำคัญ หลีกเลี่ยงชื่อ
+  <code>calls repository once</code> ถ้าจำนวนครั้งไม่ใช่ contract ของระบบ
+</p>
+
+<h2 id="repository-test">Repository test ที่ boundary</h2>
+<div class="code-block">
+  <div class="code-label">task_repository_impl_test.dart</div>
+  <pre><code>test('maps transport records to domain tasks', () async {
+  final source = FakeTaskDataSource(records: [
+    const TaskRecord(id: '1', title: 'Read tests', completed: false),
+  ]);
+  final repository = TaskRepositoryImpl(source);
+
+  final result = await repository.loadTasks();
+
+  expect(result, isA&lt;Success&lt;List&lt;Task&gt;&gt;&gt;());
+  final tasks = (result as Success&lt;List&lt;Task&gt;&gt;).value;
+  expect(tasks.single.title, 'Read tests');
+});</code></pre>
+</div>
+<p>
+  Fake ควรจำลอง contract ด้วยข้อมูลจริงขนาดเล็ก ไม่จำลอง implementation
+  detail ของ Dio หรือฐานข้อมูล หาก mapping พัง test นี้ต้อง fail
+</p>
+
+<h2 id="provider-test">Controller test ด้วย ProviderContainer</h2>
+<div class="code-block">
+  <div class="code-label">task_controller_test.dart</div>
+  <pre><code>final container = ProviderContainer(
+  overrides: [
+    taskRepositoryProvider.overrideWithValue(fakeRepository),
+  ],
+);
+addTearDown(container.dispose);
+
+final states = &lt;AsyncValue&lt;TaskViewState&gt;&gt;[];
+final subscription = container.listen(
+  taskControllerProvider,
+  (_, next) =&gt; states.add(next),
+  fireImmediately: true,
+);
+addTearDown(subscription.close);
+
+await container.read(taskControllerProvider.notifier).create('Ship app');
+
+expect(states.last.requireValue.visibleTasks.single.title, 'Ship app');</code></pre>
+</div>
+<p>
+  อ่าน controller ผ่าน graph จริง แต่ override เฉพาะ external boundary
+  วิธีนี้ตรวจ dependency wiring ได้มากกว่าการสร้าง controller ตรง ๆ
+</p>
+
+<h2 id="widget-test">Widget test จากมุมผู้ใช้</h2>
+<div class="code-block">
+  <div class="code-label">task_list_page_test.dart</div>
+  <pre><code>await tester.pumpWidget(
+  ProviderScope(
+    overrides: [taskRepositoryProvider.overrideWithValue(fakeRepository)],
+    child: const MaterialApp(home: TaskListPage()),
+  ),
+);
+await tester.pumpAndSettle();
+
+expect(find.text('Draft developer guide'), findsOneWidget);
+await tester.tap(find.bySemanticsLabel('ทำงาน Draft developer guide ให้เสร็จ'));
+await tester.pump();
+expect(fakeRepository.saved.single.isCompleted, isTrue);</code></pre>
+</div>
+<p>
+  Prefer text, role, label และ key ที่มีความหมายต่อผู้ใช้ หลีกเลี่ยง finder
+  ที่ผูกกับลำดับ widget หรือ class ภายในซึ่ง refactor แล้ว behavior ยังเดิม
+</p>
+
+<h2 id="router-test">Router matrix</h2>
+<div class="table-wrap">
+  <table>
+    <thead><tr><th>Session</th><th>Target</th><th>Expected</th></tr></thead>
+    <tbody>
+      <tr><td>signed-out</td><td>/tasks</td><td>/login</td></tr>
+      <tr><td>signed-out</td><td>/unknown</td><td>/login หรือ error ตาม policy</td></tr>
+      <tr><td>signed-in</td><td>/login</td><td>/home</td></tr>
+      <tr><td>signed-in</td><td>/tasks</td><td>TaskListPage</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<h2 id="integration">Critical integration flow</h2>
+<div class="code-block">
+  <div class="code-label">integration_test/app_flow_test.dart</div>
+  <pre><code>testWidgets('login → create task → complete task → sign out', (tester) async {
+  await app.mainForTesting();
+  await tester.pumpAndSettle();
+
+  await tester.enterText(find.byKey(const Key('email')), 'demo@example.com');
+  await tester.enterText(find.byKey(const Key('password')), 'password');
+  await tester.tap(find.text('Sign in'));
+  await tester.pumpAndSettle();
+
+  await tester.tap(find.text('Open task manager'));
+  await tester.tap(find.bySemanticsLabel('เพิ่มงาน'));
+  // fill, save, toggle, verify, sign out
+});</code></pre>
+</div>
+<p>
+  อย่า duplicate ทุก edge case จาก unit test ใน integration test
+  ให้ flow นี้พิสูจน์ wiring, navigation, state และ platform surface เท่านั้น
+</p>
+
+<h2 id="commands">Verification commands</h2>
+<div class="code-block">
+  <div class="code-label">Focused → full suite</div>
+  <pre><code>flutter test test/features/tasks/domain
+flutter test test/features/tasks/data
+flutter test test/features/tasks/application
+flutter test test/features/tasks/presentation
+flutter test test/app/router
+flutter test --coverage
+flutter analyze</code></pre>
+</div>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>mock ทุก class จน test พิสูจน์เพียง mock configuration</li>
+  <li>ใช้ <code>pumpAndSettle</code> กับ animation/stream ที่ไม่มีวัน settle</li>
+  <li>assert implementation detail แทน observable behavior</li>
+  <li>ไล่ coverage 100% แต่ critical redirect และ failure path ไม่ถูกทดสอบ</li>
+  <li>test ผ่านทีละไฟล์ แต่ไม่รัน full suite ก่อนส่งงาน</li>
+</ul>

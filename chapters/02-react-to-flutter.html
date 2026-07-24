@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="ใช้ความรู้เดิมเป็นสะพาน แต่แยก DOM, Widget, runtime และ state ownership ให้ถูกต้อง">
+  <title>แผนที่ความคิดจาก React และ Next.js สู่ Flutter — Flutter Field Guide</title>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script defer src="../assets/js/site.js"></script>
+  <script defer src="../assets/js/catalog.js"></script>
+</head>
+<body data-root="../">
+  <a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
+  <noscript><p class="noscript-note">เนื้อหาทั้งหมดยังอ่านได้ แต่ search, theme, quiz และ progress ต้องเปิด JavaScript</p></noscript>
+  <div class="site-shell">
+    <aside class="sidebar" aria-label="เมนูหลักสูตร">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
+        <span><strong>Flutter Field Guide</strong><small>Web → Mobile</small></span>
+      </a>
+      <div class="sidebar-tools">
+        <button class="search-trigger" type="button" data-search-trigger>ค้นหาบทเรียน <kbd>/</kbd></button>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </div>
+      <div class="course-progress">
+        <div class="progress-meta"><span>ความคืบหน้า</span><strong data-progress-count>0 / 28</strong></div>
+        <div class="progress-track" aria-hidden="true"><div class="progress-value" data-progress-value></div></div>
+      </div>
+      <p class="nav-heading">A · Orientation & Setup</p>
+<nav class="course-nav">
+<a href="../chapters/01-orientation.html"><span class="nav-index">01</span>เริ่มใช้คู่มือและตั้งเป้าหมายระบบ</a>
+<a href="../chapters/02-react-to-flutter.html" aria-current="page"><span class="nav-index">02</span>แผนที่ความคิดจาก React และ Next.js สู่ Flutter</a>
+<a href="../chapters/03-macos-toolchain.html"><span class="nav-index">03</span>ติดตั้ง Flutter toolchain บน macOS และ VS Code</a>
+<a href="../chapters/04-clone-and-run.html"><span class="nav-index">04</span>Clone, Generate, Run และตรวจ Boilerplate</a>
+</nav>
+<p class="nav-heading">B · Dart for TypeScript</p>
+<nav class="course-nav">
+<a href="../chapters/05-dart-types.html"><span class="nav-index">05</span>Dart Types และโครงสร้างโปรแกรมสำหรับ TypeScript Developer</a>
+<a href="../chapters/06-null-collections-patterns.html"><span class="nav-index">06</span>Null Safety, Collections และ Pattern Matching</a>
+<a href="../chapters/07-functions-classes-generics.html"><span class="nav-index">07</span>Functions, Classes, Immutability และ Generics</a>
+<a href="../chapters/08-async-errors-results.html"><span class="nav-index">08</span>Future, Stream, Exception และ Typed Result</a>
+</nav>
+<p class="nav-heading">C · Flutter Fundamentals</p>
+<nav class="course-nav">
+<a href="../chapters/09-widget-runtime.html"><span class="nav-index">09</span>Widget, Element, RenderObject และ BuildContext</a>
+<a href="../chapters/10-layout-theme-forms.html"><span class="nav-index">10</span>Constraints, Responsive Layout, Theme และ Form</a>
+<a href="../chapters/11-state-lifecycle.html"><span class="nav-index">11</span>State Ownership และ Lifecycle</a>
+</nav>
+<p class="nav-heading">D · Boilerplate Architecture</p>
+<nav class="course-nav">
+<a href="../chapters/12-boilerplate-map.html"><span class="nav-index">12</span>แผนที่ AI-first Flutter Boilerplate</a>
+<a href="../chapters/13-riverpod.html"><span class="nav-index">13</span>Riverpod: State Graph และ Dependency Injection</a>
+<a href="../chapters/14-go-router.html"><span class="nav-index">14</span>GoRouter, Redirect และ Authentication Guard</a>
+<a href="../chapters/15-network-storage-errors.html"><span class="nav-index">15</span>Dio, DTO, Repository, Failure และ Secure Storage</a>
+</nav>
+<p class="nav-heading">E · Task Management</p>
+<nav class="course-nav">
+<a href="../chapters/16-task-domain.html"><span class="nav-index">16</span>Capstone: Model Task Domain ด้วย Test-first</a>
+<a href="../chapters/17-offline-repository.html"><span class="nav-index">17</span>Capstone: Offline Datasource และ Repository</a>
+<a href="../chapters/18-task-riverpod.html"><span class="nav-index">18</span>Capstone: Task State และ Filter ด้วย Riverpod</a>
+<a href="../chapters/19-task-form.html"><span class="nav-index">19</span>Capstone: Create/Edit Form และ Validation</a>
+<a href="../chapters/20-task-mutations.html"><span class="nav-index">20</span>Capstone: Toggle, Update, Delete และ Feedback</a>
+<a href="../chapters/21-dio-datasource.html"><span class="nav-index">21</span>Capstone: Real-API-ready Dio Datasource</a>
+<a href="../chapters/22-capstone-integration.html"><span class="nav-index">22</span>Capstone: Route, Shell และ End-to-end Flow</a>
+</nav>
+<p class="nav-heading">F · Quality & Delivery</p>
+<nav class="course-nav">
+<a href="../chapters/23-testing.html"><span class="nav-index">23</span>Test Strategy: Unit ถึง Integration</a>
+<a href="../chapters/24-debug-performance.html"><span class="nav-index">24</span>Debugging, DevTools และ Performance</a>
+<a href="../chapters/25-production-concerns.html"><span class="nav-index">25</span>Environment, Security, Accessibility และ Localization</a>
+<a href="../chapters/26-build-release.html"><span class="nav-index">26</span>Build Android, iOS และ Web</a>
+<a href="../chapters/27-production-checklist.html"><span class="nav-index">27</span>Production Readiness และ Next-system Checklist</a>
+<a href="../chapters/28-ai-workflow.html"><span class="nav-index">28</span>ใช้ AI พัฒนา Flutter อย่างมีขอบเขตและหลักฐาน</a>
+</nav>
+<p class="nav-heading">Reference</p>
+<nav class="course-nav">
+<a href="../reference/commands.html"><span class="nav-index">R</span>Command Cookbook</a>
+<a href="../reference/glossary.html"><span class="nav-index">R</span>React/Next.js ↔ Flutter Glossary</a>
+<a href="../reference/architecture-decisions.html"><span class="nav-index">R</span>Architecture Decision Matrix</a>
+<a href="../reference/troubleshooting.html"><span class="nav-index">R</span>Troubleshooting Catalog</a>
+</nav>
+
+      <div class="sidebar-footer"><p>Offline-first · ภาษาไทย · Flutter 3.44</p></div>
+    </aside>
+    <div class="site-main">
+      <header class="mobile-bar">
+        <button class="nav-trigger" type="button" data-nav-trigger aria-expanded="false">เมนู</button>
+        <strong>02 · แผนที่ความคิดจาก React และ Next.js สู่ Flutter</strong>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </header>
+      <main id="main-content" class="lesson-wrap">
+        <article class="lesson">
+          <header class="lesson-header">
+            <p class="lesson-kicker">A · Orientation & Setup · บทที่ 02</p>
+            <h1>แผนที่ความคิดจาก React และ Next.js สู่ Flutter</h1>
+            <p class="hero-lead">ใช้ความรู้เดิมเป็นสะพาน แต่แยก DOM, Widget, runtime และ state ownership ให้ถูกต้อง</p>
+            <div class="lesson-meta">
+              <span>เวลาอ่าน 28 นาที</span>
+              <span>ระดับ เริ่มต้น</span>
+              <span>React Next.js JSX DOM Widget hooks provider</span>
+            </div>
+          </header>
+          <h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>จับคู่ concept ที่คุ้นเคยโดยไม่คิดว่า implementation เท่ากัน</li>
+  <li>เข้าใจความต่างระหว่าง Browser DOM กับ Flutter rendering pipeline</li>
+  <li>เลือก owner ของ UI, state, navigation และ data ได้ถูก layer</li>
+</ul>
+
+<h2 id="comparison">Concept map หลัก</h2>
+<table class="comparison-table">
+  <thead><tr><th>React / Next.js</th><th>Flutter</th><th>ข้อแตกต่างสำคัญ</th></tr></thead>
+  <tbody>
+    <tr><td>JSX element</td><td>Widget</td><td>Widget เป็น immutable configuration ไม่ใช่ DOM node</td></tr>
+    <tr><td>Component instance</td><td>Element</td><td>Element รักษาตำแหน่งและ lifecycle ใน tree</td></tr>
+    <tr><td>Browser layout/paint</td><td>RenderObject</td><td>Flutter คุม constraints, layout และ paint pipeline</td></tr>
+    <tr><td>props</td><td>constructor parameters</td><td>Dart ใช้ named/required parameters และ nominal types</td></tr>
+    <tr><td>useState</td><td>StatefulWidget/setState</td><td>เหมาะกับ state ที่ widget เป็นเจ้าของและอายุสั้น</td></tr>
+    <tr><td>Context/Zustand/Redux</td><td>Riverpod</td><td>Riverpod เป็นทั้ง state graph และ dependency composition</td></tr>
+    <tr><td>React Router/App Router</td><td>GoRouter</td><td>mobile back stack และ deep link ต้องคิดร่วมกัน</td></tr>
+    <tr><td>fetch/axios</td><td>Dio</td><td>Dio ควรอยู่ data boundary ไม่ไหลถึง UI</td></tr>
+    <tr><td>localStorage</td><td>platform storage abstraction</td><td>secure data ต้องใช้ Keychain/Keystore และ config ราย platform</td></tr>
+    <tr><td>npm test</td><td>flutter test</td><td>Widget test รัน Flutter binding โดยไม่ต้องเปิด simulator</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-bridge">
+  <strong>Analogy มีวันหมดอายุ</strong>
+  ใช้ตารางนี้เพื่อถามว่า “responsibility นี้อยู่ตรงไหน” ไม่ใช่เพื่อย้าย pattern
+  จาก Web แบบคำต่อคำ ตัวอย่างเช่น อย่าหา <code>useEffect</code> ทุกครั้งที่
+  Widget สร้าง เพราะ lifecycle และ provider ownership ให้ทางเลือกที่แม่นกว่า
+</div>
+
+<h2 id="trees">สาม tree แทน DOM mental model</h2>
+<figure class="diagram tree-diagram" aria-labelledby="three-tree-title">
+  <div class="track-grid">
+    <article class="track-card" data-track="flutter"><span class="track-label">Configuration</span><h3>Widget tree</h3><p>สร้างใหม่ได้บ่อย ราคาถูก และ immutable</p></article>
+    <article class="track-card" data-track="architecture"><span class="track-label">Identity</span><h3>Element tree</h3><p>จับคู่ Widget กับตำแหน่งและ lifecycle</p></article>
+    <article class="track-card" data-track="capstone"><span class="track-label">Pixels</span><h3>Render tree</h3><p>รับ constraints, layout, paint และ hit test</p></article>
+  </div>
+  <figcaption>Widget บอก “ต้องการอะไร” ส่วน Element และ RenderObject ทำให้อยู่ต่อและแสดงผล</figcaption>
+</figure>
+<p class="diagram-description" id="three-tree-title">
+  เมื่อ parent build ใหม่ Flutter เปรียบเทียบ Widget configuration กับ Element
+  เดิม แล้วอัปเดต RenderObject เฉพาะส่วนที่จำเป็น ไม่ได้ลบและสร้าง pixel ทุกครั้ง
+</p>
+
+<h2 id="component-example">จาก React component ไป Widget</h2>
+<div class="code-block">
+  <div class="code-label">React</div>
+  <pre><code>type TaskCardProps = {
+  title: string;
+  completed: boolean;
+  onToggle(): void;
+};
+
+export function TaskCard(props: TaskCardProps) {
+  return (
+    &lt;button onClick={props.onToggle}&gt;
+      {props.completed ? "Done" : "Open"} · {props.title}
+    &lt;/button&gt;
+  );
+}</code></pre>
+</div>
+
+<div class="code-block">
+  <div class="code-label">Flutter</div>
+  <pre><code>final class TaskCard extends StatelessWidget {
+  const TaskCard({
+    required this.title,
+    required this.completed,
+    required this.onToggle,
+    super.key,
+  });
+
+  final String title;
+  final bool completed;
+  final VoidCallback onToggle;
+
+  @override
+  Widget build(BuildContext context) {
+    return FilledButton.tonal(
+      onPressed: onToggle,
+      child: Text('${completed ? 'Done' : 'Open'} · $title'),
+    );
+  }
+}</code></pre>
+</div>
+
+<p>
+  ทั้งสองตัวอย่าง declarative และรับ data/callback จากภายนอก แต่ Flutter
+  constructor ทำหน้าที่เป็น typed props contract, <code>key</code> ช่วย identity
+  ใน Element tree และปุ่มมี Material semantics/interaction จาก framework
+</p>
+
+<h2 id="state-map">เลือก state owner จากอายุและขอบเขต</h2>
+<table class="comparison-table">
+  <thead><tr><th>State</th><th>Owner ที่เหมาะ</th><th>เหตุผล</th></tr></thead>
+  <tbody>
+    <tr><td>Password visibility</td><td>Login form widget</td><td>ใช้หน้าเดียว อายุสั้น ไม่ต้อง persist</td></tr>
+    <tr><td>Task filter</td><td>Task controller/provider</td><td>เป็นส่วนของ feature state และต้อง test</td></tr>
+    <tr><td>Authenticated session</td><td>Session provider/repository</td><td>หลาย route ใช้และต้อง restore</td></tr>
+    <tr><td>Text field draft</td><td>Form controller</td><td>ผูก focus/validation กับ form lifecycle</td></tr>
+  </tbody>
+</table>
+
+<h2 id="data-map">Data fetching ไม่ควรจบที่ Dio</h2>
+<div class="code-block">
+  <div class="code-label">ความต่างของ responsibility</div>
+  <pre><code>// Web component ที่เล็กอาจ fetch โดยตรงได้
+const response = await fetch('/api/tasks');
+
+// Boilerplate แยก boundary
+TaskPage
+  → TaskListController
+  → GetTasks
+  → TaskRepository
+  → TaskRemoteDatasource
+  → Dio</code></pre>
+</div>
+<p>
+  การแยกนี้ไม่ได้ทำเพราะ Flutter บังคับ แต่ทำเพื่อป้องกัน HTTP shape,
+  <code>DioException</code> และ plugin detail ไหลเข้ามาใน business/UI code
+</p>
+
+<h2 id="mistakes">ความผิดพลาดจากการย้าย mental model</h2>
+<ul>
+  <li>สร้าง service locator global เพราะคิดว่าเหมือน import singleton ใน JavaScript</li>
+  <li>ใช้ <code>BuildContext</code> หลัง <code>await</code> โดยไม่ตรวจ mounted</li>
+  <li>ห่อทุกอย่างด้วย Riverpod ทั้งที่ state มี owner แค่ widget เดียว</li>
+  <li>ใช้ fixed width แบบ CSS desktop จน constraints บนมือถือ overflow</li>
+  <li>เรียก API ใน <code>build</code> ทำให้ request ซ้ำทุก rebuild</li>
+</ul>
+
+          <section class="checkpoint" id="checkpoint">
+  <h2>Checkpoint ก่อนเดินต่อ</h2>
+  <ol>
+    <li>อธิบายหัวข้อนี้ด้วยภาษาของตนเองโดยไม่เปิดคู่มือ</li>
+    <li>ชี้ไฟล์หรือคำสั่งใน Boilerplate ที่สัมพันธ์กับบทนี้ได้</li>
+    <li>รันตัวอย่างหรือ verification ที่บทกำหนดและอ่านผลลัพธ์ได้</li>
+  </ol>
+</section>
+<section class="quiz" id="quiz">
+  <h2>Quiz ตรวจ mental model</h2>
+  <p><strong>Widget ใกล้เคียงกับสิ่งใดมากที่สุด?</strong></p>
+  <div class="quiz-options"><button class="quiz-option" type="button" data-correct="false">DOM node ที่แก้ property ได้</button><button class="quiz-option" type="button" data-correct="true">Immutable UI configuration</button><button class="quiz-option" type="button" data-correct="false">Browser process</button></div>
+  <p class="quiz-feedback" aria-live="polite"></p>
+</section>
+<section class="exercise" id="practice">
+  <h2>Practice</h2>
+  <p>เลือก React component เดิมหนึ่งตัวและเขียนรายการ responsibility ก่อนออกแบบเป็น Flutter โดยไม่เริ่มจาก JSX</p>
+  <p><strong>Definition of done:</strong> อธิบายเหตุผลของ design, แสดงผลลัพธ์ที่รันจริง และไม่มี warning ที่ถูกมองข้าม</p>
+</section>
+
+          <nav class="chapter-pagination" aria-label="เปลี่ยนบทเรียน">
+            <a href="../chapters/01-orientation.html">ก่อนหน้า<br><strong>เริ่มใช้คู่มือและตั้งเป้าหมายระบบ</strong></a>
+            <a href="../chapters/03-macos-toolchain.html">บทถัดไป<br><strong>ติดตั้ง Flutter toolchain บน macOS และ VS Code</strong></a>
+          </nav>
+        </article>
+        <aside class="lesson-toc" aria-label="สารบัญบท">
+          <strong>ในบทนี้</strong>
+          <a href="#objectives">เป้าหมายของบท</a>
+<a href="#comparison">Concept map หลัก</a>
+<a href="#trees">สาม tree แทน DOM mental model</a>
+<a href="#component-example">จาก React component ไป Widget</a>
+<a href="#state-map">เลือก state owner จากอายุและขอบเขต</a>
+<a href="#data-map">Data fetching ไม่ควรจบที่ Dio</a>
+<a href="#mistakes">ความผิดพลาดจากการย้าย mental model</a>
+<a href="#checkpoint">Checkpoint</a>
+<a href="#quiz">Quiz</a>
+<a href="#practice">Practice</a>
+          <button class="chapter-complete" type="button" data-current-chapter="02-react-to-flutter" aria-pressed="false">
+            ทำเครื่องหมายว่าเรียนจบบทนี้
+          </button>
+        </aside>
+      </main>
+    </div>
+  </div>
+  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
+    <div class="search-head">
+      <label><span id="search-title" class="visually-hidden">ค้นหาคู่มือ</span><input id="search-input" type="search" placeholder="ค้นหา Dart, Riverpod, routing, build…" autocomplete="off"></label>
+      <button class="search-close" type="button" data-search-close>ปิด</button>
+    </div>
+    <div class="search-results" id="search-results" aria-live="polite"></div>
+  </dialog>
+</body>
+</html>

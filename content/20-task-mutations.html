@@ -1,0 +1,129 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>ออกแบบ update/toggle/delete เป็น explicit state transition</li>
+  <li>เลือก optimistic หรือ confirmed update ด้วย risk/latency</li>
+  <li>ยืนยัน destructive action และให้ feedback</li>
+  <li>จัดการ concurrent mutation อย่าง deterministic</li>
+</ul>
+
+<h2 id="mutation-flow">Mutation flow</h2>
+<figure class="diagram flow-diagram" aria-labelledby="mutation-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">EV</span><span class="rail-copy"><strong>User event</strong><small>toggle, edit หรือ delete</small></span></li>
+    <li><span class="rail-node">GD</span><span class="rail-copy"><strong>Guard</strong><small>validation, duplicate, confirmation</small></span></li>
+    <li><span class="rail-node">UC</span><span class="rail-copy"><strong>Use case</strong><small>เรียก repository contract</small></span></li>
+    <li><span class="rail-node">ST</span><span class="rail-copy"><strong>State transition</strong><small>update content หรือ failure</small></span></li>
+    <li><span class="rail-node">FB</span><span class="rail-copy"><strong>Feedback</strong><small>semantics, snackbar, retry/undo</small></span></li>
+  </ol>
+  <figcaption>ทุก mutation มี guard และ observable result ไม่ยิง I/O จาก gesture โดยตรง</figcaption>
+</figure>
+<p class="diagram-description" id="mutation-title">
+  Controller เป็นจุด serialize operation ส่วน Presentation เป็นเจ้าของ
+  confirmation และข้อความที่ผู้ใช้เห็น
+</p>
+
+<h2 id="toggle">Toggle completion</h2>
+<div class="code-block">
+  <div class="code-label">UI event</div>
+  <pre><code>Checkbox(
+  value: task.isCompleted,
+  onChanged: state.isMutating
+      ? null
+      : (_) =&gt; ref
+          .read(taskListControllerProvider.notifier)
+          .toggle(task.id),
+  semanticLabel: task.isCompleted
+      ? 'ทำเครื่องหมาย ${task.title} ว่ายังไม่เสร็จ'
+      : 'ทำเครื่องหมาย ${task.title} ว่าเสร็จแล้ว',
+)</code></pre>
+</div>
+
+<h2 id="optimistic">Optimistic vs confirmed</h2>
+<table class="comparison-table">
+  <thead><tr><th>แบบ</th><th>ข้อดี</th><th>ต้นทุน</th></tr></thead>
+  <tbody>
+    <tr><td>Confirmed</td><td>state ตรง source-of-truth, rollback ง่าย</td><td>feedback ช้าตาม I/O</td></tr>
+    <tr><td>Optimistic</td><td>UI ตอบทันที</td><td>ต้องเก็บ previous state, rollback, conflict/race policy</td></tr>
+  </tbody>
+</table>
+<p>
+  offline datasource เร็วมากจึงเริ่ม confirmed update เพื่อความชัด เมื่อใช้
+  remote API และ latency วัดได้จึงค่อยพิจารณา optimistic
+</p>
+
+<h2 id="update">Edit โดยรักษา identity</h2>
+<div class="code-block">
+  <div class="code-label">Domain update</div>
+  <pre><code>Result&lt;Task&gt; updateContent({
+  required String title,
+  required String description,
+}) {
+  final cleanTitle = title.trim();
+  if (cleanTitle.isEmpty) {
+    return const Error(ValidationFailure(message: 'กรุณากรอกชื่องาน'));
+  }
+  return Success(copyWith(
+    title: cleanTitle,
+    description: description.trim(),
+  ));
+}</code></pre>
+</div>
+
+<h2 id="delete">Delete confirmation</h2>
+<div class="code-block">
+  <div class="code-label">Presentation confirmation</div>
+  <pre><code>final confirmed = await showDialog&lt;bool&gt;(
+  context: context,
+  builder: (context) =&gt; AlertDialog(
+    title: const Text('ลบงานนี้?'),
+    content: Text('“${task.title}” จะถูกลบออกจากรายการ'),
+    actions: [
+      TextButton(
+        onPressed: () =&gt; Navigator.pop(context, false),
+        child: const Text('ยกเลิก'),
+      ),
+      FilledButton(
+        onPressed: () =&gt; Navigator.pop(context, true),
+        child: const Text('ลบงาน'),
+      ),
+    ],
+  ),
+);
+if (confirmed == true &amp;&amp; context.mounted) {
+  await controller.delete(task.id);
+}</code></pre>
+</div>
+
+<h2 id="feedback">Feedback ที่ดี</h2>
+<ul>
+  <li>action loading: disable control ที่เกี่ยวข้อง ไม่ block ทั้งหน้าเสมอ</li>
+  <li>success: UI state เปลี่ยนและมี semantics/brief message</li>
+  <li>failure: บอกสาเหตุระดับผู้ใช้และ recovery เช่น retry</li>
+  <li>delete: ถ้า product risk สูง เพิ่ม Undo โดย repository รองรับ restore</li>
+</ul>
+
+<h2 id="race">Race และ stale result</h2>
+<p>
+  ถ้าอนุญาตหลาย task mutate พร้อมกัน ให้ state track operation ต่อ id
+  ไม่ใช้ bool เดียว disable ทั้ง list แต่ถ้า MVP เลือก serialize ให้เขียน
+  policy และ test ชัด ไม่ปล่อย request แข่งกันโดยไม่ได้ตั้งใจ
+</p>
+
+<h2 id="tests">Mutation tests</h2>
+<ul>
+  <li>toggle success เปลี่ยนเฉพาะ target task</li>
+  <li>toggle missing id แสดง failure และ list เดิมไม่หาย</li>
+  <li>edit invalid ไม่เรียก repository</li>
+  <li>delete cancel ไม่เรียก controller</li>
+  <li>delete confirm success เอา item ออก</li>
+  <li>กด action ซ้ำระหว่าง mutation ไม่เกิด duplicate call</li>
+</ul>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>ทำ optimistic update โดยไม่มี rollback</li>
+  <li>ลบจาก UI list แต่ไม่ลบ source-of-truth</li>
+  <li>ใช้สีแดงอย่างเดียวบอก destructive action โดยไม่มีข้อความ</li>
+  <li>Dialog ปิดแล้วใช้ context โดยไม่ตรวจ mounted</li>
+  <li>กด action ซ้ำได้ระหว่าง await</li>
+</ul>

@@ -1,0 +1,127 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>ติดตั้งส่วนประกอบที่จำเป็นโดยรู้ว่าแต่ละตัวรับผิดชอบอะไร</li>
+  <li>ใช้ <code>flutter doctor -v</code> เป็นหลักฐาน ไม่เดาจากอาการ</li>
+  <li>ตั้ง VS Code, Android emulator, iOS Simulator และ Web device</li>
+  <li>แยกปัญหา Flutter SDK ออกจาก platform SDK</li>
+</ul>
+
+<div class="callout callout-warning">
+  <strong>อย่าติดตั้งแบบสุ่มตาม error แรก</strong>
+  อ่าน target ที่ต้องรองรับก่อน หากทำ Web อย่างเดียว Xcode warning ไม่ block
+  งาน แต่ถ้าจะ build iOS ต้องมี Xcode component และ license ครบ
+</div>
+
+<h2 id="layers">Toolchain มีหลายชั้น</h2>
+<figure class="diagram pipeline-diagram" aria-labelledby="toolchain-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">01</span><span class="rail-copy"><strong>Flutter SDK</strong><small>framework, engine tools, flutter command</small></span></li>
+    <li><span class="rail-node">02</span><span class="rail-copy"><strong>Dart SDK</strong><small>compiler, analyzer, formatter</small></span></li>
+    <li><span class="rail-node">03</span><span class="rail-copy"><strong>Platform SDK</strong><small>Android SDK / Xcode / browser</small></span></li>
+    <li><span class="rail-node">04</span><span class="rail-copy"><strong>Device</strong><small>emulator, simulator, physical device</small></span></li>
+    <li><span class="rail-node">05</span><span class="rail-copy"><strong>IDE</strong><small>VS Code extension, debugger, DevTools</small></span></li>
+  </ol>
+  <figcaption>error แต่ละชั้นต้องใช้หลักฐานและเครื่องมือคนละชุด</figcaption>
+</figure>
+<p class="diagram-description" id="toolchain-title">
+  Flutter command orchestrates Dart และ platform toolchain แต่ไม่ได้รวม Android
+  SDK หรือ iOS platform component ทั้งหมดไว้ด้วย
+</p>
+
+<h2 id="flutter">ติดตั้งและตรวจ Flutter</h2>
+<p>
+  ใช้ Flutter stable ที่ตรงกับ <code>.fvmrc</code> ของ repository
+  หากทีมใช้ FVM ให้ทุกคนเลือก version จากไฟล์เดียวกัน หากติดตั้ง SDK ตรง
+  ให้ตรวจว่า <code>flutter --version</code> ตรง baseline
+</p>
+<div class="code-block">
+  <div class="code-label">ตรวจ SDK และ PATH</div>
+  <pre><code>which flutter
+flutter --version
+dart --version
+flutter doctor -v</code></pre>
+</div>
+<p>
+  อ่าน path บรรทัดแรกเพื่อป้องกันการเรียก Flutter คนละชุดกับ VS Code
+  หาก terminal กับ IDE แสดง version ต่างกัน ให้แก้ SDK path ไม่ใช่รัน
+  <code>flutter clean</code>
+</p>
+
+<h2 id="vscode">ตั้งค่า VS Code</h2>
+<ol>
+  <li>ติดตั้ง extension <strong>Flutter</strong> ซึ่งติดตั้ง Dart extension ให้ด้วย</li>
+  <li>เปิด repository root ที่มี <code>pubspec.yaml</code> ไม่เปิดเฉพาะ <code>lib</code></li>
+  <li>ใช้ Command Palette → <strong>Flutter: Select Device</strong></li>
+  <li>ตรวจ status bar ว่า SDK และ device ถูกชุด</li>
+  <li>เปิด Settings และเปิด format on save สำหรับ Dart</li>
+</ol>
+
+<div class="code-block">
+  <div class="code-label">.vscode/settings.json ตัวอย่าง</div>
+  <pre><code>{
+  "[dart]": {
+    "editor.formatOnSave": true,
+    "editor.rulers": [80]
+  },
+  "dart.flutterSdkPath": ".fvm/flutter_sdk"
+}</code></pre>
+</div>
+<p>
+  ใส่ <code>dart.flutterSdkPath</code> เฉพาะเมื่อ repository ใช้ FVM และ path
+  นั้นมีจริง อย่า commit path absolute ที่เป็นของเครื่องคนเดียว
+</p>
+
+<h2 id="android">Android setup</h2>
+<ol>
+  <li>ติดตั้ง Android Studio เพื่อจัดการ SDK แม้เขียนโค้ดใน VS Code</li>
+  <li>SDK Manager: ติดตั้ง platform และ build tools ที่ Flutter รองรับ</li>
+  <li>Device Manager: สร้าง emulator ที่ ABI เหมาะกับ Apple Silicon</li>
+  <li>ยอมรับ license ด้วย <code>flutter doctor --android-licenses</code></li>
+  <li>รัน emulator แล้วตรวจด้วย <code>flutter devices</code></li>
+</ol>
+
+<h2 id="ios">iOS setup</h2>
+<ol>
+  <li>ติดตั้ง Xcode และเปิดครั้งแรกเพื่อให้ component initialization เสร็จ</li>
+  <li>เลือก Command Line Tools ใน Xcode Settings → Locations</li>
+  <li>ดาวน์โหลด iOS Simulator runtime ที่ project target ต้องใช้</li>
+  <li>ติดตั้ง CocoaPods ตาม policy ของทีม</li>
+  <li>เปิด Simulator แล้วตรวจด้วย <code>flutter devices</code></li>
+</ol>
+
+<div class="callout">
+  <strong>iOS build error ที่ไม่ใช่ source error</strong>
+  หาก Xcode รายงานว่า iOS platform version ไม่ถูกติดตั้ง ให้เพิ่ม component
+  ใน Xcode Settings ก่อนแก้ Dart code
+</div>
+
+<h2 id="web">Web setup</h2>
+<div class="code-block">
+  <div class="code-label">ตรวจ Web device</div>
+  <pre><code>flutter config --enable-web
+flutter devices
+flutter run -d chrome -t lib/main_development.dart</code></pre>
+</div>
+<p>
+  Web เหมาะกับ feedback loop เร็ว แต่ plugin เช่น secure storage มีข้อกำหนด
+  ต่างจาก mobile จึงต้องมี platform verification ภายหลัง
+</p>
+
+<h2 id="doctor">อ่าน flutter doctor อย่างมีเหตุผล</h2>
+<table class="comparison-table">
+  <thead><tr><th>สถานะ</th><th>ความหมาย</th><th>การตัดสินใจ</th></tr></thead>
+  <tbody>
+    <tr><td>[✓]</td><td>component ผ่าน check ที่ doctor รู้จัก</td><td>ยังต้อง build/test project จริง</td></tr>
+    <tr><td>[!]</td><td>มี warning หรือ optional gap</td><td>อ่าน target; อาจไม่ block งานปัจจุบัน</td></tr>
+    <tr><td>[✗]</td><td>component ไม่พร้อม</td><td>แก้ก่อนถ้า target นั้นอยู่ใน scope</td></tr>
+  </tbody>
+</table>
+
+<h2 id="mistakes">ปัญหาที่พบบ่อย</h2>
+<ul>
+  <li>มี Flutter หลายชุดใน PATH แล้ว VS Code ใช้คนละชุดกับ terminal</li>
+  <li>เปิด project ใน iCloud แล้ว generated build files ถูก duplicate</li>
+  <li>อัปเดต Xcode แต่ไม่ได้ดาวน์โหลด Simulator runtime ใหม่</li>
+  <li>สร้าง Android emulator x86 บน Apple Silicon โดยไม่จำเป็น</li>
+  <li>แก้ทุก doctor warning ทั้งที่ target ปัจจุบันเป็น Web เท่านั้น</li>
+</ul>

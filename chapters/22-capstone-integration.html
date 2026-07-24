@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="เชื่อม Tasks เข้ากับ GoRouter และ Home โดยรักษา auth guard และ public feature surface">
+  <title>Capstone: Route, Shell และ End-to-end Flow — Flutter Field Guide</title>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script defer src="../assets/js/site.js"></script>
+  <script defer src="../assets/js/catalog.js"></script>
+</head>
+<body data-root="../">
+  <a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
+  <noscript><p class="noscript-note">เนื้อหาทั้งหมดยังอ่านได้ แต่ search, theme, quiz และ progress ต้องเปิด JavaScript</p></noscript>
+  <div class="site-shell">
+    <aside class="sidebar" aria-label="เมนูหลักสูตร">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
+        <span><strong>Flutter Field Guide</strong><small>Web → Mobile</small></span>
+      </a>
+      <div class="sidebar-tools">
+        <button class="search-trigger" type="button" data-search-trigger>ค้นหาบทเรียน <kbd>/</kbd></button>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </div>
+      <div class="course-progress">
+        <div class="progress-meta"><span>ความคืบหน้า</span><strong data-progress-count>0 / 28</strong></div>
+        <div class="progress-track" aria-hidden="true"><div class="progress-value" data-progress-value></div></div>
+      </div>
+      <p class="nav-heading">A · Orientation & Setup</p>
+<nav class="course-nav">
+<a href="../chapters/01-orientation.html"><span class="nav-index">01</span>เริ่มใช้คู่มือและตั้งเป้าหมายระบบ</a>
+<a href="../chapters/02-react-to-flutter.html"><span class="nav-index">02</span>แผนที่ความคิดจาก React และ Next.js สู่ Flutter</a>
+<a href="../chapters/03-macos-toolchain.html"><span class="nav-index">03</span>ติดตั้ง Flutter toolchain บน macOS และ VS Code</a>
+<a href="../chapters/04-clone-and-run.html"><span class="nav-index">04</span>Clone, Generate, Run และตรวจ Boilerplate</a>
+</nav>
+<p class="nav-heading">B · Dart for TypeScript</p>
+<nav class="course-nav">
+<a href="../chapters/05-dart-types.html"><span class="nav-index">05</span>Dart Types และโครงสร้างโปรแกรมสำหรับ TypeScript Developer</a>
+<a href="../chapters/06-null-collections-patterns.html"><span class="nav-index">06</span>Null Safety, Collections และ Pattern Matching</a>
+<a href="../chapters/07-functions-classes-generics.html"><span class="nav-index">07</span>Functions, Classes, Immutability และ Generics</a>
+<a href="../chapters/08-async-errors-results.html"><span class="nav-index">08</span>Future, Stream, Exception และ Typed Result</a>
+</nav>
+<p class="nav-heading">C · Flutter Fundamentals</p>
+<nav class="course-nav">
+<a href="../chapters/09-widget-runtime.html"><span class="nav-index">09</span>Widget, Element, RenderObject และ BuildContext</a>
+<a href="../chapters/10-layout-theme-forms.html"><span class="nav-index">10</span>Constraints, Responsive Layout, Theme และ Form</a>
+<a href="../chapters/11-state-lifecycle.html"><span class="nav-index">11</span>State Ownership และ Lifecycle</a>
+</nav>
+<p class="nav-heading">D · Boilerplate Architecture</p>
+<nav class="course-nav">
+<a href="../chapters/12-boilerplate-map.html"><span class="nav-index">12</span>แผนที่ AI-first Flutter Boilerplate</a>
+<a href="../chapters/13-riverpod.html"><span class="nav-index">13</span>Riverpod: State Graph และ Dependency Injection</a>
+<a href="../chapters/14-go-router.html"><span class="nav-index">14</span>GoRouter, Redirect และ Authentication Guard</a>
+<a href="../chapters/15-network-storage-errors.html"><span class="nav-index">15</span>Dio, DTO, Repository, Failure และ Secure Storage</a>
+</nav>
+<p class="nav-heading">E · Task Management</p>
+<nav class="course-nav">
+<a href="../chapters/16-task-domain.html"><span class="nav-index">16</span>Capstone: Model Task Domain ด้วย Test-first</a>
+<a href="../chapters/17-offline-repository.html"><span class="nav-index">17</span>Capstone: Offline Datasource และ Repository</a>
+<a href="../chapters/18-task-riverpod.html"><span class="nav-index">18</span>Capstone: Task State และ Filter ด้วย Riverpod</a>
+<a href="../chapters/19-task-form.html"><span class="nav-index">19</span>Capstone: Create/Edit Form และ Validation</a>
+<a href="../chapters/20-task-mutations.html"><span class="nav-index">20</span>Capstone: Toggle, Update, Delete และ Feedback</a>
+<a href="../chapters/21-dio-datasource.html"><span class="nav-index">21</span>Capstone: Real-API-ready Dio Datasource</a>
+<a href="../chapters/22-capstone-integration.html" aria-current="page"><span class="nav-index">22</span>Capstone: Route, Shell และ End-to-end Flow</a>
+</nav>
+<p class="nav-heading">F · Quality & Delivery</p>
+<nav class="course-nav">
+<a href="../chapters/23-testing.html"><span class="nav-index">23</span>Test Strategy: Unit ถึง Integration</a>
+<a href="../chapters/24-debug-performance.html"><span class="nav-index">24</span>Debugging, DevTools และ Performance</a>
+<a href="../chapters/25-production-concerns.html"><span class="nav-index">25</span>Environment, Security, Accessibility และ Localization</a>
+<a href="../chapters/26-build-release.html"><span class="nav-index">26</span>Build Android, iOS และ Web</a>
+<a href="../chapters/27-production-checklist.html"><span class="nav-index">27</span>Production Readiness และ Next-system Checklist</a>
+<a href="../chapters/28-ai-workflow.html"><span class="nav-index">28</span>ใช้ AI พัฒนา Flutter อย่างมีขอบเขตและหลักฐาน</a>
+</nav>
+<p class="nav-heading">Reference</p>
+<nav class="course-nav">
+<a href="../reference/commands.html"><span class="nav-index">R</span>Command Cookbook</a>
+<a href="../reference/glossary.html"><span class="nav-index">R</span>React/Next.js ↔ Flutter Glossary</a>
+<a href="../reference/architecture-decisions.html"><span class="nav-index">R</span>Architecture Decision Matrix</a>
+<a href="../reference/troubleshooting.html"><span class="nav-index">R</span>Troubleshooting Catalog</a>
+</nav>
+
+      <div class="sidebar-footer"><p>Offline-first · ภาษาไทย · Flutter 3.44</p></div>
+    </aside>
+    <div class="site-main">
+      <header class="mobile-bar">
+        <button class="nav-trigger" type="button" data-nav-trigger aria-expanded="false">เมนู</button>
+        <strong>22 · Capstone: Route, Shell และ End-to-end Flow</strong>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </header>
+      <main id="main-content" class="lesson-wrap">
+        <article class="lesson">
+          <header class="lesson-header">
+            <p class="lesson-kicker">E · Task Management · บทที่ 22</p>
+            <h1>Capstone: Route, Shell และ End-to-end Flow</h1>
+            <p class="hero-lead">เชื่อม Tasks เข้ากับ GoRouter และ Home โดยรักษา auth guard และ public feature surface</p>
+            <div class="lesson-meta">
+              <span>เวลาอ่าน 64 นาที</span>
+              <span>ระดับ กลาง</span>
+              <span>integration route public API home auth guard smoke</span>
+            </div>
+          </header>
+          <h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>เปิด Tasks ผ่าน public feature surface</li>
+  <li>เพิ่ม route โดยไม่ทำลาย authentication guard</li>
+  <li>เชื่อม Home action และ deep link</li>
+  <li>รัน feature tests และ smoke flow ครบ</li>
+</ul>
+
+<h2 id="public-api">Feature public surface</h2>
+<div class="code-block">
+  <div class="code-label">lib/features/tasks/tasks.dart</div>
+  <pre><code>export 'presentation/pages/task_list_page.dart'
+    show TaskListPage;</code></pre>
+</div>
+<p>
+  Router ต้องรู้เพียง page ที่เปิดได้ ไม่ต้อง import datasource, DTO,
+  controller implementation หรือ generated providers ทั้งหมด
+</p>
+
+<h2 id="route">เพิ่ม route</h2>
+<div class="code-block">
+  <div class="code-label">app_router.dart</div>
+  <pre><code>GoRoute(
+  path: AppRoutes.tasks,
+  name: 'tasks',
+  builder: (context, state) =&gt; const TaskListPage(),
+),</code></pre>
+</div>
+<p>
+  guard เดิม default deny signed-out route จึงปกป้อง <code>/tasks</code>
+  โดยไม่เพิ่ม condition ต่อ route แต่ต้องมี test พิสูจน์ policy
+</p>
+
+<h2 id="home">Home entry point</h2>
+<div class="code-block">
+  <div class="code-label">Home action</div>
+  <pre><code>AppButton(
+  label: 'Open task manager',
+  onPressed: () =&gt; context.go(AppRoutes.tasks),
+)</code></pre>
+</div>
+<p>
+  ใช้ชื่อ action ที่บอกผลลัพธ์ ไม่ใช้ “Click here” และรักษา minimum touch
+  target/keyboard semantics จาก shared button
+</p>
+
+<h2 id="flow">End-to-end capstone flow</h2>
+<figure class="diagram flow-diagram" aria-labelledby="capstone-flow-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">LG</span><span class="rail-copy"><strong>Fake login</strong><small>demo@example.com</small></span></li>
+    <li><span class="rail-node">HM</span><span class="rail-copy"><strong>Home</strong><small>authenticated shell</small></span></li>
+    <li><span class="rail-node">RT</span><span class="rail-copy"><strong>/tasks</strong><small>guard allows session</small></span></li>
+    <li><span class="rail-node">LD</span><span class="rail-copy"><strong>Load</strong><small>offline repository seed</small></span></li>
+    <li><span class="rail-node">CR</span><span class="rail-copy"><strong>CRUD</strong><small>create, edit, toggle, delete</small></span></li>
+    <li><span class="rail-node">SO</span><span class="rail-copy"><strong>Sign out</strong><small>guard returns login</small></span></li>
+  </ol>
+  <figcaption>Capstone ใช้ Authentication reference เดิมและเพิ่ม Tasks โดยไม่ข้าม boundary</figcaption>
+</figure>
+<p class="diagram-description" id="capstone-flow-title">
+  Flow นี้เป็น demo integration ไม่ใช่ production session เพราะ user restore,
+  token expiry/refresh และ real authentication datasource ยังเป็น production gap
+</p>
+
+<h2 id="route-tests">Route tests</h2>
+<div class="code-block">
+  <div class="code-label">Signed-out and signed-in</div>
+  <pre><code>testWidgets('redirects signed-out tasks route to login', (tester) async {
+  await tester.pumpWidget(buildTestApp(user: null));
+  router.go('/tasks');
+  await tester.pumpAndSettle();
+  expect(find.byType(LoginPage), findsOneWidget);
+});
+
+testWidgets('renders tasks for an authenticated user', (tester) async {
+  await tester.pumpWidget(buildTestApp(user: TestData.user));
+  router.go('/tasks');
+  await tester.pumpAndSettle();
+  expect(find.byType(TaskListPage), findsOneWidget);
+});</code></pre>
+</div>
+
+<h2 id="verification">Verification ladder</h2>
+<div class="code-block">
+  <div class="code-label">จากเร็วไปกว้าง</div>
+  <pre><code>flutter test test/features/tasks/domain
+flutter test test/features/tasks/application
+flutter test test/features/tasks/data
+flutter test test/features/tasks/presentation
+flutter test test/app/router
+flutter analyze
+flutter test</code></pre>
+</div>
+<p>
+  เมื่อ focused test fail แก้จุดนั้นก่อนรันทั้งหมด หลังทั้งหมดผ่านจึง build
+  target จริงเพื่อจับ platform/compiler issue
+</p>
+
+<h2 id="manual-smoke">Manual smoke checklist</h2>
+<ol>
+  <li>cold start แสดง Login</li>
+  <li>invalid form ไม่เรียก repository</li>
+  <li>demo login ไป Home</li>
+  <li>เปิด Tasks และเห็น seed 3 รายการ</li>
+  <li>filter/create/edit/toggle/delete ทำงาน</li>
+  <li>large text และ narrow viewport ไม่ overflow</li>
+  <li>sign out จาก Home แล้ว /tasks ถูก guard</li>
+</ol>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>Router import internal provider/data files ของ Tasks</li>
+  <li>เพิ่ม route แต่ไม่ทดสอบ signed-out</li>
+  <li>ใช้ navigation เป็น business outcome ใน use case</li>
+  <li>ถือว่า widget tests แทน cold-start/plugin integration</li>
+  <li>เรียก demo flow ว่า production-ready</li>
+</ul>
+
+          <section class="checkpoint" id="checkpoint">
+  <h2>Checkpoint ก่อนเดินต่อ</h2>
+  <ol>
+    <li>อธิบายหัวข้อนี้ด้วยภาษาของตนเองโดยไม่เปิดคู่มือ</li>
+    <li>ชี้ไฟล์หรือคำสั่งใน Boilerplate ที่สัมพันธ์กับบทนี้ได้</li>
+    <li>รันตัวอย่างหรือ verification ที่บทกำหนดและอ่านผลลัพธ์ได้</li>
+  </ol>
+</section>
+<section class="quiz" id="quiz">
+  <h2>Quiz ตรวจ mental model</h2>
+  <p><strong>cross-feature import ที่เหมาะสมคืออะไร?</strong></p>
+  <div class="quiz-options"><button class="quiz-option" type="button" data-correct="false">import ไฟล์ internal ทุกตัว</button><button class="quiz-option" type="button" data-correct="true">import public feature surface ที่ตั้งใจเปิด</button><button class="quiz-option" type="button" data-correct="false">copy class ไปอีก feature</button></div>
+  <p class="quiz-feedback" aria-live="polite"></p>
+</section>
+<section class="exercise" id="practice">
+  <h2>Practice</h2>
+  <p>เขียน route test สำหรับ /tasks ทั้ง signed-in และ signed-out แล้วทดสอบ navigation จาก Home</p>
+  <p><strong>Definition of done:</strong> อธิบายเหตุผลของ design, แสดงผลลัพธ์ที่รันจริง และไม่มี warning ที่ถูกมองข้าม</p>
+</section>
+
+          <nav class="chapter-pagination" aria-label="เปลี่ยนบทเรียน">
+            <a href="../chapters/21-dio-datasource.html">ก่อนหน้า<br><strong>Capstone: Real-API-ready Dio Datasource</strong></a>
+            <a href="../chapters/23-testing.html">บทถัดไป<br><strong>Test Strategy: Unit ถึง Integration</strong></a>
+          </nav>
+        </article>
+        <aside class="lesson-toc" aria-label="สารบัญบท">
+          <strong>ในบทนี้</strong>
+          <a href="#objectives">เป้าหมายของบท</a>
+<a href="#public-api">Feature public surface</a>
+<a href="#route">เพิ่ม route</a>
+<a href="#home">Home entry point</a>
+<a href="#flow">End-to-end capstone flow</a>
+<a href="#route-tests">Route tests</a>
+<a href="#verification">Verification ladder</a>
+<a href="#manual-smoke">Manual smoke checklist</a>
+<a href="#mistakes">ข้อผิดพลาดที่พบบ่อย</a>
+<a href="#checkpoint">Checkpoint</a>
+<a href="#quiz">Quiz</a>
+<a href="#practice">Practice</a>
+          <button class="chapter-complete" type="button" data-current-chapter="22-capstone-integration" aria-pressed="false">
+            ทำเครื่องหมายว่าเรียนจบบทนี้
+          </button>
+        </aside>
+      </main>
+    </div>
+  </div>
+  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
+    <div class="search-head">
+      <label><span id="search-title" class="visually-hidden">ค้นหาคู่มือ</span><input id="search-input" type="search" placeholder="ค้นหา Dart, Riverpod, routing, build…" autocomplete="off"></label>
+      <button class="search-close" type="button" data-search-close>ปิด</button>
+    </div>
+    <div class="search-results" id="search-results" aria-live="polite"></div>
+  </dialog>
+</body>
+</html>

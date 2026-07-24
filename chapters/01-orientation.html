@@ -1,0 +1,245 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="วางเส้นทางจาก Web developer ไปสู่ Flutter developer และรู้ว่าควรอ่านหรือทดลองอย่างไร">
+  <title>เริ่มใช้คู่มือและตั้งเป้าหมายระบบ — Flutter Field Guide</title>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script defer src="../assets/js/site.js"></script>
+  <script defer src="../assets/js/catalog.js"></script>
+</head>
+<body data-root="../">
+  <a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
+  <noscript><p class="noscript-note">เนื้อหาทั้งหมดยังอ่านได้ แต่ search, theme, quiz และ progress ต้องเปิด JavaScript</p></noscript>
+  <div class="site-shell">
+    <aside class="sidebar" aria-label="เมนูหลักสูตร">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
+        <span><strong>Flutter Field Guide</strong><small>Web → Mobile</small></span>
+      </a>
+      <div class="sidebar-tools">
+        <button class="search-trigger" type="button" data-search-trigger>ค้นหาบทเรียน <kbd>/</kbd></button>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </div>
+      <div class="course-progress">
+        <div class="progress-meta"><span>ความคืบหน้า</span><strong data-progress-count>0 / 28</strong></div>
+        <div class="progress-track" aria-hidden="true"><div class="progress-value" data-progress-value></div></div>
+      </div>
+      <p class="nav-heading">A · Orientation & Setup</p>
+<nav class="course-nav">
+<a href="../chapters/01-orientation.html" aria-current="page"><span class="nav-index">01</span>เริ่มใช้คู่มือและตั้งเป้าหมายระบบ</a>
+<a href="../chapters/02-react-to-flutter.html"><span class="nav-index">02</span>แผนที่ความคิดจาก React และ Next.js สู่ Flutter</a>
+<a href="../chapters/03-macos-toolchain.html"><span class="nav-index">03</span>ติดตั้ง Flutter toolchain บน macOS และ VS Code</a>
+<a href="../chapters/04-clone-and-run.html"><span class="nav-index">04</span>Clone, Generate, Run และตรวจ Boilerplate</a>
+</nav>
+<p class="nav-heading">B · Dart for TypeScript</p>
+<nav class="course-nav">
+<a href="../chapters/05-dart-types.html"><span class="nav-index">05</span>Dart Types และโครงสร้างโปรแกรมสำหรับ TypeScript Developer</a>
+<a href="../chapters/06-null-collections-patterns.html"><span class="nav-index">06</span>Null Safety, Collections และ Pattern Matching</a>
+<a href="../chapters/07-functions-classes-generics.html"><span class="nav-index">07</span>Functions, Classes, Immutability และ Generics</a>
+<a href="../chapters/08-async-errors-results.html"><span class="nav-index">08</span>Future, Stream, Exception และ Typed Result</a>
+</nav>
+<p class="nav-heading">C · Flutter Fundamentals</p>
+<nav class="course-nav">
+<a href="../chapters/09-widget-runtime.html"><span class="nav-index">09</span>Widget, Element, RenderObject และ BuildContext</a>
+<a href="../chapters/10-layout-theme-forms.html"><span class="nav-index">10</span>Constraints, Responsive Layout, Theme และ Form</a>
+<a href="../chapters/11-state-lifecycle.html"><span class="nav-index">11</span>State Ownership และ Lifecycle</a>
+</nav>
+<p class="nav-heading">D · Boilerplate Architecture</p>
+<nav class="course-nav">
+<a href="../chapters/12-boilerplate-map.html"><span class="nav-index">12</span>แผนที่ AI-first Flutter Boilerplate</a>
+<a href="../chapters/13-riverpod.html"><span class="nav-index">13</span>Riverpod: State Graph และ Dependency Injection</a>
+<a href="../chapters/14-go-router.html"><span class="nav-index">14</span>GoRouter, Redirect และ Authentication Guard</a>
+<a href="../chapters/15-network-storage-errors.html"><span class="nav-index">15</span>Dio, DTO, Repository, Failure และ Secure Storage</a>
+</nav>
+<p class="nav-heading">E · Task Management</p>
+<nav class="course-nav">
+<a href="../chapters/16-task-domain.html"><span class="nav-index">16</span>Capstone: Model Task Domain ด้วย Test-first</a>
+<a href="../chapters/17-offline-repository.html"><span class="nav-index">17</span>Capstone: Offline Datasource และ Repository</a>
+<a href="../chapters/18-task-riverpod.html"><span class="nav-index">18</span>Capstone: Task State และ Filter ด้วย Riverpod</a>
+<a href="../chapters/19-task-form.html"><span class="nav-index">19</span>Capstone: Create/Edit Form และ Validation</a>
+<a href="../chapters/20-task-mutations.html"><span class="nav-index">20</span>Capstone: Toggle, Update, Delete และ Feedback</a>
+<a href="../chapters/21-dio-datasource.html"><span class="nav-index">21</span>Capstone: Real-API-ready Dio Datasource</a>
+<a href="../chapters/22-capstone-integration.html"><span class="nav-index">22</span>Capstone: Route, Shell และ End-to-end Flow</a>
+</nav>
+<p class="nav-heading">F · Quality & Delivery</p>
+<nav class="course-nav">
+<a href="../chapters/23-testing.html"><span class="nav-index">23</span>Test Strategy: Unit ถึง Integration</a>
+<a href="../chapters/24-debug-performance.html"><span class="nav-index">24</span>Debugging, DevTools และ Performance</a>
+<a href="../chapters/25-production-concerns.html"><span class="nav-index">25</span>Environment, Security, Accessibility และ Localization</a>
+<a href="../chapters/26-build-release.html"><span class="nav-index">26</span>Build Android, iOS และ Web</a>
+<a href="../chapters/27-production-checklist.html"><span class="nav-index">27</span>Production Readiness และ Next-system Checklist</a>
+<a href="../chapters/28-ai-workflow.html"><span class="nav-index">28</span>ใช้ AI พัฒนา Flutter อย่างมีขอบเขตและหลักฐาน</a>
+</nav>
+<p class="nav-heading">Reference</p>
+<nav class="course-nav">
+<a href="../reference/commands.html"><span class="nav-index">R</span>Command Cookbook</a>
+<a href="../reference/glossary.html"><span class="nav-index">R</span>React/Next.js ↔ Flutter Glossary</a>
+<a href="../reference/architecture-decisions.html"><span class="nav-index">R</span>Architecture Decision Matrix</a>
+<a href="../reference/troubleshooting.html"><span class="nav-index">R</span>Troubleshooting Catalog</a>
+</nav>
+
+      <div class="sidebar-footer"><p>Offline-first · ภาษาไทย · Flutter 3.44</p></div>
+    </aside>
+    <div class="site-main">
+      <header class="mobile-bar">
+        <button class="nav-trigger" type="button" data-nav-trigger aria-expanded="false">เมนู</button>
+        <strong>01 · เริ่มใช้คู่มือและตั้งเป้าหมายระบบ</strong>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </header>
+      <main id="main-content" class="lesson-wrap">
+        <article class="lesson">
+          <header class="lesson-header">
+            <p class="lesson-kicker">A · Orientation & Setup · บทที่ 01</p>
+            <h1>เริ่มใช้คู่มือและตั้งเป้าหมายระบบ</h1>
+            <p class="hero-lead">วางเส้นทางจาก Web developer ไปสู่ Flutter developer และรู้ว่าควรอ่านหรือทดลองอย่างไร</p>
+            <div class="lesson-meta">
+              <span>เวลาอ่าน 18 นาที</span>
+              <span>ระดับ เริ่มต้น</span>
+              <span>roadmap mental model hot reload capstone</span>
+            </div>
+          </header>
+          <h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>เข้าใจว่าคู่มือนี้สอนการตัดสินใจ ไม่ใช่เพียง syntax</li>
+  <li>เห็นภาพระบบ Task Management ที่จะสร้างตลอดหลักสูตร</li>
+  <li>วาง workflow อ่าน → ทดลอง → test → อธิบาย → ทำต่อ</li>
+  <li>แยกคำว่า compile-ready, demo-ready และ production-ready</li>
+</ul>
+
+<div class="callout callout-bridge">
+  <strong>React bridge</strong>
+  ถ้าคุณเคยเรียน Next.js จากการสร้าง route, data fetching และ component จริง
+  หลักสูตรนี้ใช้วิธีเดียวกัน แต่เพิ่ม mobile runtime, platform toolchain และ
+  architectural boundary ที่แอปหลาย platform ต้องรับผิดชอบ
+</div>
+
+<h2 id="outcome">ปลายทางที่เราจะสร้าง</h2>
+<p>
+  completed example เริ่มจาก Boilerplate เดิมที่มี Authentication และ Home
+  แล้วเพิ่ม feature <code>tasks</code> ซึ่งมี list, filter, create, edit,
+  toggle และ delete ทำงานแบบ offline เพื่อให้ clone แล้วรันได้ทันที
+</p>
+
+<figure class="diagram pipeline-diagram" aria-labelledby="course-flow-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">A</span><span class="rail-copy"><strong>Setup</strong><small>เครื่องมือและ baseline</small></span></li>
+    <li><span class="rail-node">B</span><span class="rail-copy"><strong>Dart</strong><small>type, logic, async</small></span></li>
+    <li><span class="rail-node">C</span><span class="rail-copy"><strong>Flutter</strong><small>widget, layout, state</small></span></li>
+    <li><span class="rail-node">D</span><span class="rail-copy"><strong>Architecture</strong><small>feature และ boundary</small></span></li>
+    <li><span class="rail-node">E</span><span class="rail-copy"><strong>Capstone</strong><small>Task Management</small></span></li>
+    <li><span class="rail-node">F</span><span class="rail-copy"><strong>Delivery</strong><small>test, build, production</small></span></li>
+  </ol>
+  <figcaption>ทุก track สร้างความรู้ที่ track ถัดไปใช้ต่อ</figcaption>
+</figure>
+<p class="diagram-description" id="course-flow-title">
+  เส้นทางหลักเริ่มจาก baseline ที่ทำซ้ำได้ แล้วเพิ่ม language, UI runtime,
+  architecture, feature implementation และ release evidence ตามลำดับ
+</p>
+
+<h2 id="learning-loop">Learning loop ที่ใช้ทุกบท</h2>
+<ol>
+  <li><strong>Predict:</strong> ทำนายผลก่อนรัน เช่น state ไหนจะ rebuild</li>
+  <li><strong>Run:</strong> รัน code, test หรือ command จริง</li>
+  <li><strong>Observe:</strong> อ่าน output, stack trace หรือ UI state</li>
+  <li><strong>Explain:</strong> อธิบายด้วยคำของตนเอง ไม่คัดคำจำกัดความ</li>
+  <li><strong>Change:</strong> เปลี่ยน input หนึ่งอย่างแล้วทำนายใหม่</li>
+</ol>
+
+<p>
+  วงจรนี้สำคัญกับ Flutter เพราะการจำชื่อ Widget ไม่ช่วยวิเคราะห์ constraint,
+  provider lifecycle หรือ route redirect เมื่อระบบจริงซับซ้อนขึ้น
+</p>
+
+<h2 id="readiness">สามระดับความพร้อม</h2>
+<table class="comparison-table">
+  <thead><tr><th>ระดับ</th><th>พิสูจน์แล้ว</th><th>ยังไม่พิสูจน์</th></tr></thead>
+  <tbody>
+    <tr><td>Compile-ready</td><td>source compile ใน target/build mode นั้น</td><td>flow จริง, security, backend</td></tr>
+    <tr><td>Demo-ready</td><td>ผู้เรียนทดลอง deterministic flow ได้</td><td>production identity และ operations</td></tr>
+    <tr><td>Production-ready</td><td>risk, platform, signing, data, observability และ release process ผ่านเกณฑ์</td><td>ไม่มีคำอ้างแบบกว้าง ต้องมีหลักฐานรายระบบ</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-warning">
+  <strong>สถานะ Boilerplate ปัจจุบัน</strong>
+  entrypoint ชื่อ <code>main_production.dart</code> ปิด diagnostic logging และ
+  debug banner แต่ Authentication ยังใช้ fake datasource ดังนั้นเป็น
+  production-minded composition example ไม่ใช่ production authentication
+</div>
+
+<h2 id="workspace">จัด workspace สำหรับการเรียน</h2>
+<div class="code-block">
+  <div class="code-label">โครงสร้างที่แนะนำ</div>
+  <pre><code>Projects/
+├── flutter-boilerplate/      # source ต้นฉบับ
+├── my-task-app/              # clone ที่ใช้ลงมือทำ
+└── flutter-document/         # คู่มือและ completed example</code></pre>
+</div>
+<p>
+  เก็บ working copy ของ Flutter นอก cloud-synced directory ถ้าเป็นไปได้ เพราะ
+  build tools สร้างไฟล์จำนวนมากและระบบ sync อาจสร้าง conflict copy เช่น
+  <code>launch_background 2.xml</code> ซึ่ง Gradle ไม่ยอมรับ
+</p>
+
+<h2 id="mistakes">ความเข้าใจผิดที่พบบ่อย</h2>
+<ul>
+  <li><strong>“รู้ React แล้ว Flutter เหมือนกัน”</strong> — declarative คล้ายกัน แต่ runtime, layout และ state lifecycle ต่างกัน</li>
+  <li><strong>“Hot reload ผ่านแปลว่าถูก”</strong> — hot reload ไม่ใช่ test และไม่จำลอง cold start</li>
+  <li><strong>“Build ผ่านแปลว่าปล่อยได้”</strong> — build ไม่ตรวจ auth policy, privacy หรือ backend schema</li>
+  <li><strong>“Clean Architecture ต้องมีทุก folder”</strong> — Boilerplate นี้เพิ่ม layer เมื่อมี responsibility เท่านั้น</li>
+</ul>
+
+          <section class="checkpoint" id="checkpoint">
+  <h2>Checkpoint ก่อนเดินต่อ</h2>
+  <ol>
+    <li>อธิบายหัวข้อนี้ด้วยภาษาของตนเองโดยไม่เปิดคู่มือ</li>
+    <li>ชี้ไฟล์หรือคำสั่งใน Boilerplate ที่สัมพันธ์กับบทนี้ได้</li>
+    <li>รันตัวอย่างหรือ verification ที่บทกำหนดและอ่านผลลัพธ์ได้</li>
+  </ol>
+</section>
+<section class="quiz" id="quiz">
+  <h2>Quiz ตรวจ mental model</h2>
+  <p><strong>สิ่งใดคือผลลัพธ์หลักของหลักสูตรนี้?</strong></p>
+  <div class="quiz-options"><button class="quiz-option" type="button" data-correct="false">จำ Widget ให้ได้มากที่สุด</button><button class="quiz-option" type="button" data-correct="true">สร้าง mental model และระบบที่ทดสอบได้</button><button class="quiz-option" type="button" data-correct="false">แปลง JSX เป็น Dart แบบบรรทัดต่อบรรทัด</button></div>
+  <p class="quiz-feedback" aria-live="polite"></p>
+</section>
+<section class="exercise" id="practice">
+  <h2>Practice</h2>
+  <p>เขียนเป้าหมาย feature มือถือหนึ่งอย่าง แล้วระบุ Widget, state, data และ test ที่คาดว่าจะต้องมี</p>
+  <p><strong>Definition of done:</strong> อธิบายเหตุผลของ design, แสดงผลลัพธ์ที่รันจริง และไม่มี warning ที่ถูกมองข้าม</p>
+</section>
+
+          <nav class="chapter-pagination" aria-label="เปลี่ยนบทเรียน">
+            <span></span>
+            <a href="../chapters/02-react-to-flutter.html">บทถัดไป<br><strong>แผนที่ความคิดจาก React และ Next.js สู่ Flutter</strong></a>
+          </nav>
+        </article>
+        <aside class="lesson-toc" aria-label="สารบัญบท">
+          <strong>ในบทนี้</strong>
+          <a href="#objectives">เป้าหมายของบท</a>
+<a href="#outcome">ปลายทางที่เราจะสร้าง</a>
+<a href="#learning-loop">Learning loop ที่ใช้ทุกบท</a>
+<a href="#readiness">สามระดับความพร้อม</a>
+<a href="#workspace">จัด workspace สำหรับการเรียน</a>
+<a href="#mistakes">ความเข้าใจผิดที่พบบ่อย</a>
+<a href="#checkpoint">Checkpoint</a>
+<a href="#quiz">Quiz</a>
+<a href="#practice">Practice</a>
+          <button class="chapter-complete" type="button" data-current-chapter="01-orientation" aria-pressed="false">
+            ทำเครื่องหมายว่าเรียนจบบทนี้
+          </button>
+        </aside>
+      </main>
+    </div>
+  </div>
+  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
+    <div class="search-head">
+      <label><span id="search-title" class="visually-hidden">ค้นหาคู่มือ</span><input id="search-input" type="search" placeholder="ค้นหา Dart, Riverpod, routing, build…" autocomplete="off"></label>
+      <button class="search-close" type="button" data-search-close>ปิด</button>
+    </div>
+    <div class="search-results" id="search-results" aria-live="polite"></div>
+  </dialog>
+</body>
+</html>

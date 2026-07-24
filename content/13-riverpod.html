@@ -1,0 +1,122 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>มอง Riverpod เป็น dependency/state graph ไม่ใช่ global variable</li>
+  <li>เลือก <code>watch</code>, <code>read</code> และ <code>listen</code></li>
+  <li>สร้าง controller ที่รับ dependency ผ่าน provider</li>
+  <li>override provider ใน test โดยไม่เรียก network/plugin</li>
+</ul>
+
+<h2 id="graph">Provider graph</h2>
+<figure class="diagram flow-diagram" aria-labelledby="riverpod-flow-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">DS</span><span class="rail-copy"><strong>Datasource provider</strong><small>external implementation</small></span></li>
+    <li><span class="rail-node">RP</span><span class="rail-copy"><strong>Repository provider</strong><small>maps boundary to domain</small></span></li>
+    <li><span class="rail-node">UC</span><span class="rail-copy"><strong>Use case provider</strong><small>application workflow</small></span></li>
+    <li><span class="rail-node">CT</span><span class="rail-copy"><strong>Controller provider</strong><small>owns state transitions</small></span></li>
+    <li><span class="rail-node">UI</span><span class="rail-copy"><strong>ConsumerWidget</strong><small>watches state and renders</small></span></li>
+  </ol>
+  <figcaption>Dependency ถูกประกอบจากล่างขึ้นบนและ override ได้ที่จุดใดจุดหนึ่ง</figcaption>
+</figure>
+<p class="diagram-description" id="riverpod-flow-title">
+  Test controller สามารถ override repository provider แล้วใช้ graph ส่วนที่เหลือจริง
+  โดยไม่สร้าง mock ของทุก function
+</p>
+
+<h2 id="provider">Provider สำหรับ dependency</h2>
+<div class="code-block">
+  <div class="code-label">Annotation-based provider</div>
+  <pre><code>@riverpod
+TaskRepository taskRepository(Ref ref) {
+  return TaskRepositoryImpl(
+    ref.watch(taskLocalDatasourceProvider),
+  );
+}</code></pre>
+</div>
+<p>
+  Generated provider เพิ่ม compile-time type และชื่อที่สม่ำเสมอ
+  หลังแก้ annotation ต้องรัน build_runner และ review generated diff
+</p>
+
+<h2 id="controller">Notifier/controller</h2>
+<div class="code-block">
+  <div class="code-label">Riverpod controller</div>
+  <pre><code>@riverpod
+class TaskListController extends _$TaskListController {
+  @override
+  TaskListState build() {
+    return const TaskListState.loading();
+  }
+
+  Future&lt;void&gt; load() async {
+    final getTasks = ref.read(getTasksProvider);
+    final result = await getTasks();
+    state = switch (result) {
+      Success(:final data) =&gt; TaskListState.ready(tasks: data),
+      Error(:final failure) =&gt; TaskListState.failed(failure: failure),
+    };
+  }
+}</code></pre>
+</div>
+
+<h2 id="watch-read-listen">watch, read, listen</h2>
+<table class="comparison-table">
+  <thead><tr><th>API</th><th>ใช้เมื่อ</th><th>ตัวอย่าง</th></tr></thead>
+  <tbody>
+    <tr><td>ref.watch</td><td>ค่าที่เปลี่ยนแล้วต้อง recompute/rebuild</td><td>Widget watch task state</td></tr>
+    <tr><td>ref.read</td><td>อ่านครั้งเดียวใน event/method</td><td>onPressed เรียก controller</td></tr>
+    <tr><td>ref.listen</td><td>ทำ presentation side effect จาก transition</td><td>failure ใหม่แสดง SnackBar</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-warning">
+  <strong>อย่าใช้ read เพื่อหลบ rebuild</strong>
+  ถ้า UI แสดงค่าที่เปลี่ยน ต้อง watch ค่าอย่างแม่นยำหรือใช้
+  <code>select</code> ไม่ใช่ read แล้วปล่อย UI stale
+</div>
+
+<h2 id="override">Provider override ใน test</h2>
+<div class="code-block">
+  <div class="code-label">ProviderContainer</div>
+  <pre><code>final container = ProviderContainer(
+  overrides: [
+    taskRepositoryProvider.overrideWithValue(fakeRepository),
+  ],
+);
+addTearDown(container.dispose);
+
+await container.read(taskListControllerProvider.notifier).load();
+expect(
+  container.read(taskListControllerProvider),
+  isA&lt;TaskListReady&gt;(),
+);</code></pre>
+</div>
+
+<h2 id="lifecycle">autoDispose และ keepAlive</h2>
+<p>
+  Provider ที่ไม่มี listener อาจถูก dispose ตาม declaration/lifecycle
+  อย่า keepAlive ทุกตัวเพื่อแก้ “state หาย” ก่อนวิเคราะห์ ownership
+  Session อาจอยู่ระดับ app แต่ form draft อาจควรถูกทิ้งเมื่อออกหน้า
+</p>
+
+<h2 id="select">ลด rebuild ด้วย select เมื่อมีหลักฐาน</h2>
+<div class="code-block">
+  <div class="code-label">Watch field ที่ UI ใช้</div>
+  <pre><code>final completedCount = ref.watch(
+  taskListControllerProvider.select(
+    (state) =&gt; state.completedCount,
+  ),
+);</code></pre>
+</div>
+<p>
+  ใช้เมื่อ profiling พบ subtree rebuild จาก field อื่นจริง
+  อย่าเริ่มด้วย select ทุก fieldจน state API แตกละเอียดและอ่านยาก
+</p>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>เรียก <code>ref.watch</code> ใน onPressed callback</li>
+  <li>สร้าง provider global ที่ไม่มี owner/cleanup policy</li>
+  <li>ให้ controller รับ BuildContext</li>
+  <li>override controller ทั้งตัวทั้งที่ต้องการเปลี่ยน repository boundary</li>
+  <li>ลืม dispose ProviderContainer ใน test</li>
+</ul>

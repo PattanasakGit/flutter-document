@@ -1,0 +1,90 @@
+<h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>เข้าใจว่าคู่มือนี้สอนการตัดสินใจ ไม่ใช่เพียง syntax</li>
+  <li>เห็นภาพระบบ Task Management ที่จะสร้างตลอดหลักสูตร</li>
+  <li>วาง workflow อ่าน → ทดลอง → test → อธิบาย → ทำต่อ</li>
+  <li>แยกคำว่า compile-ready, demo-ready และ production-ready</li>
+</ul>
+
+<div class="callout callout-bridge">
+  <strong>React bridge</strong>
+  ถ้าคุณเคยเรียน Next.js จากการสร้าง route, data fetching และ component จริง
+  หลักสูตรนี้ใช้วิธีเดียวกัน แต่เพิ่ม mobile runtime, platform toolchain และ
+  architectural boundary ที่แอปหลาย platform ต้องรับผิดชอบ
+</div>
+
+<h2 id="outcome">ปลายทางที่เราจะสร้าง</h2>
+<p>
+  completed example เริ่มจาก Boilerplate เดิมที่มี Authentication และ Home
+  แล้วเพิ่ม feature <code>tasks</code> ซึ่งมี list, filter, create, edit,
+  toggle และ delete ทำงานแบบ offline เพื่อให้ clone แล้วรันได้ทันที
+</p>
+
+<figure class="diagram pipeline-diagram" aria-labelledby="course-flow-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">A</span><span class="rail-copy"><strong>Setup</strong><small>เครื่องมือและ baseline</small></span></li>
+    <li><span class="rail-node">B</span><span class="rail-copy"><strong>Dart</strong><small>type, logic, async</small></span></li>
+    <li><span class="rail-node">C</span><span class="rail-copy"><strong>Flutter</strong><small>widget, layout, state</small></span></li>
+    <li><span class="rail-node">D</span><span class="rail-copy"><strong>Architecture</strong><small>feature และ boundary</small></span></li>
+    <li><span class="rail-node">E</span><span class="rail-copy"><strong>Capstone</strong><small>Task Management</small></span></li>
+    <li><span class="rail-node">F</span><span class="rail-copy"><strong>Delivery</strong><small>test, build, production</small></span></li>
+  </ol>
+  <figcaption>ทุก track สร้างความรู้ที่ track ถัดไปใช้ต่อ</figcaption>
+</figure>
+<p class="diagram-description" id="course-flow-title">
+  เส้นทางหลักเริ่มจาก baseline ที่ทำซ้ำได้ แล้วเพิ่ม language, UI runtime,
+  architecture, feature implementation และ release evidence ตามลำดับ
+</p>
+
+<h2 id="learning-loop">Learning loop ที่ใช้ทุกบท</h2>
+<ol>
+  <li><strong>Predict:</strong> ทำนายผลก่อนรัน เช่น state ไหนจะ rebuild</li>
+  <li><strong>Run:</strong> รัน code, test หรือ command จริง</li>
+  <li><strong>Observe:</strong> อ่าน output, stack trace หรือ UI state</li>
+  <li><strong>Explain:</strong> อธิบายด้วยคำของตนเอง ไม่คัดคำจำกัดความ</li>
+  <li><strong>Change:</strong> เปลี่ยน input หนึ่งอย่างแล้วทำนายใหม่</li>
+</ol>
+
+<p>
+  วงจรนี้สำคัญกับ Flutter เพราะการจำชื่อ Widget ไม่ช่วยวิเคราะห์ constraint,
+  provider lifecycle หรือ route redirect เมื่อระบบจริงซับซ้อนขึ้น
+</p>
+
+<h2 id="readiness">สามระดับความพร้อม</h2>
+<table class="comparison-table">
+  <thead><tr><th>ระดับ</th><th>พิสูจน์แล้ว</th><th>ยังไม่พิสูจน์</th></tr></thead>
+  <tbody>
+    <tr><td>Compile-ready</td><td>source compile ใน target/build mode นั้น</td><td>flow จริง, security, backend</td></tr>
+    <tr><td>Demo-ready</td><td>ผู้เรียนทดลอง deterministic flow ได้</td><td>production identity และ operations</td></tr>
+    <tr><td>Production-ready</td><td>risk, platform, signing, data, observability และ release process ผ่านเกณฑ์</td><td>ไม่มีคำอ้างแบบกว้าง ต้องมีหลักฐานรายระบบ</td></tr>
+  </tbody>
+</table>
+
+<div class="callout callout-warning">
+  <strong>สถานะ Boilerplate ปัจจุบัน</strong>
+  entrypoint ชื่อ <code>main_production.dart</code> ปิด diagnostic logging และ
+  debug banner แต่ Authentication ยังใช้ fake datasource ดังนั้นเป็น
+  production-minded composition example ไม่ใช่ production authentication
+</div>
+
+<h2 id="workspace">จัด workspace สำหรับการเรียน</h2>
+<div class="code-block">
+  <div class="code-label">โครงสร้างที่แนะนำ</div>
+  <pre><code>Projects/
+├── flutter-boilerplate/      # source ต้นฉบับ
+├── my-task-app/              # clone ที่ใช้ลงมือทำ
+└── flutter-document/         # คู่มือและ completed example</code></pre>
+</div>
+<p>
+  เก็บ working copy ของ Flutter นอก cloud-synced directory ถ้าเป็นไปได้ เพราะ
+  build tools สร้างไฟล์จำนวนมากและระบบ sync อาจสร้าง conflict copy เช่น
+  <code>launch_background 2.xml</code> ซึ่ง Gradle ไม่ยอมรับ
+</p>
+
+<h2 id="mistakes">ความเข้าใจผิดที่พบบ่อย</h2>
+<ul>
+  <li><strong>“รู้ React แล้ว Flutter เหมือนกัน”</strong> — declarative คล้ายกัน แต่ runtime, layout และ state lifecycle ต่างกัน</li>
+  <li><strong>“Hot reload ผ่านแปลว่าถูก”</strong> — hot reload ไม่ใช่ test และไม่จำลอง cold start</li>
+  <li><strong>“Build ผ่านแปลว่าปล่อยได้”</strong> — build ไม่ตรวจ auth policy, privacy หรือ backend schema</li>
+  <li><strong>“Clean Architecture ต้องมีทุก folder”</strong> — Boilerplate นี้เพิ่ม layer เมื่อมี responsibility เท่านั้น</li>
+</ul>

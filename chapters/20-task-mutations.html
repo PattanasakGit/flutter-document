@@ -1,0 +1,288 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="จัดการ mutation, confirmation, concurrency, rollback decision และ user feedback">
+  <title>Capstone: Toggle, Update, Delete และ Feedback — Flutter Field Guide</title>
+  <link rel="stylesheet" href="../assets/css/site.css">
+  <script defer src="../assets/js/site.js"></script>
+  <script defer src="../assets/js/catalog.js"></script>
+</head>
+<body data-root="../">
+  <a class="skip-link" href="#main-content">ข้ามไปยังเนื้อหาหลัก</a>
+  <noscript><p class="noscript-note">เนื้อหาทั้งหมดยังอ่านได้ แต่ search, theme, quiz และ progress ต้องเปิด JavaScript</p></noscript>
+  <div class="site-shell">
+    <aside class="sidebar" aria-label="เมนูหลักสูตร">
+      <a class="brand" href="../index.html">
+        <span class="brand-mark" aria-hidden="true">&lt;/&gt;</span>
+        <span><strong>Flutter Field Guide</strong><small>Web → Mobile</small></span>
+      </a>
+      <div class="sidebar-tools">
+        <button class="search-trigger" type="button" data-search-trigger>ค้นหาบทเรียน <kbd>/</kbd></button>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </div>
+      <div class="course-progress">
+        <div class="progress-meta"><span>ความคืบหน้า</span><strong data-progress-count>0 / 28</strong></div>
+        <div class="progress-track" aria-hidden="true"><div class="progress-value" data-progress-value></div></div>
+      </div>
+      <p class="nav-heading">A · Orientation & Setup</p>
+<nav class="course-nav">
+<a href="../chapters/01-orientation.html"><span class="nav-index">01</span>เริ่มใช้คู่มือและตั้งเป้าหมายระบบ</a>
+<a href="../chapters/02-react-to-flutter.html"><span class="nav-index">02</span>แผนที่ความคิดจาก React และ Next.js สู่ Flutter</a>
+<a href="../chapters/03-macos-toolchain.html"><span class="nav-index">03</span>ติดตั้ง Flutter toolchain บน macOS และ VS Code</a>
+<a href="../chapters/04-clone-and-run.html"><span class="nav-index">04</span>Clone, Generate, Run และตรวจ Boilerplate</a>
+</nav>
+<p class="nav-heading">B · Dart for TypeScript</p>
+<nav class="course-nav">
+<a href="../chapters/05-dart-types.html"><span class="nav-index">05</span>Dart Types และโครงสร้างโปรแกรมสำหรับ TypeScript Developer</a>
+<a href="../chapters/06-null-collections-patterns.html"><span class="nav-index">06</span>Null Safety, Collections และ Pattern Matching</a>
+<a href="../chapters/07-functions-classes-generics.html"><span class="nav-index">07</span>Functions, Classes, Immutability และ Generics</a>
+<a href="../chapters/08-async-errors-results.html"><span class="nav-index">08</span>Future, Stream, Exception และ Typed Result</a>
+</nav>
+<p class="nav-heading">C · Flutter Fundamentals</p>
+<nav class="course-nav">
+<a href="../chapters/09-widget-runtime.html"><span class="nav-index">09</span>Widget, Element, RenderObject และ BuildContext</a>
+<a href="../chapters/10-layout-theme-forms.html"><span class="nav-index">10</span>Constraints, Responsive Layout, Theme และ Form</a>
+<a href="../chapters/11-state-lifecycle.html"><span class="nav-index">11</span>State Ownership และ Lifecycle</a>
+</nav>
+<p class="nav-heading">D · Boilerplate Architecture</p>
+<nav class="course-nav">
+<a href="../chapters/12-boilerplate-map.html"><span class="nav-index">12</span>แผนที่ AI-first Flutter Boilerplate</a>
+<a href="../chapters/13-riverpod.html"><span class="nav-index">13</span>Riverpod: State Graph และ Dependency Injection</a>
+<a href="../chapters/14-go-router.html"><span class="nav-index">14</span>GoRouter, Redirect และ Authentication Guard</a>
+<a href="../chapters/15-network-storage-errors.html"><span class="nav-index">15</span>Dio, DTO, Repository, Failure และ Secure Storage</a>
+</nav>
+<p class="nav-heading">E · Task Management</p>
+<nav class="course-nav">
+<a href="../chapters/16-task-domain.html"><span class="nav-index">16</span>Capstone: Model Task Domain ด้วย Test-first</a>
+<a href="../chapters/17-offline-repository.html"><span class="nav-index">17</span>Capstone: Offline Datasource และ Repository</a>
+<a href="../chapters/18-task-riverpod.html"><span class="nav-index">18</span>Capstone: Task State และ Filter ด้วย Riverpod</a>
+<a href="../chapters/19-task-form.html"><span class="nav-index">19</span>Capstone: Create/Edit Form และ Validation</a>
+<a href="../chapters/20-task-mutations.html" aria-current="page"><span class="nav-index">20</span>Capstone: Toggle, Update, Delete และ Feedback</a>
+<a href="../chapters/21-dio-datasource.html"><span class="nav-index">21</span>Capstone: Real-API-ready Dio Datasource</a>
+<a href="../chapters/22-capstone-integration.html"><span class="nav-index">22</span>Capstone: Route, Shell และ End-to-end Flow</a>
+</nav>
+<p class="nav-heading">F · Quality & Delivery</p>
+<nav class="course-nav">
+<a href="../chapters/23-testing.html"><span class="nav-index">23</span>Test Strategy: Unit ถึง Integration</a>
+<a href="../chapters/24-debug-performance.html"><span class="nav-index">24</span>Debugging, DevTools และ Performance</a>
+<a href="../chapters/25-production-concerns.html"><span class="nav-index">25</span>Environment, Security, Accessibility และ Localization</a>
+<a href="../chapters/26-build-release.html"><span class="nav-index">26</span>Build Android, iOS และ Web</a>
+<a href="../chapters/27-production-checklist.html"><span class="nav-index">27</span>Production Readiness และ Next-system Checklist</a>
+<a href="../chapters/28-ai-workflow.html"><span class="nav-index">28</span>ใช้ AI พัฒนา Flutter อย่างมีขอบเขตและหลักฐาน</a>
+</nav>
+<p class="nav-heading">Reference</p>
+<nav class="course-nav">
+<a href="../reference/commands.html"><span class="nav-index">R</span>Command Cookbook</a>
+<a href="../reference/glossary.html"><span class="nav-index">R</span>React/Next.js ↔ Flutter Glossary</a>
+<a href="../reference/architecture-decisions.html"><span class="nav-index">R</span>Architecture Decision Matrix</a>
+<a href="../reference/troubleshooting.html"><span class="nav-index">R</span>Troubleshooting Catalog</a>
+</nav>
+
+      <div class="sidebar-footer"><p>Offline-first · ภาษาไทย · Flutter 3.44</p></div>
+    </aside>
+    <div class="site-main">
+      <header class="mobile-bar">
+        <button class="nav-trigger" type="button" data-nav-trigger aria-expanded="false">เมนู</button>
+        <strong>20 · Capstone: Toggle, Update, Delete และ Feedback</strong>
+        <button class="theme-trigger" type="button" data-theme-trigger aria-label="สลับธีม"><span data-theme-label>ธีม</span></button>
+      </header>
+      <main id="main-content" class="lesson-wrap">
+        <article class="lesson">
+          <header class="lesson-header">
+            <p class="lesson-kicker">E · Task Management · บทที่ 20</p>
+            <h1>Capstone: Toggle, Update, Delete และ Feedback</h1>
+            <p class="hero-lead">จัดการ mutation, confirmation, concurrency, rollback decision และ user feedback</p>
+            <div class="lesson-meta">
+              <span>เวลาอ่าน 72 นาที</span>
+              <span>ระดับ กลาง</span>
+              <span>CRUD mutation optimistic confirmation delete feedback concurrency</span>
+            </div>
+          </header>
+          <h2 id="objectives">เป้าหมายของบท</h2>
+<ul>
+  <li>ออกแบบ update/toggle/delete เป็น explicit state transition</li>
+  <li>เลือก optimistic หรือ confirmed update ด้วย risk/latency</li>
+  <li>ยืนยัน destructive action และให้ feedback</li>
+  <li>จัดการ concurrent mutation อย่าง deterministic</li>
+</ul>
+
+<h2 id="mutation-flow">Mutation flow</h2>
+<figure class="diagram flow-diagram" aria-labelledby="mutation-title">
+  <ol class="execution-rail">
+    <li><span class="rail-node">EV</span><span class="rail-copy"><strong>User event</strong><small>toggle, edit หรือ delete</small></span></li>
+    <li><span class="rail-node">GD</span><span class="rail-copy"><strong>Guard</strong><small>validation, duplicate, confirmation</small></span></li>
+    <li><span class="rail-node">UC</span><span class="rail-copy"><strong>Use case</strong><small>เรียก repository contract</small></span></li>
+    <li><span class="rail-node">ST</span><span class="rail-copy"><strong>State transition</strong><small>update content หรือ failure</small></span></li>
+    <li><span class="rail-node">FB</span><span class="rail-copy"><strong>Feedback</strong><small>semantics, snackbar, retry/undo</small></span></li>
+  </ol>
+  <figcaption>ทุก mutation มี guard และ observable result ไม่ยิง I/O จาก gesture โดยตรง</figcaption>
+</figure>
+<p class="diagram-description" id="mutation-title">
+  Controller เป็นจุด serialize operation ส่วน Presentation เป็นเจ้าของ
+  confirmation และข้อความที่ผู้ใช้เห็น
+</p>
+
+<h2 id="toggle">Toggle completion</h2>
+<div class="code-block">
+  <div class="code-label">UI event</div>
+  <pre><code>Checkbox(
+  value: task.isCompleted,
+  onChanged: state.isMutating
+      ? null
+      : (_) =&gt; ref
+          .read(taskListControllerProvider.notifier)
+          .toggle(task.id),
+  semanticLabel: task.isCompleted
+      ? 'ทำเครื่องหมาย ${task.title} ว่ายังไม่เสร็จ'
+      : 'ทำเครื่องหมาย ${task.title} ว่าเสร็จแล้ว',
+)</code></pre>
+</div>
+
+<h2 id="optimistic">Optimistic vs confirmed</h2>
+<table class="comparison-table">
+  <thead><tr><th>แบบ</th><th>ข้อดี</th><th>ต้นทุน</th></tr></thead>
+  <tbody>
+    <tr><td>Confirmed</td><td>state ตรง source-of-truth, rollback ง่าย</td><td>feedback ช้าตาม I/O</td></tr>
+    <tr><td>Optimistic</td><td>UI ตอบทันที</td><td>ต้องเก็บ previous state, rollback, conflict/race policy</td></tr>
+  </tbody>
+</table>
+<p>
+  offline datasource เร็วมากจึงเริ่ม confirmed update เพื่อความชัด เมื่อใช้
+  remote API และ latency วัดได้จึงค่อยพิจารณา optimistic
+</p>
+
+<h2 id="update">Edit โดยรักษา identity</h2>
+<div class="code-block">
+  <div class="code-label">Domain update</div>
+  <pre><code>Result&lt;Task&gt; updateContent({
+  required String title,
+  required String description,
+}) {
+  final cleanTitle = title.trim();
+  if (cleanTitle.isEmpty) {
+    return const Error(ValidationFailure(message: 'กรุณากรอกชื่องาน'));
+  }
+  return Success(copyWith(
+    title: cleanTitle,
+    description: description.trim(),
+  ));
+}</code></pre>
+</div>
+
+<h2 id="delete">Delete confirmation</h2>
+<div class="code-block">
+  <div class="code-label">Presentation confirmation</div>
+  <pre><code>final confirmed = await showDialog&lt;bool&gt;(
+  context: context,
+  builder: (context) =&gt; AlertDialog(
+    title: const Text('ลบงานนี้?'),
+    content: Text('“${task.title}” จะถูกลบออกจากรายการ'),
+    actions: [
+      TextButton(
+        onPressed: () =&gt; Navigator.pop(context, false),
+        child: const Text('ยกเลิก'),
+      ),
+      FilledButton(
+        onPressed: () =&gt; Navigator.pop(context, true),
+        child: const Text('ลบงาน'),
+      ),
+    ],
+  ),
+);
+if (confirmed == true &amp;&amp; context.mounted) {
+  await controller.delete(task.id);
+}</code></pre>
+</div>
+
+<h2 id="feedback">Feedback ที่ดี</h2>
+<ul>
+  <li>action loading: disable control ที่เกี่ยวข้อง ไม่ block ทั้งหน้าเสมอ</li>
+  <li>success: UI state เปลี่ยนและมี semantics/brief message</li>
+  <li>failure: บอกสาเหตุระดับผู้ใช้และ recovery เช่น retry</li>
+  <li>delete: ถ้า product risk สูง เพิ่ม Undo โดย repository รองรับ restore</li>
+</ul>
+
+<h2 id="race">Race และ stale result</h2>
+<p>
+  ถ้าอนุญาตหลาย task mutate พร้อมกัน ให้ state track operation ต่อ id
+  ไม่ใช้ bool เดียว disable ทั้ง list แต่ถ้า MVP เลือก serialize ให้เขียน
+  policy และ test ชัด ไม่ปล่อย request แข่งกันโดยไม่ได้ตั้งใจ
+</p>
+
+<h2 id="tests">Mutation tests</h2>
+<ul>
+  <li>toggle success เปลี่ยนเฉพาะ target task</li>
+  <li>toggle missing id แสดง failure และ list เดิมไม่หาย</li>
+  <li>edit invalid ไม่เรียก repository</li>
+  <li>delete cancel ไม่เรียก controller</li>
+  <li>delete confirm success เอา item ออก</li>
+  <li>กด action ซ้ำระหว่าง mutation ไม่เกิด duplicate call</li>
+</ul>
+
+<h2 id="mistakes">ข้อผิดพลาดที่พบบ่อย</h2>
+<ul>
+  <li>ทำ optimistic update โดยไม่มี rollback</li>
+  <li>ลบจาก UI list แต่ไม่ลบ source-of-truth</li>
+  <li>ใช้สีแดงอย่างเดียวบอก destructive action โดยไม่มีข้อความ</li>
+  <li>Dialog ปิดแล้วใช้ context โดยไม่ตรวจ mounted</li>
+  <li>กด action ซ้ำได้ระหว่าง await</li>
+</ul>
+
+          <section class="checkpoint" id="checkpoint">
+  <h2>Checkpoint ก่อนเดินต่อ</h2>
+  <ol>
+    <li>อธิบายหัวข้อนี้ด้วยภาษาของตนเองโดยไม่เปิดคู่มือ</li>
+    <li>ชี้ไฟล์หรือคำสั่งใน Boilerplate ที่สัมพันธ์กับบทนี้ได้</li>
+    <li>รันตัวอย่างหรือ verification ที่บทกำหนดและอ่านผลลัพธ์ได้</li>
+  </ol>
+</section>
+<section class="quiz" id="quiz">
+  <h2>Quiz ตรวจ mental model</h2>
+  <p><strong>destructive action ควรมีอะไร?</strong></p>
+  <div class="quiz-options"><button class="quiz-option" type="button" data-correct="false">ซ่อนปุ่ม</button><button class="quiz-option" type="button" data-correct="true">confirmation และ feedback/recovery ที่ชัด</button><button class="quiz-option" type="button" data-correct="false">ทำทันทีโดยไม่แจ้ง</button></div>
+  <p class="quiz-feedback" aria-live="polite"></p>
+</section>
+<section class="exercise" id="practice">
+  <h2>Practice</h2>
+  <p>ออกแบบ delete flow ที่ยืนยันก่อนลบและเขียน test ว่ายกเลิกแล้ว repository ไม่ถูกเรียก</p>
+  <p><strong>Definition of done:</strong> อธิบายเหตุผลของ design, แสดงผลลัพธ์ที่รันจริง และไม่มี warning ที่ถูกมองข้าม</p>
+</section>
+
+          <nav class="chapter-pagination" aria-label="เปลี่ยนบทเรียน">
+            <a href="../chapters/19-task-form.html">ก่อนหน้า<br><strong>Capstone: Create/Edit Form และ Validation</strong></a>
+            <a href="../chapters/21-dio-datasource.html">บทถัดไป<br><strong>Capstone: Real-API-ready Dio Datasource</strong></a>
+          </nav>
+        </article>
+        <aside class="lesson-toc" aria-label="สารบัญบท">
+          <strong>ในบทนี้</strong>
+          <a href="#objectives">เป้าหมายของบท</a>
+<a href="#mutation-flow">Mutation flow</a>
+<a href="#toggle">Toggle completion</a>
+<a href="#optimistic">Optimistic vs confirmed</a>
+<a href="#update">Edit โดยรักษา identity</a>
+<a href="#delete">Delete confirmation</a>
+<a href="#feedback">Feedback ที่ดี</a>
+<a href="#race">Race และ stale result</a>
+<a href="#tests">Mutation tests</a>
+<a href="#mistakes">ข้อผิดพลาดที่พบบ่อย</a>
+<a href="#checkpoint">Checkpoint</a>
+<a href="#quiz">Quiz</a>
+<a href="#practice">Practice</a>
+          <button class="chapter-complete" type="button" data-current-chapter="20-task-mutations" aria-pressed="false">
+            ทำเครื่องหมายว่าเรียนจบบทนี้
+          </button>
+        </aside>
+      </main>
+    </div>
+  </div>
+  <dialog class="search-dialog" id="search-dialog" aria-labelledby="search-title">
+    <div class="search-head">
+      <label><span id="search-title" class="visually-hidden">ค้นหาคู่มือ</span><input id="search-input" type="search" placeholder="ค้นหา Dart, Riverpod, routing, build…" autocomplete="off"></label>
+      <button class="search-close" type="button" data-search-close>ปิด</button>
+    </div>
+    <div class="search-results" id="search-results" aria-live="polite"></div>
+  </dialog>
+</body>
+</html>
