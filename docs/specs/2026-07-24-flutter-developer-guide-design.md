@@ -172,7 +172,7 @@ documentation template.
 - Motion is optional and respects `prefers-reduced-motion`.
 - Light and dark themes both meet practical contrast requirements.
 
-Illustrations are locally stored SVG diagrams:
+Illustrations are semantic HTML/CSS diagrams embedded in their relevant pages:
 
 1. React-to-Flutter concept map
 2. Flutter widget/element/render tree
@@ -185,8 +185,10 @@ Illustrations are locally stored SVG diagrams:
 9. Multi-environment composition
 10. Android/iOS/Web build pipeline
 
-No decorative raster images or external fonts are required. The diagrams
-directly explain a relationship or execution sequence.
+No decorative raster images, model-authored SVGs, or external fonts are
+required. The diagrams directly explain a relationship or execution sequence,
+remain selectable, reflow at narrow widths, and include adjacent text
+descriptions.
 
 ## 7. Offline Behavior
 
@@ -200,7 +202,7 @@ The site must work from a `file://` URL:
 - No service worker requirement
 
 Search metadata is embedded in `assets/js/site.js`. Links between pages are
-relative. SVG assets load from local relative paths.
+relative. Diagrams use the shared local stylesheet and no external assets.
 
 Progress, theme, and completed exercises use `localStorage` when available and
 degrade without blocking content if browser privacy settings disable storage.

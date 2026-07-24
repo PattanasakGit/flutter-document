@@ -14,7 +14,7 @@ file so they work from `file://`. A copied boilerplate under
 by an in-memory datasource, while a documented remote datasource demonstrates
 Dio without making the runnable application depend on a server.
 
-**Tech Stack:** HTML5, CSS, classic JavaScript, local SVG, Dart 3.12.2, Flutter
+**Tech Stack:** HTML5, CSS, classic JavaScript, Dart 3.12.2, Flutter
 3.44.8, Riverpod 3, GoRouter, Dio, Freezed, flutter_test, and mocktail.
 
 ## Global Constraints
@@ -26,7 +26,8 @@ Dio without making the runnable application depend on a server.
   concise callouts.
 - Every learning chapter contains objectives, React/Next bridge, explanation,
   code lab, mistakes, checkpoint, quiz, and practice.
-- Diagrams are local SVG assets and explain real relationships or sequences.
+- Diagrams are semantic HTML/CSS figures and explain real relationships or
+  sequences without external assets.
 - The example project runs offline by default.
 - Source boilerplate architecture and `AGENTS.md` rules remain authoritative.
 - No real credentials, tokens, backend URL, or production-authentication claim
@@ -110,61 +111,59 @@ git add README.md index.html assets tools
 git commit -m "feat: add offline learning portal foundation"
 ```
 
-### Task 2: Explanatory SVG system
+### Task 2: Explanatory HTML/CSS diagram system
 
 **Files:**
-- Create: `assets/images/react-to-flutter.svg`
-- Create: `assets/images/flutter-trees.svg`
-- Create: `assets/images/feature-architecture.svg`
-- Create: `assets/images/riverpod-flow.svg`
-- Create: `assets/images/router-guard.svg`
-- Create: `assets/images/task-crud-flow.svg`
-- Create: `assets/images/error-pipeline.svg`
-- Create: `assets/images/test-pyramid.svg`
-- Create: `assets/images/environment-composition.svg`
-- Create: `assets/images/build-pipeline.svg`
+- Create: `components/diagram-patterns.html`
+- Modify: `assets/css/site.css`
 - Modify: `index.html`
 
 **Interfaces:**
-- Consumes: CSS color tokens mirrored as SVG custom properties.
-- Produces: ten self-contained images with Thai `<title>` and `<desc>` content,
-  a 16:9 viewBox, and no external references.
+- Consumes: CSS color tokens and semantic figure patterns.
+- Produces: `.flow-diagram`, `.concept-map`, `.tree-diagram`,
+  `.pipeline-diagram`, `.test-pyramid`, and ten selectable, responsive figures
+  with visible titles and adjacent text descriptions.
 
-- [ ] **Step 1: Add image validation**
+- [ ] **Step 1: Add diagram validation**
 
-Extend `tools/validate_site.dart` so every SVG must contain `<title>`, `<desc>`,
-and `viewBox`, and must not contain an external URL.
+Extend `tools/validate_site.dart` so every element with
+`class="diagram"` contains a `<figcaption>` and a neighboring prose
+description.
 
-- [ ] **Step 2: Verify missing SVG requirements fail**
+- [ ] **Step 2: Verify missing diagram requirements fail**
 
-Add one temporary incomplete SVG, run the validator, confirm it fails with
-`SVG requires title, desc, and viewBox`, then remove the temporary file.
+Add one temporary incomplete `<figure class="diagram">`, run the validator,
+confirm it fails with `Diagram requires figcaption and description`, then
+remove the temporary figure.
 
 - [ ] **Step 3: Draw all ten diagrams**
 
-Use semantic groups, readable labels, arrows with explicit direction, and
-legend text. Keep minimum SVG label size equivalent to 14 CSS pixels.
+Use semantic lists, readable labels, CSS arrows with explicit direction, and
+legend text. Keep labels at least 14 CSS pixels and preserve reading order
+without CSS.
 
 - [ ] **Step 4: Add the learning-map image to the landing page**
 
 Embed with:
 
 ```html
-<figure class="diagram">
-  <img src="assets/images/react-to-flutter.svg"
-       alt="แผนที่เปรียบเทียบแนวคิด React และ Flutter">
+<figure class="diagram concept-map" aria-labelledby="react-map-title">
+  <div class="diagram-canvas"><!-- labeled concept nodes --></div>
   <figcaption>เริ่มจากสิ่งที่คุ้นเคย แล้วเปลี่ยน mental model</figcaption>
 </figure>
+<p class="diagram-description" id="react-map-title">
+  แผนภาพจับคู่ React component กับ Flutter Widget และอธิบายจุดที่ไม่เท่ากัน
+</p>
 ```
 
 - [ ] **Step 5: Validate and commit**
 
 Run: `dart run tools/validate_site.dart`
 
-Expected: all SVG checks pass.
+Expected: all diagram checks pass.
 
 ```bash
-git add assets/images index.html tools/validate_site.dart
+git add components assets/css/site.css index.html tools/validate_site.dart
 git commit -m "feat: add explanatory Flutter diagrams"
 ```
 
@@ -625,7 +624,8 @@ Riverpod, tests, and signing.
 
 Run: `dart run tools/validate_site.dart`
 
-Expected: all 33 HTML pages and ten SVG files pass with zero broken links.
+Expected: all 33 HTML pages and ten explanatory figures pass with zero broken
+links.
 
 - [ ] **Step 3: Verify the example project**
 
@@ -647,8 +647,8 @@ tests pass, and Web release output is produced.
 
 Open `index.html` from `file://` and verify desktop 1440×900 and mobile 390×844.
 Test sidebar, search, theme, progress, copy, quiz, chapter links, keyboard focus,
-reduced motion, and browser console logs. Open at least one SVG and one deep
-chapter directly.
+reduced motion, and browser console logs. Inspect at least one explanatory
+figure and one deep chapter directly.
 
 - [ ] **Step 5: Final content audit**
 
