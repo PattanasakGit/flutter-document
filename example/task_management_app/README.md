@@ -1,312 +1,247 @@
-# AI-First Flutter Boilerplate
+# Task Management Capstone
 
-A modern, feature-first Flutter foundation designed for human developers and
-AI coding agents. It provides explicit architectural boundaries, typed failure
-handling, deterministic tests, environment-aware composition, and one complete
-reference feature without turning small changes into framework work.
+แอป Flutter ที่ทำงานได้จริงซึ่งต่อยอดจาก AI-First Flutter Boilerplate สำหรับ
+ใช้ประกอบ [Flutter Field Guide](../../index.html) ตัวอย่างนี้คงกฎเดิมของ
+Boilerplate และเพิ่ม Task Management เป็น vertical slice ครบ Domain,
+Application, Data, Presentation, Riverpod, GoRouter และ tests
 
 > [!IMPORTANT]
-> This repository is a production-minded reference starter, not a deploy-ready
-> product. The included authentication flow intentionally uses a deterministic
-> fake datasource in every environment. Replace it and complete the
-> [production checklist](#production-checklist) before shipping a real app.
+> โปรเจกต์นี้เป็น runnable learning/reference app ไม่ใช่ผลิตภัณฑ์พร้อมปล่อยจริง
+> Authentication และ Tasks ใช้ deterministic fake/in-memory datasource
+> ข้อมูล task จะ reset เมื่อ process เริ่มใหม่
 
-## Why use this starter?
+## สิ่งที่ทำได้
 
-- **Current Flutter foundation:** Flutter 3.44.8, Dart 3.12.2, Material 3,
-  Riverpod 3, GoRouter, Dio, Freezed, and `flutter_secure_storage`.
-- **Feature-first structure:** code stays close to the product capability it
-  implements instead of being distributed across global technical folders.
-- **Light clean architecture:** add application, domain, and data layers only
-  when a feature has business rules or external I/O.
-- **Typed boundaries:** transport errors, application failures, results, DTOs,
-  and domain entities have distinct responsibilities.
-- **AI-ready conventions:** [`AGENTS.md`](AGENTS.md) and the documentation define
-  where code belongs, what each layer may import, and what verification is
-  required.
-- **Reproducible quality checks:** generated code is committed, tests are
-  deterministic, and pull requests run generation, formatting, analysis, and
-  tests.
+- ล็อกอินด้วย demo authentication และ route guard
+- เปิด Task board จาก Home หรือ deep link `/tasks`
+- ดู summary และกรอง All / Open / Completed
+- Create, edit, toggle และ delete พร้อม validation/confirmation
+- แสดง loading, empty, fatal load error และ recoverable mutation error
+- รองรับ narrow/wide layout, keyboard, semantics และ Material 3 light/dark theme
+- ทดสอบแบบ offline ตั้งแต่ pure Domain ถึง Router integration
 
-This is a clone-and-own boilerplate. It is intentionally not a runtime
-framework or a package that application code must depend on forever.
+## Requirements
 
-## Included reference implementation
+- Flutter 3.44.8 stable (ดู `.fvmrc`)
+- Dart 3.12.2 ที่มาพร้อม Flutter
+- VS Code + Flutter/Dart extensions
+- Android SDK, Xcode/CocoaPods หรือ browser ตาม target ที่ต้องการรัน
 
-| Area | Included |
-| --- | --- |
-| Application shell | Material 3 themes, responsive layouts, and environment labels |
-| Navigation | Centralized GoRouter configuration with an authentication guard |
-| State and DI | Annotation-based Riverpod providers and controllers |
-| Networking | Configured Dio client, interceptors, endpoints, and error mapping |
-| Persistence | Secure token-storage abstraction |
-| Error flow | `AppException` → `Failure` → `Result<T>` |
-| Authentication | DTO, entity, repository, use case, controller, login UI, and tests |
-| Home | A deliberately presentation-only feature showing the minimum viable structure |
-| Quality | Formatting, generation, analysis, unit/widget/router tests, and PR CI |
+ตรวจ environment:
 
-The authentication feature is an executable architecture example. It uses:
-
-```text
-demo@example.com
-password123
+```bash
+flutter --version
+flutter doctor -v
+flutter devices
 ```
 
-These credentials and the returned token are fake and must never be treated as
-a real authentication mechanism.
-
-## Quick start
-
-### Prerequisites
-
-- Flutter 3.44.8 stable, also recorded in [`.fvmrc`](.fvmrc)
-- Dart 3.12.2 or the Dart SDK bundled with that Flutter release
-- Android Studio/Android SDK, Xcode/CocoaPods, or a supported Web browser for
-  the platform being developed
-
-### Run the app
+## Setup จาก clean checkout
 
 ```bash
 flutter pub get
 dart run build_runner build
-flutter run -t lib/main_development.dart
+dart format --output=none --set-exit-if-changed .
+flutter analyze
+flutter test
 ```
 
-Run the complete local quality suite before opening a pull request:
+generated Riverpod/Freezed/JSON files ถูก commit แล้ว แต่ต้องรัน build runner
+ใหม่เมื่อแก้ annotation และ review generated diff ห้ามแก้ไฟล์ `.g.dart` หรือ
+`.freezed.dart` ด้วยมือ
 
-```bash
-./scripts/format.sh
-./scripts/generate.sh
-./scripts/analyze.sh
-./scripts/test.sh
-```
+## Run
 
-## Environments
-
-| Environment | Entry point | App logging | Debug banner |
-| --- | --- | --- | --- |
-| Development | `lib/main_development.dart` | On | On |
-| Staging | `lib/main_staging.dart` | Off | Off |
-| Production | `lib/main_production.dart` | Off | Off |
+Development:
 
 ```bash
 flutter run -t lib/main_development.dart
-flutter run -t lib/main_staging.dart
-flutter run -t lib/main_production.dart
 ```
 
-The entrypoints select Dart-level configuration and composition. They are not
-native Android product flavors or iOS schemes, and they currently compose the
-same fake authentication datasource.
-
-The committed API URLs use the reserved `.invalid` domain so the starter cannot
-contact an unintended service. When a real datasource is implemented, supply a
-non-secret base URL at build time:
+เลือก device:
 
 ```bash
-flutter run -t lib/main_staging.dart \
-  --dart-define=API_BASE_URL=https://api.staging.example.com
+flutter devices
+flutter run -d <device-id> -t lib/main_development.dart
 ```
 
-Never store API secrets, signing credentials, access tokens, or passwords in
-source-controlled Dart values or `--dart-define` examples.
+Demo credentials:
+
+```text
+Email:    demo@example.com
+Password: password123
+```
+
+หลังล็อกอินเลือก **Open task manager** ข้อมูล seed 3 รายการมาจาก
+`lib/features/tasks/data/task_seed.dart`
+
+## Build
+
+Web release compilation:
+
+```bash
+flutter build web --release -t lib/main_development.dart
+flutter build web --release -t lib/main_production.dart
+python3 -m http.server 8080 --directory build/web
+```
+
+บรรทัดแรกตรวจ offline development composition และบรรทัดที่สองตรวจ
+production entrypoint compilation gate โดย production entrypoint ยังไม่เท่ากับ
+production readiness
+
+Android:
+
+```bash
+flutter build apk --debug -t lib/main_development.dart
+flutter build appbundle --release -t lib/main_production.dart
+```
+
+iOS (macOS + Xcode + signing ที่ถูกต้อง):
+
+```bash
+flutter build ios --release -t lib/main_production.dart
+flutter build ipa --release -t lib/main_production.dart
+```
+
+Release build ผ่านพิสูจน์เพียง source compile/package ในเงื่อนไขนั้น
+ไม่พิสูจน์ real auth, persistence, signing, privacy หรือ production operations
 
 ## Architecture
 
-Business code lives under `lib/features/<feature>/`. A feature begins with only
-the folders it needs:
-
 ```text
-presentation → application → domain
-data ──────────────────────→ domain
+Presentation ──→ Application ──→ Domain
+      │                │             ↑
+      └────────────────┴─────────────┤
+Data ────────────────────────────────┘
+
+External input → Datasource → Repository → Result<T>
+                                   ↓
+Widget ← TaskListState ← Controller/Use case
 ```
 
-- **Presentation** owns pages, widgets, controllers, and user interaction.
-- **Application** coordinates use cases and application workflows.
-- **Domain** owns pure-Dart entities, repository contracts, and business rules.
-- **Data** implements external boundaries such as HTTP APIs and persistence.
-- **Core** contains business-neutral infrastructure shared by the application.
-- **Shared** contains proven cross-feature UI or utilities, not speculative
-  abstractions.
+- `domain/` เป็น pure Dart: Task invariant, TaskFilter และ repository contract
+- `application/` เป็น use cases ที่พูดภาษาของ feature
+- `data/` เป็น local/remote datasource, checked DTO, mapping และ typed failure
+  boundary โดย runnable default ยังเป็น in-memory
+- `presentation/` เป็น Riverpod controller, union state, pages, forms และ widgets
+- `tasks_providers.dart` ประกอบ dependency graph โดยไม่มี business logic
+- `tasks.dart` เป็น public feature surface ที่ Router import
 
-Core rules:
+อ่าน [Capstone development map](docs/task-management-capstone.md) และ
+`AGENTS.md` ก่อนแก้ feature
 
-1. Keep new code in the nearest feature until another feature genuinely needs
-   it.
-2. Keep Flutter, Dio, storage plugins, and DTOs outside the domain layer.
-3. Do not expose `DioException` or raw transport responses outside data
-   boundaries.
-4. Convert expected external errors into typed application failures.
-5. Use Riverpod for application state and dependency composition.
-6. Access another feature through its intentional public API.
-7. Test behavior at the lowest useful level and add widget/router coverage for
-   user-visible flows.
-
-See [`docs/architecture.md`](docs/architecture.md) for the full import matrix and
-request flow.
-
-## Project structure
+## Feature flow
 
 ```text
-.
-├── AGENTS.md
-├── lib/
-│   ├── app/                    # Bootstrap, environments, router, and theme
-│   ├── core/                   # Network, errors, storage, logging, and results
-│   ├── features/
-│   │   ├── authentication/     # Complete reference vertical slice
-│   │   └── home/               # Intentionally presentation-only
-│   ├── shared/                 # Proven cross-feature code
-│   └── main_*.dart             # Development, staging, and production
-├── test/                       # Mirrors production responsibilities
-├── integration_test/           # Reserved for device-level critical flows
-├── docs/                       # Architecture and contribution guidance
-└── scripts/                    # Portable quality commands
+TaskListPage
+  → TaskListController
+    → CreateTask / UpdateTask / ToggleTask / DeleteTask / GetTasks
+      → TaskRepository
+        → TaskRepositoryImpl
+          → TaskLocalDatasource
+            → InMemoryTaskDatasource
 ```
 
-Empty architecture folders are not kept for symmetry. Add a layer only when it
-has a concrete responsibility.
+Remote path ที่ทดสอบแยก:
 
-## Implementing a feature
+```text
+RemoteTaskRepository
+  → DioTaskRemoteDatasource
+    → ApiClient
+      → Dio
+```
 
-1. Create `lib/features/<feature_name>/presentation`.
-2. Add the smallest page/widget/controller needed for the user flow.
-3. Add `domain` when the feature has entities, business rules, or repository
-   contracts.
-4. Add `application` when orchestration belongs outside the controller.
-5. Add `data` when the feature crosses an API, database, plugin, or storage
-   boundary.
-6. Keep providers near the feature and expose only its intentional public API.
-7. Mirror important behavior under `test/features/<feature_name>/`.
-8. Regenerate code and run the complete quality suite.
+Presentation ไม่ import datasource, raw record, Dio หรือ JSON และ Domain
+ไม่ import Flutter/Riverpod/Data
 
-Use [`docs/feature-guideline.md`](docs/feature-guideline.md) for the decision tree
-and merge checklist.
+## Tests
 
-## Code generation
-
-Riverpod, Freezed, and JSON generated files are committed so a fresh clone can
-analyze without first mutating the working tree.
-
-After changing annotated declarations:
+Focused feedback:
 
 ```bash
-./scripts/generate.sh
-git diff --check
-git diff
+flutter test test/features/tasks/domain
+flutter test test/features/tasks/data
+flutter test test/features/tasks/application
+flutter test test/features/tasks/presentation
+flutter test test/app/router/task_route_test.dart
 ```
 
-Review generated changes before committing them. Do not edit generated files
-manually.
+Full quality gate:
 
-## Testing and continuous integration
+```bash
+dart run build_runner build
+dart format --output=none --set-exit-if-changed .
+flutter analyze
+flutter test
+git diff --check
+```
 
-Tests avoid real network access and cover:
+Test portfolio ครอบคลุม:
 
-- Result and error mapping
-- Network and storage infrastructure
-- Authentication repository and use case
-- Riverpod controller state transitions
-- Login widgets and validation
-- Router authentication behavior
+- invariant, normalization, update identity และ filters
+- unmodifiable datasource snapshots และ CRUD
+- DTO-like record ↔ entity mapping และ failure mapping
+- checked HTTP schema, request serialization และ remote repository mapping
+- controller load/filter/mutation/duplicate-action/race behavior
+- loading/error UI, form validation, rendering, filter, create/edit/toggle/delete
+- signed-in task route และ signed-out redirect
+- regression suite ของ Boilerplate เดิม
 
-The pull-request workflow in
-[`.github/workflows/pull_request.yaml`](.github/workflows/pull_request.yaml)
-verifies generated output, formatting, analysis, and tests.
+## เพิ่ม behavior อย่างปลอดภัย
 
-Device integration tests, platform builds, coverage enforcement, localization,
-and accessibility guideline tests are deliberate next steps rather than
-claimed capabilities.
+1. อ่าน `AGENTS.md`, feature ใกล้เคียง และ test ที่เกี่ยวข้อง
+2. เขียน failing behavior test และรันให้เห็น failure ที่ถูกเหตุผล
+3. เพิ่ม implementation เล็กที่สุดให้ test ผ่าน
+4. รักษา dependency direction และ public surface
+5. รัน focused tests ระหว่างทำ แล้วรัน full quality gate
+6. อัปเดตคู่มือ/decision/production gap เมื่อ contract เปลี่ยน
 
-## Working with AI coding agents
-
-Before changing code, every agent should:
-
-1. Read [`AGENTS.md`](AGENTS.md).
-2. Read the nearest feature and its tests.
-3. State which existing pattern the change follows.
-4. Keep the edit scoped to the requested capability.
-5. Report actual generation, formatting, analysis, and test results.
-
-A useful task prompt is:
+ตัวอย่าง prompt สำหรับ AI:
 
 ```text
-Implement <capability> in <feature>.
-Follow AGENTS.md and the nearest existing feature pattern.
-Preserve layer boundaries, add behavior-focused tests, and report the exact
-verification commands and results.
+เพิ่ม TaskPriority ใน features/tasks
+อ่าน AGENTS.md และ tests ปัจจุบันก่อน
+รักษา Domain → Application ← Data/Presentation และใช้ Result/Failure เดิม
+เริ่มจาก failing domain/data/controller/widget tests
+ห้ามเพิ่ม dependency หรือแก้ authentication
+รายงาน output ของ build_runner, format, analyze และ full tests ตามที่รันจริง
 ```
 
-Explicit architecture and verification rules help Codex, Claude, Cursor,
-ChatGPT, and other coding agents converge on the same repository conventions.
+## Environment
 
-## Supported targets
+| Environment | Entrypoint | สภาพตัวอย่าง |
+| --- | --- | --- |
+| Development | `lib/main_development.dart` | Fake auth + in-memory tasks |
+| Staging | `lib/main_staging.dart` | ยังใช้ fake/local; ไม่ใช่ staging transport จริง |
+| Production | `lib/main_production.dart` | ยังใช้ fake/local; ชื่อ entrypoint ไม่ทำให้ production-ready |
 
-The repository currently enables:
+API base URLs ใน starter ใช้ `.invalid` เพื่อไม่เรียกบริการจริงโดยไม่ตั้งใจ
 
-- Android
-- iOS
-- Web
+## Production gaps
 
-Desktop targets are intentionally not generated. Add a platform only when the
-product requires it and verify every plugin at that platform boundary.
+ต้องปิดอย่างน้อยรายการต่อไปนี้ก่อน release ผลิตภัณฑ์:
 
-## Production checklist
+- แทน fake authentication ด้วย real backend/OIDC
+- เพิ่ม session restore, expiry, refresh, revoke และ intended-route restoration
+- แทน in-memory tasks ด้วย local database/remote repository ตาม requirement
+- ออกแบบ sync, conflict, retry, idempotency, migration และ data retention
+- ทำ native flavors/schemes, identifiers, signing, icons และ store metadata
+- เพิ่ม localization, locale/RTL tests และ accessibility QA บนอุปกรณ์จริง
+- เพิ่ม privacy-safe crash/error/performance observability และ alerts
+- เพิ่ม device integration smoke tests, target builds และ staged rollout/rollback
+- ทบทวน secrets, network security, privacy disclosure และ dependency risks
 
-Complete these items before releasing a real product:
+ห้าม fallback staging/production ไป fake datasource แล้วแสดงว่าเป็นระบบจริง
 
-- [ ] Replace `FakeAuthenticationRemoteDatasource` in staging and production
-      with environment-specific implementations that fail closed.
-- [ ] Implement the real Dio-backed authentication flow and map malformed
-      response/schema errors into typed failures.
-- [ ] Add authentication initialization, session restoration, expiration,
-      refresh/401 handling, and intended-route restoration.
-- [ ] Configure and test secure storage for every target platform, including
-      iOS Keychain entitlements and secure Web hosting requirements.
-- [ ] Add Android product flavors and iOS schemes when environments need
-      distinct identifiers, names, icons, services, or signing.
-- [ ] Add localization resources and locale/RTL tests for every supported
-      language.
-- [ ] Add device-level integration smoke tests for critical flows.
-- [ ] Extend CI with target builds, coverage policy, dependency maintenance,
-      and security checks appropriate to the product.
-- [ ] Replace starter application identifiers, names, icons, URLs, and signing
-      configuration.
-- [ ] Choose and configure privacy-safe crash reporting and observability.
+## Git author
 
-## Android release signing
+Repository เอกสารนี้ใช้:
 
-Debug builds work without signing configuration. Android release tasks fail
-closed until `android/key.properties` exists with credentials stored outside
-source control:
-
-```properties
-storeFile=/absolute/path/to/release-keystore.jks
-storePassword=<secret>
-keyAlias=<release-alias>
-keyPassword=<secret>
+```text
+PattanasakGit <pattanasak.at@gmail.com>
 ```
 
-The starter identity is `dev.aifirst.flutterstarter` on Android and iOS. Replace
-it with the owning organization's reverse-domain identifier before publishing.
-Keep keystores and `key.properties` out of Git.
+ตรวจ commit ล่าสุดด้วย:
 
-## Documentation
-
-| Document | Purpose |
-| --- | --- |
-| [`AGENTS.md`](AGENTS.md) | Mandatory repository rules for humans and AI agents |
-| [`docs/architecture.md`](docs/architecture.md) | Layer responsibilities, imports, and request flow |
-| [`docs/feature-guideline.md`](docs/feature-guideline.md) | Feature creation and merge checklist |
-| [`docs/coding-standard.md`](docs/coding-standard.md) | Dart and Flutter implementation standards |
-| [`docs/naming-convention.md`](docs/naming-convention.md) | Naming rules by responsibility |
-| [`docs/error-handling.md`](docs/error-handling.md) | Exception, failure, and result flow |
-| [`docs/testing.md`](docs/testing.md) | Test strategy and commands |
-| [`docs/adding-a-module.md`](docs/adding-a-module.md) | Process for adding optional infrastructure |
-
-## Optional modules
-
-Firebase, databases, analytics, notifications, localization, crash reporting,
-and advanced integration or golden testing are intentionally not core
-dependencies. Add a module only after a product requirement exists, then follow
-[`docs/adding-a-module.md`](docs/adding-a-module.md).
+```bash
+git log -1 --format=fuller
+```

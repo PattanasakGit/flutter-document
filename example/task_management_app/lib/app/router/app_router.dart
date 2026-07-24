@@ -5,6 +5,7 @@ import 'package:ai_first_flutter_starter/app/router/route_paths.dart';
 import 'package:ai_first_flutter_starter/features/authentication/presentation/controllers/login_controller.dart';
 import 'package:ai_first_flutter_starter/features/authentication/presentation/pages/login_page.dart';
 import 'package:ai_first_flutter_starter/features/home/presentation/pages/home_page.dart';
+import 'package:ai_first_flutter_starter/features/tasks/tasks.dart';
 import 'package:ai_first_flutter_starter/shared/widgets/app_error_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,6 +43,11 @@ final goRouterProvider = Provider<GoRouter>((ref) {
         name: AppRoutes.home.name,
         path: RoutePaths.home,
         builder: (context, state) => const HomePage(),
+      ),
+      GoRoute(
+        name: AppRoutes.tasks.name,
+        path: RoutePaths.tasks,
+        builder: (context, state) => const TaskListPage(),
       ),
     ],
     errorBuilder: (context, state) {

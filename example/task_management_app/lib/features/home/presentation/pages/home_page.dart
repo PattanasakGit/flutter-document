@@ -1,10 +1,12 @@
 import 'package:ai_first_flutter_starter/app/config/environment_provider.dart';
+import 'package:ai_first_flutter_starter/app/router/route_paths.dart';
 import 'package:ai_first_flutter_starter/app/theme/app_spacing.dart';
 import 'package:ai_first_flutter_starter/features/authentication/authentication.dart';
 import 'package:ai_first_flutter_starter/features/home/presentation/widgets/environment_badge.dart';
 import 'package:ai_first_flutter_starter/shared/widgets/app_button.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
 final class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -88,18 +90,26 @@ final class HomePage extends ConsumerWidget {
                         ),
                         const SizedBox(height: AppSpacing.md),
                       ],
-                      Align(
-                        alignment: Alignment.centerLeft,
-                        child: AppButton(
-                          label: 'Sign out',
-                          expand: false,
-                          isLoading: isLoading,
-                          onPressed: () async {
-                            await ref
-                                .read(loginControllerProvider.notifier)
-                                .logout();
-                          },
-                        ),
+                      Wrap(
+                        spacing: AppSpacing.sm,
+                        runSpacing: AppSpacing.sm,
+                        children: [
+                          AppButton(
+                            label: 'Open task manager',
+                            expand: false,
+                            onPressed: () => context.go(RoutePaths.tasks),
+                          ),
+                          AppButton(
+                            label: 'Sign out',
+                            expand: false,
+                            isLoading: isLoading,
+                            onPressed: () async {
+                              await ref
+                                  .read(loginControllerProvider.notifier)
+                                  .logout();
+                            },
+                          ),
+                        ],
                       ),
                     ],
                   ),

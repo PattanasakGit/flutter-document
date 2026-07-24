@@ -81,6 +81,15 @@ void main() {
       );
     });
 
+    test('maps malformed service data to a SchemaFailure', () {
+      final failure = mapper.mapException(
+        const SchemaAppException(message: 'Task id must be a string.'),
+      );
+
+      expect(failure, isA<SchemaFailure>());
+      expect(failure.userMessage, isNot(contains('Task id')));
+    });
+
     test('maps unknown objects to UnknownFailure', () {
       final failure = mapper.mapException(StateError('unexpected'));
 

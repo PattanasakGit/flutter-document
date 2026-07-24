@@ -32,6 +32,13 @@ final class ValidationFailure extends Failure {
   const ValidationFailure({required super.userMessage});
 }
 
+final class SchemaFailure extends Failure {
+  const SchemaFailure({
+    super.userMessage =
+        'The service returned unexpected data. Please try again later.',
+  });
+}
+
 final class ServerFailure extends Failure {
   const ServerFailure({
     super.userMessage = 'The service is unavailable. Please try again.',

@@ -39,6 +39,7 @@ final class ErrorMapper {
       ValidationAppException(:final message) => ValidationFailure(
         userMessage: message,
       ),
+      SchemaAppException() => const SchemaFailure(),
       ServerAppException() => const ServerFailure(),
       TimeoutAppException() => const TimeoutFailure(),
       UnknownAppException() => const UnknownFailure(),

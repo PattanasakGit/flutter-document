@@ -43,6 +43,12 @@ final class ValidationAppException extends AppException {
   });
 }
 
+final class SchemaAppException extends AppException {
+  const SchemaAppException({
+    required super.message,
+  });
+}
+
 final class ServerAppException extends AppException {
   const ServerAppException({
     required super.message,

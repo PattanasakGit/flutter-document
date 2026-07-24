@@ -42,4 +42,43 @@ final class ApiClient {
       throw _errorMapper.mapDioException(error);
     }
   }
+
+  Future<T> put<T>(
+    String path, {
+    required T Function(Object? data) decoder,
+    Object? data,
+  }) async {
+    try {
+      final response = await _dio.put<Object?>(path, data: data);
+      return decoder(response.data);
+    } on DioException catch (error) {
+      throw _errorMapper.mapDioException(error);
+    }
+  }
+
+  Future<T> patch<T>(
+    String path, {
+    required T Function(Object? data) decoder,
+    Object? data,
+  }) async {
+    try {
+      final response = await _dio.patch<Object?>(path, data: data);
+      return decoder(response.data);
+    } on DioException catch (error) {
+      throw _errorMapper.mapDioException(error);
+    }
+  }
+
+  Future<T> delete<T>(
+    String path, {
+    required T Function(Object? data) decoder,
+    Object? data,
+  }) async {
+    try {
+      final response = await _dio.delete<Object?>(path, data: data);
+      return decoder(response.data);
+    } on DioException catch (error) {
+      throw _errorMapper.mapDioException(error);
+    }
+  }
 }

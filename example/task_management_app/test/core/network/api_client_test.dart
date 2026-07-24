@@ -80,4 +80,49 @@ void main() {
 
     expect(sessionId, 'session-1');
   });
+
+  test(
+    'supports put, patch, and delete verbs through typed decoders',
+    () async {
+      final putRequest = RequestOptions(path: '/tasks/one');
+      when(
+        () => dio.put<Object?>('/tasks/one', data: const {'title': 'Updated'}),
+      ).thenAnswer(
+        (_) async => Response<Object?>(
+          requestOptions: putRequest,
+          data: const <String, Object?>{'id': 'one'},
+        ),
+      );
+      when(
+        () => dio.patch<Object?>('/tasks/one/toggle'),
+      ).thenAnswer(
+        (_) async => Response<Object?>(
+          requestOptions: RequestOptions(path: '/tasks/one/toggle'),
+          data: const <String, Object?>{'completed': true},
+        ),
+      );
+      when(
+        () => dio.delete<Object?>('/tasks/one'),
+      ).thenAnswer(
+        (_) async => Response<Object?>(
+          requestOptions: RequestOptions(path: '/tasks/one'),
+        ),
+      );
+
+      final id = await client.put<String>(
+        '/tasks/one',
+        data: const {'title': 'Updated'},
+        decoder: (data) => (data! as Map<String, Object?>)['id']! as String,
+      );
+      final completed = await client.patch<bool>(
+        '/tasks/one/toggle',
+        decoder: (data) =>
+            (data! as Map<String, Object?>)['completed']! as bool,
+      );
+      await client.delete<void>('/tasks/one', decoder: (_) {});
+
+      expect(id, 'one');
+      expect(completed, isTrue);
+    },
+  );
 }
