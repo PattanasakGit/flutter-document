@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: write
+  pages: write
 
 concurrency:
   group: publish-gh-pages
@@ -24,3 +25,8 @@ jobs:
 
       - name: Publish main to gh-pages
         run: git push origin HEAD:gh-pages
+
+      - name: Request GitHub Pages build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/${GITHUB_REPOSITORY}/pages/builds"
