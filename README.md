@@ -5,6 +5,10 @@
 
 ## เปิดคู่มือ
 
+อ่านฉบับออนไลน์ได้ที่
+[`https://pattanasakgit.github.io/flutter-document/`](https://pattanasakgit.github.io/flutter-document/)
+โดย GitHub Pages จะ deploy ใหม่อัตโนมัติทุกครั้งที่ push ไปยัง branch `main`
+
 เปิด `index.html` ด้วย browser ได้โดยตรง เว็บไซต์ไม่ใช้ CDN และไม่ต้องรัน
 local server หรือใช้คำสั่งต่อไปนี้เมื่อ browser จำกัด `file://`:
 
